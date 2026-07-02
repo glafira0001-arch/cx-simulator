@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Перевести сервисную проблему в CX</title>
+  <style>
+    :root {
+      --paper: #fffaf1;
+      --ink: #172033;
+      --muted: #667085;
+      --line: rgba(23, 32, 51, .14);
+      --blue: #173f75;
+      --blue-soft: #e8effb;
+      --red: #b23b32;
+      --red-soft: #f9e7e3;
+      --green: #267348;
+      --green-soft: #e7f3ea;
+      --yellow: #b7791f;
+      --yellow-soft: #fff1cf;
+      --shadow: 0 18px 50px rgba(23, 32, 51, .13);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 13px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(178, 59, 50, .10), transparent 32%),
+        radial-gradient(circle at 92% 0%, rgba(23, 63, 117, .14), transparent 36%),
+        linear-gradient(135deg, #fbf7ef, #eee8dc);
+    }
+
+    button, select, textarea, input { font-family: inherit; }
+
+    .app {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hero-card, .status-card, .workspace, .result-card {
+      background: rgba(255, 250, 241, .94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      bottom: -105px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      border: 30px solid rgba(23, 63, 117, .06);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 4vw, 56px);
+      line-height: .98;
+      letter-spacing: -0.045em;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 880px;
+      color: #344054;
+      font-size: 18px;
+      line-height: 1.5;
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .status-title {
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .progress {
+      height: 13px;
+      border-radius: 999px;
+      background: rgba(23, 32, 51, .08);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      transition: width .35s ease;
+    }
+
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 750;
+      color: #344054;
+      margin: 8px 0;
+    }
+
+    .status-line span:last-child {
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .mini-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .workspace {
+      padding: 24px;
+    }
+
+    .step-title {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .step-text {
+      margin: 0 0 18px;
+      max-width: 960px;
+      color: #344054;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .case-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, .62);
+      padding: 22px;
+      min-height: 560px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .case-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .case-label {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--red-soft);
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .case-counter {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .problem {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 22px rgba(23, 32, 51, .07);
+    }
+
+    .problem h3 {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 17px;
+    }
+
+    .problem p {
+      margin: 0;
+      color: #344054;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: white;
+      padding: 15px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 13px;
+      align-items: start;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    .answer:hover {
+      transform: translateY(-2px);
+      border-color: rgba(23, 63, 117, .35);
+      box-shadow: 0 12px 28px rgba(23, 32, 51, .10);
+    }
+
+    .answer.disabled {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .answer.correct {
+      background: var(--green-soft);
+      border-color: rgba(38, 115, 72, .55);
+    }
+
+    .answer.wrong {
+      background: var(--red-soft);
+      border-color: rgba(178, 59, 50, .55);
+    }
+
+    .answer-index {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+    }
+
+    .answer.correct .answer-index {
+      background: #d8eddf;
+      color: var(--green);
+    }
+
+    .answer.wrong .answer-index {
+      background: #f5d7d1;
+      color: var(--red);
+    }
+
+    .answer-text {
+      color: var(--ink);
+      line-height: 1.45;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .feedback {
+      display: none;
+      padding: 17px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+    }
+
+    .feedback.show { display: block; animation: pop .25s ease; }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback.good { background: var(--green-soft); border-color: rgba(38, 115, 72, .28); }
+    .feedback.warn { background: var(--yellow-soft); border-color: rgba(183, 121, 31, .28); }
+    .feedback.bad { background: var(--red-soft); border-color: rgba(178, 59, 50, .28); }
+
+    .feedback h3 { margin: 0 0 8px; font-size: 18px; }
+    .feedback p { margin: 0; color: #344054; line-height: 1.5; }
+
+    .formula {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .formula-box {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, .58);
+    }
+
+    .formula-box h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: var(--blue);
+    }
+
+    .formula-box textarea {
+      width: 100%;
+      min-height: 96px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--ink);
+      background: white;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(23, 32, 51, .14);
+    }
+
+    .btn.primary { background: var(--blue); color: white; }
+    .btn.secondary { background: rgba(23, 32, 51, .08); color: var(--ink); }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .result-card {
+      display: none;
+      padding: 26px;
+      margin-top: 20px;
+    }
+
+    .result-card.show { display: block; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .result-box {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .56);
+    }
+
+    .result-box h3 {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 17px;
+    }
+
+    .result-box p,
+    .result-box li {
+      color: #344054;
+      line-height: 1.5;
+    }
+
+    .result-box p { margin: 0; }
+    .result-box ul { margin: 0; padding-left: 20px; }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 20;
+      padding: 13px 16px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      font-weight: 850;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: .25s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 980px) {
+      .hero, .result-grid, .formula { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 20px, 1220px); padding-top: 12px; }
+      .hero-card, .status-card, .workspace, .result-card { border-radius: 20px; padding: 20px; }
+      .answer { grid-template-columns: 34px 1fr; }
+      .answer-index { width: 34px; height: 34px; border-radius: 11px; }
+      .actions { justify-content: stretch; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Урок 1 · Задание 3</div>
+        <h1>Переведите проблему из сервиса в CX</h1>
+        <p class="subtitle">
+          Перед вами бытовые формулировки вроде «поддержка плохо работает» или «клиенты не читают инструкции».
+          Выберите управленческую CX-формулировку: где в пути клиента разрыв, какой риск и что должен изменить директор.
+        </p>
+      </div>
+
+      <aside class="status-card">
+        <div>
+          <p class="status-title">Пульт задания</p>
+          <div class="progress"><div id="progressFill" class="progress-fill"></div></div>
+          <div class="status-line"><span>Карточка</span><span id="caseText">1 из 6</span></div>
+          <div class="status-line"><span>Верных решений</span><span id="scoreText">0</span></div>
+        </div>
+        <p class="mini-note">
+          Хорошая CX-формулировка не ищет виноватого. Она показывает этап пути, системный разрыв, владельца и риск для бизнеса.
+        </p>
+      </aside>
+    </section>
+
+    <section class="workspace">
+      <h2 class="step-title">Этап 1. Выберите правильную CX-формулировку</h2>
+      <p class="step-text">
+        На каждой карточке выберите вариант, который переводит жалобу из уровня «кто плохо сработал» в уровень управляемого клиентского опыта.
+      </p>
+
+      <div class="case-card">
+        <div class="case-top">
+          <span class="case-label">Исходная формулировка</span>
+          <span id="caseCounter" class="case-counter">1 / 6</span>
+        </div>
+
+        <div class="problem">
+          <h3 id="problemTitle"></h3>
+          <p id="problemText"></p>
+        </div>
+
+        <div id="answers" class="answers"></div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="actions">
+          <button id="prevBtn" class="btn secondary" type="button">Назад</button>
+          <button id="nextBtn" class="btn primary" type="button" disabled>Следующая карточка</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="transferSection" class="workspace hidden" style="margin-top:20px;">
+      <h2 class="step-title">Этап 2. Перенесите формулу на свой бизнес</h2>
+      <p class="step-text">
+        Заполните короткий черновик по одной проблеме из своей компании. Это не проверяется автоматически, но помогает применить инструмент.
+      </p>
+
+      <div class="formula">
+        <div class="formula-box">
+          <h3>1. Бытовая жалоба</h3>
+          <textarea id="own1" placeholder="Например: клиенты не читают инструкции"></textarea>
+        </div>
+        <div class="formula-box">
+          <h3>2. Где этап пути?</h3>
+          <textarea id="own2" placeholder="Например: после оплаты, перед первым использованием"></textarea>
+        </div>
+        <div class="formula-box">
+          <h3>3. В чем системный разрыв?</h3>
+          <textarea id="own3" placeholder="Например: нет понятного первого шага и владельца адаптации"></textarea>
+        </div>
+        <div class="formula-box">
+          <h3>4. Какое решение?</h3>
+          <textarea id="own4" placeholder="Например: назначить владельца, создать сценарий первого шага, измерять долю дошедших"></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="copyOwnBtn" class="btn secondary" type="button">Скопировать мой черновик</button>
+        <button id="showResultBtn" class="btn primary" type="button">Завершить задание</button>
+      </div>
+    </section>
+
+    <section id="resultCard" class="result-card">
+      <div class="eyebrow"><span class="eyebrow-dot"></span>Итог задания</div>
+      <h2 class="step-title">Главный вывод</h2>
+      <p class="step-text">
+        Сервисная формулировка часто описывает видимый симптом. CX-формулировка показывает, где в клиентском пути
+        возникает разрыв, кто должен им владеть, какой риск для бизнеса и какой показатель покажет улучшение.
+      </p>
+
+      <div class="result-grid">
+        <div class="result-box">
+          <h3>Формула перевода</h3>
+          <ul>
+            <li>Не «клиенты не читают инструкции», а «после оплаты нет понятного первого шага».</li>
+            <li>Не «поддержка плохо работает», а «клиент повторяет проблему, потому что контекст не передается».</li>
+            <li>Не «продажи обещают лишнее», а «обещания до покупки не согласованы с операционной системой».</li>
+          </ul>
+        </div>
+        <div class="result-box">
+          <h3>Что делает директор</h3>
+          <p>
+            Переводит жалобу в управленческую задачу: этап пути, разрыв, владелец, показатель, изменение процесса.
+            Так компания перестает лечить симптомы и начинает управлять клиентским опытом.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="copyResultBtn" class="btn secondary" type="button">Скопировать итог</button>
+        <button id="restartBtn" class="btn primary" type="button">Пройти заново</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast">Скопировано</div>
+
+  <script>
+    const cases = [
+      {
+        title: "«Поддержка плохо работает»",
+        text: "Клиент обратился с проблемой. Первый сотрудник ответил быстро, второй попросил повторить детали, третий сказал, что это не его зона.",
+        correct: 1,
+        answers: [
+          "Нужно провести тренинг по вежливости для поддержки.",
+          "Клиент повторяет проблему нескольким сотрудникам, потому что компания не передает контекст между каналами и отделами.",
+          "Нужно чаще напоминать сотрудникам, что клиент всегда прав."
+        ],
+        feedback: "Верно. Проблема не только в качестве ответа. Разрыв в том, что компания не удерживает историю обращения и заставляет клиента самому связывать процесс."
+      },
+      {
+        title: "«Клиенты не читают инструкции»",
+        text: "После оплаты клиент получает длинное письмо с правилами, но не делает первый шаг и пишет в поддержку с базовыми вопросами.",
+        correct: 2,
+        answers: [
+          "Нужно написать клиентам, что они обязаны читать инструкцию.",
+          "Нужно сделать инструкцию еще подробнее.",
+          "После оплаты нет понятного сценария первого действия, поэтому клиент не понимает маршрут и не входит в продукт."
+        ],
+        feedback: "Верно. Клиент может не читать длинную инструкцию не из-за лени, а потому что компания не спроектировала простой первый шаг."
+      },
+      {
+        title: "«Менеджер по продажам обещает лишнее»",
+        text: "Клиент покупает услугу после обещания быстрого результата. После оплаты выясняется, что выполнение идет по стандартному сроку, который в два раза длиннее.",
+        correct: 0,
+        answers: [
+          "Обещания в продаже не согласованы с операционными возможностями, поэтому клиент получает разрыв ожиданий после оплаты.",
+          "Нужно запретить менеджерам много говорить с клиентами.",
+          "Нужно дать клиенту скидку, чтобы он не жаловался."
+        ],
+        feedback: "Верно. Это не только проблема одного менеджера. Компания должна согласовать оффер, скрипты продаж и реальный процесс исполнения."
+      },
+      {
+        title: "«Администратор не объяснил следующий шаг»",
+        text: "Клиент оформил покупку, получил чек и ушел. Через несколько дней он пишет: «Я не понял, что теперь делать».",
+        correct: 2,
+        answers: [
+          "Администратору нужно быть дружелюбнее.",
+          "Нужно отправлять клиенту больше рекламных рассылок.",
+          "На этапе после оплаты нет обязательного правила: кто объясняет следующий шаг, срок и ответственного."
+        ],
+        feedback: "Верно. Тут важна не только речь администратора, а обязательный переход клиента от оплаты к понятному маршруту."
+      },
+      {
+        title: "«Доставка подвела»",
+        text: "Доставка задержалась. Клиент узнал об этом только после собственного звонка. Сотрудник извинился, но не смог назвать новый срок.",
+        correct: 1,
+        answers: [
+          "Курьер должен быть вежливее.",
+          "Компания не управляет ожиданием клиента при сбое: нет проактивного уведомления, нового срока и владельца ситуации.",
+          "Нужно сделать скидку на доставку."
+        ],
+        feedback: "Верно. В CX важно не только само опоздание, а то, как компания управляет ожиданием, сроком и ответственностью при сбое."
+      },
+      {
+        title: "«Клиент не вернулся»",
+        text: "Первый проект завершился без жалоб. Но клиент не купил повторно. Команда считает, что он просто ушел из-за цены.",
+        correct: 0,
+        answers: [
+          "После первого результата компания не показала клиенту ценность продолжения и не связала опыт с повторной покупкой.",
+          "Нужно сразу снизить цену на следующий проект.",
+          "Нужно чаще просить клиента оставить отзыв."
+        ],
+        feedback: "Верно. Если жалоб нет, это не значит, что клиент понял ценность продолжения. Повторная покупка требует управляемого перехода."
+      }
+    ];
+
+    const state = {
+      current: 0,
+      selected: Array(6).fill(null),
+      correct: Array(6).fill(false),
+      score: 0
+    };
+
+    const el = {
+      problemTitle: document.getElementById("problemTitle"),
+      problemText: document.getElementById("problemText"),
+      answers: document.getElementById("answers"),
+      feedback: document.getElementById("feedback"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      caseCounter: document.getElementById("caseCounter"),
+      caseText: document.getElementById("caseText"),
+      scoreText: document.getElementById("scoreText"),
+      progressFill: document.getElementById("progressFill"),
+      transferSection: document.getElementById("transferSection"),
+      resultCard: document.getElementById("resultCard"),
+      showResultBtn: document.getElementById("showResultBtn"),
+      restartBtn: document.getElementById("restartBtn"),
+      copyResultBtn: document.getElementById("copyResultBtn"),
+      copyOwnBtn: document.getElementById("copyOwnBtn"),
+      toast: document.getElementById("toast")
+    };
+
+    function render() {
+      const item = cases[state.current];
+      el.problemTitle.textContent = item.title;
+      el.problemText.textContent = item.text;
+      el.caseCounter.textContent = `${state.current + 1} / ${cases.length}`;
+      el.caseText.textContent = `${state.current + 1} из ${cases.length}`;
+      el.scoreText.textContent = state.score;
+      el.progressFill.style.width = `${Math.round((state.selected.filter(v => v !== null).length / cases.length) * 70)}%`;
+
+      el.answers.innerHTML = "";
+      item.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.className = "answer";
+        if (state.selected[state.current] !== null) {
+          btn.classList.add("disabled");
+          if (index === item.correct) btn.classList.add("correct");
+          if (index === state.selected[state.current] && index !== item.correct) btn.classList.add("wrong");
+        }
+        btn.innerHTML = `<span class="answer-index">${index + 1}</span><span class="answer-text">${answer}</span>`;
+        btn.addEventListener("click", () => choose(index));
+        el.answers.appendChild(btn);
+      });
+
+      if (state.selected[state.current] !== null) {
+        const ok = state.selected[state.current] === item.correct;
+        el.feedback.className = `feedback show ${ok ? "good" : "warn"}`;
+        el.feedback.innerHTML = `<h3>${ok ? "Верно" : "Не лучший вариант"}</h3><p>${ok ? item.feedback : "Этот вариант остается на уровне симптома или частной реакции. Нужна формулировка, которая показывает этап пути, системный разрыв и управленческое решение."}</p>`;
+        el.nextBtn.disabled = false;
+      } else {
+        el.feedback.className = "feedback";
+        el.feedback.innerHTML = "";
+        el.nextBtn.disabled = true;
+      }
+
+      el.prevBtn.disabled = state.current === 0;
+      el.nextBtn.textContent = state.current === cases.length - 1 ? "Перейти к переносу" : "Следующая карточка";
+    }
+
+    function choose(index) {
+      if (state.selected[state.current] !== null) return;
+      const item = cases[state.current];
+      state.selected[state.current] = index;
+      if (index === item.correct) {
+        state.correct[state.current] = true;
+        state.score++;
+      }
+      render();
+    }
+
+    function next() {
+      if (state.current < cases.length - 1) {
+        state.current++;
+        render();
+      } else {
+        el.transferSection.classList.remove("hidden");
+        el.progressFill.style.width = "85%";
+        el.transferSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function prev() {
+      if (state.current > 0) {
+        state.current--;
+        render();
+      }
+    }
+
+    function showResult() {
+      el.resultCard.classList.add("show");
+      el.progressFill.style.width = "100%";
+      el.resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function copyOwn() {
+      const text = [
+        "Мой черновик CX-формулировки",
+        "",
+        "Бытовая жалоба: " + document.getElementById("own1").value,
+        "Этап пути: " + document.getElementById("own2").value,
+        "Системный разрыв: " + document.getElementById("own3").value,
+        "Решение: " + document.getElementById("own4").value
+      ].join("\n");
+      await copyText(text);
+    }
+
+    async function copyResult() {
+      const text = [
+        "Итог задания «Переведите проблему из сервиса в CX»",
+        "",
+        "Сервисная формулировка описывает симптом: кто плохо ответил, не объяснил, задержал, забыл.",
+        "CX-формулировка показывает управленческую задачу: этап пути, системный разрыв, владельца, риск и показатель.",
+        "",
+        "Формула: бытовая жалоба → этап клиентского пути → системный разрыв → владелец → показатель → изменение процесса."
+      ].join("\n");
+      await copyText(text);
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Скопировано");
+      } catch {
+        showToast("Не удалось скопировать");
+      }
+    }
+
+    function restart() {
+      state.current = 0;
+      state.selected = Array(6).fill(null);
+      state.correct = Array(6).fill(false);
+      state.score = 0;
+      el.transferSection.classList.add("hidden");
+      el.resultCard.classList.remove("show");
+      ["own1","own2","own3","own4"].forEach(id => document.getElementById(id).value = "");
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showToast(text) {
+      el.toast.textContent = text;
+      el.toast.classList.add("show");
+      setTimeout(() => el.toast.classList.remove("show"), 1800);
+    }
+
+    el.nextBtn.addEventListener("click", next);
+    el.prevBtn.addEventListener("click", prev);
+    el.showResultBtn.addEventListener("click", showResult);
+    el.restartBtn.addEventListener("click", restart);
+    el.copyResultBtn.addEventListener("click", copyResult);
+    el.copyOwnBtn.addEventListener("click", copyOwn);
+
+    render();
+  </script>
+</body>
+</html>
