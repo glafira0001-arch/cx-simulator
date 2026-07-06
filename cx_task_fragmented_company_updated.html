@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Где компания выглядит разрозненной</title>
+  <style>
+    :root {
+      --bg: #f6f2ea;
+      --paper: #fffaf1;
+      --ink: #172033;
+      --muted: #667085;
+      --line: rgba(23, 32, 51, .14);
+      --blue: #173f75;
+      --blue-soft: #e8effb;
+      --red: #b23b32;
+      --red-soft: #f9e7e3;
+      --green: #267348;
+      --green-soft: #e7f3ea;
+      --yellow: #b7791f;
+      --yellow-soft: #fff1cf;
+      --shadow: 0 18px 50px rgba(23, 32, 51, .13);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 13px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(178, 59, 50, .10), transparent 32%),
+        radial-gradient(circle at 90% 0%, rgba(23, 63, 117, .14), transparent 36%),
+        linear-gradient(135deg, #fbf7ef, #eee8dc);
+    }
+
+    button, select { font-family: inherit; }
+
+    .app {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hero-card, .status-card, .workspace, .result-card {
+      background: rgba(255, 250, 241, .94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      bottom: -105px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      border: 30px solid rgba(23, 63, 117, .06);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 4vw, 56px);
+      line-height: .98;
+      letter-spacing: -0.045em;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 880px;
+      color: #344054;
+      font-size: 18px;
+      line-height: 1.5;
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .status-title {
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .progress {
+      height: 13px;
+      border-radius: 999px;
+      background: rgba(23, 32, 51, .08);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      transition: width .35s ease;
+    }
+
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 750;
+      color: #344054;
+      margin: 8px 0;
+    }
+
+    .status-line span:last-child {
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .mini-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .workspace {
+      padding: 24px;
+    }
+
+    .step-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(23, 32, 51, .06);
+      color: #475467;
+      font-size: 14px;
+      font-weight: 850;
+      border: 1px solid transparent;
+    }
+
+    .tab.active {
+      background: var(--blue-soft);
+      color: var(--blue);
+      border-color: rgba(23, 63, 117, .18);
+    }
+
+    .tab.done {
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: rgba(38, 115, 72, .20);
+    }
+
+    .tab-num {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: currentColor;
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .step-title {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .step-text {
+      margin: 0 0 18px;
+      max-width: 940px;
+      color: #344054;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .path {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 12px;
+      margin: 22px 0;
+    }
+
+    .path-step {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .62);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      min-height: 112px;
+      position: relative;
+      box-shadow: 0 8px 22px rgba(23, 32, 51, .07);
+    }
+
+    .path-step::after {
+      content: "→";
+      position: absolute;
+      right: -12px;
+      top: 38px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .path-step:last-child::after { display: none; }
+
+    .path-step h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--blue);
+      line-height: 1.25;
+    }
+
+    .path-step p {
+      margin: 0;
+      color: #344054;
+      font-size: 13px;
+      line-height: 1.36;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: white;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+      box-shadow: 0 8px 22px rgba(23, 32, 51, .08);
+      min-height: 132px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(23, 63, 117, .35);
+      box-shadow: 0 12px 28px rgba(23, 32, 51, .12);
+    }
+
+    .card.selected {
+      background: var(--blue-soft);
+      border-color: rgba(23, 63, 117, .55);
+      box-shadow: 0 0 0 3px rgba(23, 63, 117, .10);
+    }
+
+    .card.correct {
+      background: var(--green-soft);
+      border-color: rgba(38, 115, 72, .55);
+    }
+
+    .card.wrong {
+      background: var(--red-soft);
+      border-color: rgba(178, 59, 50, .55);
+    }
+
+    .card.disabled { cursor: default; }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(23, 32, 51, .06);
+      color: #475467;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+
+    .checkbox {
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+      border: 1px solid rgba(23, 32, 51, .18);
+      background: rgba(255, 255, 255, .70);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: white;
+      flex: 0 0 auto;
+    }
+
+    .card.selected .checkbox { background: var(--blue); border-color: var(--blue); }
+    .card.correct .checkbox { background: var(--green); border-color: var(--green); }
+    .card.wrong .checkbox { background: var(--red); border-color: var(--red); }
+
+    .card-title {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.35;
+      font-weight: 780;
+    }
+
+    .card-desc {
+      margin: 0;
+      color: #344054;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .match-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .match-row {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, .58);
+    }
+
+    .match-row.correct { background: var(--green-soft); border-color: rgba(38, 115, 72, .45); }
+    .match-row.wrong { background: var(--red-soft); border-color: rgba(178, 59, 50, .45); }
+
+    .match-problem h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: var(--blue);
+    }
+
+    .match-problem p {
+      margin: 0;
+      color: #344054;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      background: white;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+    }
+
+    .feedback.show { display: block; animation: pop .25s ease; }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback.good { background: var(--green-soft); border-color: rgba(38, 115, 72, .28); }
+    .feedback.warn { background: var(--yellow-soft); border-color: rgba(183, 121, 31, .28); }
+    .feedback.bad { background: var(--red-soft); border-color: rgba(178, 59, 50, .28); }
+
+    .feedback h3 { margin: 0 0 8px; font-size: 18px; }
+    .feedback p { margin: 0; color: #344054; line-height: 1.5; }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(23, 32, 51, .14);
+    }
+
+    .btn.primary { background: var(--blue); color: white; }
+    .btn.secondary { background: rgba(23, 32, 51, .08); color: var(--ink); }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .result-card {
+      display: none;
+      padding: 26px;
+      margin-top: 20px;
+    }
+
+    .result-card.show { display: block; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .result-box {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .56);
+    }
+
+    .result-box h3 {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 17px;
+    }
+
+    .result-box p,
+    .result-box li {
+      color: #344054;
+      line-height: 1.5;
+    }
+
+    .result-box p { margin: 0; }
+    .result-box ul { margin: 0; padding-left: 20px; }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 20;
+      padding: 13px 16px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      font-weight: 850;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: .25s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1060px) {
+      .hero, .result-grid { grid-template-columns: 1fr; }
+      .path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .path-step::after { display: none; }
+      .cards { grid-template-columns: 1fr; }
+      .match-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 20px, 1220px); padding-top: 12px; }
+      .hero-card, .status-card, .workspace, .result-card { border-radius: 20px; padding: 20px; }
+      .path { grid-template-columns: 1fr; }
+      .actions { justify-content: stretch; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Практика · Клиентский путь</div>
+        <h1>Где компания выглядит разрозненной?</h1>
+        <p class="subtitle">
+          Найдите места в клиентском пути, где человек видит не одну компанию, а набор отделов.
+          Затем подберите управленческое действие и переведите разрозненную ситуацию в CX-формулировку.
+        </p>
+      </div>
+
+      <aside class="status-card">
+        <div>
+          <p class="status-title">Пульт задания</p>
+          <div class="progress"><div id="progressFill" class="progress-fill"></div></div>
+          <div class="status-line"><span>Этап</span><span id="stageText">1 из 2</span></div>
+          <div class="status-line"><span>Выбрано разрывов</span><span id="selectedText">0 / 4</span></div>
+          <div class="status-line"><span>Верных решений</span><span id="scoreText">0</span></div>
+        </div>
+        <p class="mini-note">
+          Смысл задания — увидеть не виноватого сотрудника, а место, где путь клиента распался между отделами.
+        </p>
+      </aside>
+    </section>
+
+    <section class="workspace">
+      <div class="step-tabs">
+        <div id="tab1" class="tab active"><span class="tab-num">1</span>Найти разрывы</div>
+        <div id="tab2" class="tab"><span class="tab-num">2</span>Выбрать действие</div>
+      </div>
+
+      <section id="step1">
+        <h2 class="step-title">Посмотрите на путь глазами клиента</h2>
+        <p class="step-text">
+          Клиент не видит «маркетинг», «продажи», «операционный блок» и «поддержку». Он видит одну компанию.
+          Выберите 4 ситуации, где компания выглядит для клиента разрозненно.
+        </p>
+
+        <div class="path">
+          <div class="path-step"><h3>1. Реклама</h3><p>Клиент видит обещание компании до первого контакта.</p></div>
+          <div class="path-step"><h3>2. Заявка</h3><p>Клиент оставляет контакт и ждет понятной реакции.</p></div>
+          <div class="path-step"><h3>3. Продажа</h3><p>Менеджер объясняет ценность и условия.</p></div>
+          <div class="path-step"><h3>4. Оплата</h3><p>Клиент ожидает ясный переход к следующему шагу.</p></div>
+          <div class="path-step"><h3>5. Исполнение</h3><p>Компания должна выполнить то, что обещала.</p></div>
+          <div class="path-step"><h3>6. Поддержка</h3><p>Клиент обращается, если что-то пошло не по плану.</p></div>
+          <div class="path-step"><h3>7. Повторная покупка</h3><p>Клиент решает, продолжать ли отношения.</p></div>
+        </div>
+
+        <div id="cards" class="cards"></div>
+
+        <div id="feedback1" class="feedback"></div>
+
+        <div class="actions">
+          <button id="resetBtn" class="btn secondary" type="button">Сбросить выбор</button>
+          <button id="checkBreaksBtn" class="btn primary" type="button" disabled>Проверить</button>
+        </div>
+      </section>
+
+      <section id="step2" class="hidden">
+        <h2 class="step-title">Подберите управленческое действие и CX-формулировку</h2>
+        <p class="step-text">
+          Теперь для каждого найденного разрыва выберите действие директора. Важно не «попросить сотрудников лучше работать»,
+          а соединить путь клиента: обещание, передачу, владельца, срок или контекст. Это и есть перевод бытовой жалобы в CX-задачу.
+        </p>
+
+        <div id="matches" class="match-list"></div>
+
+        <div id="feedback2" class="feedback"></div>
+
+        <div class="actions">
+          <button id="backBtn" class="btn secondary" type="button">Вернуться к этапу 1</button>
+          <button id="checkMatchesBtn" class="btn primary" type="button">Проверить действия</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="resultCard" class="result-card">
+      <div class="eyebrow"><span class="eyebrow-dot"></span>Итог задания</div>
+      <h2 class="step-title">Главный вывод</h2>
+      <p class="step-text">
+        Разрозненный клиентский опыт возникает не тогда, когда один сотрудник ошибся, а когда отделы не связали обещание,
+        контекст, ответственность и следующий шаг в единую систему.
+      </p>
+
+      <div class="result-grid">
+        <div class="result-box">
+          <h3>Как перенести в свой бизнес</h3>
+          <ul>
+            <li>Возьмите один путь клиента: от первого интереса до повторной покупки.</li>
+            <li>Запишите, что обещает каждый отдел на своем этапе.</li>
+            <li>Найдите места, где клиент повторяет информацию, ждет, уточняет или сам связывает отделы.</li>
+            <li>Для каждого разрыва назначьте владельца и правило передачи.</li>
+          </ul>
+        </div>
+        <div class="result-box">
+          <h3>Как переводить в CX-формулировку</h3>
+          <p>
+            Не «поддержка плохо работает», а «клиент повторяет проблему, потому что контекст не передается между отделами». Не «продажи обещают лишнее», а «обещания до покупки не согласованы с операционными возможностями». Если клиенту приходится самому объяснять компании, что с ним уже происходило, значит компания переложила на него часть своей управленческой работы.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="copyBtn" class="btn secondary" type="button">Скопировать итог</button>
+        <button id="restartBtn" class="btn primary" type="button">Пройти заново</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast">Итог скопирован</div>
+
+  <script>
+    const situations = [
+      {
+        id: "s1",
+        stage: "Реклама",
+        title: "В рекламе обещали индивидуальный подход",
+        desc: "После оплаты клиент попал в стандартную очередь без объяснения, кто и когда с ним свяжется.",
+        broken: true,
+        action: "a1"
+      },
+      {
+        id: "s2",
+        stage: "Заявка",
+        title: "Менеджер перезвонил через 10 минут",
+        desc: "Клиент быстро получил ответ и понял, когда будет консультация.",
+        broken: false
+      },
+      {
+        id: "s3",
+        stage: "Продажа",
+        title: "Менеджер помог выбрать подходящий вариант",
+        desc: "Клиент понял различия между тарифами и выбрал решение под свою задачу.",
+        broken: false
+      },
+      {
+        id: "s4",
+        stage: "Оплата",
+        title: "После оплаты клиент не понял следующий шаг",
+        desc: "Счет оплачен, но клиент не знает, кто теперь отвечает за запуск работы.",
+        broken: true,
+        action: "a2"
+      },
+      {
+        id: "s5",
+        stage: "Исполнение",
+        title: "Исполнитель не получил обещания продаж",
+        desc: "Клиенту обещали срок 3 дня, а операционный блок работает по регламенту 7 дней.",
+        broken: true,
+        action: "a3"
+      },
+      {
+        id: "s6",
+        stage: "Поддержка",
+        title: "Поддержка быстро ответила по шаблону",
+        desc: "Ответ был вежливым, но сотрудник не видел историю клиента и попросил все объяснить заново.",
+        broken: true,
+        action: "a4"
+      },
+      {
+        id: "s7",
+        stage: "Повторная покупка",
+        title: "Клиенту предложили продление",
+        desc: "Менеджер опирался на результат прошлого периода и объяснил, что изменится дальше.",
+        broken: false
+      },
+      {
+        id: "s8",
+        stage: "Поддержка",
+        title: "Сотрудник извинился за ожидание",
+        desc: "Он назвал срок решения и сообщил, где клиент увидит статус обращения.",
+        broken: false
+      }
+    ];
+
+    const actions = [
+      { id: "a1", text: "Согласовать рекламные обещания с реальным процессом после оплаты." },
+      { id: "a2", text: "Назначить владельца перехода после оплаты и обязательный первый контакт." },
+      { id: "a3", text: "Ввести правило передачи обещаний продаж в исполнение до старта работы." },
+      { id: "a4", text: "Сделать единый контекст обращения: история клиента видна поддержке и смежным отделам." },
+      { id: "wrong1", text: "Попросить сотрудников быть внимательнее к клиентам." },
+      { id: "wrong2", text: "Дать клиенту скидку на следующую покупку." },
+      { id: "wrong3", text: "Усилить рекламный бюджет, чтобы привлечь больше новых клиентов." }
+    ];
+
+    const state = {
+      selected: new Set(),
+      checkedBreaks: false,
+      checkedMatches: false,
+      score: 0
+    };
+
+    const el = {
+      cards: document.getElementById("cards"),
+      matches: document.getElementById("matches"),
+      selectedText: document.getElementById("selectedText"),
+      scoreText: document.getElementById("scoreText"),
+      stageText: document.getElementById("stageText"),
+      progressFill: document.getElementById("progressFill"),
+      checkBreaksBtn: document.getElementById("checkBreaksBtn"),
+      checkMatchesBtn: document.getElementById("checkMatchesBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      backBtn: document.getElementById("backBtn"),
+      feedback1: document.getElementById("feedback1"),
+      feedback2: document.getElementById("feedback2"),
+      step1: document.getElementById("step1"),
+      step2: document.getElementById("step2"),
+      tab1: document.getElementById("tab1"),
+      tab2: document.getElementById("tab2"),
+      resultCard: document.getElementById("resultCard"),
+      copyBtn: document.getElementById("copyBtn"),
+      restartBtn: document.getElementById("restartBtn"),
+      toast: document.getElementById("toast")
+    };
+
+    function renderCards() {
+      el.cards.innerHTML = "";
+      situations.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        if (state.selected.has(item.id)) card.classList.add("selected");
+        if (state.checkedBreaks) {
+          card.classList.add("disabled");
+          if (item.broken) card.classList.add("correct");
+          if (state.selected.has(item.id) && !item.broken) card.classList.add("wrong");
+        }
+
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="tag">${item.stage}</span>
+            <span class="checkbox">${state.selected.has(item.id) ? "✓" : ""}</span>
+          </div>
+          <p class="card-title">${item.title}</p>
+          <p class="card-desc">${item.desc}</p>
+        `;
+
+        if (!state.checkedBreaks) {
+          card.addEventListener("click", () => toggleSelect(item.id));
+        }
+
+        el.cards.appendChild(card);
+      });
+      updateStatus();
+    }
+
+    function toggleSelect(id) {
+      if (state.selected.has(id)) {
+        state.selected.delete(id);
+      } else {
+        if (state.selected.size >= 4) {
+          showToast("Нужно выбрать ровно 4 ситуации");
+          return;
+        }
+        state.selected.add(id);
+      }
+      renderCards();
+    }
+
+    function updateStatus() {
+      el.selectedText.textContent = `${state.selected.size} / 4`;
+      el.checkBreaksBtn.disabled = state.selected.size !== 4 || state.checkedBreaks;
+      el.scoreText.textContent = state.score;
+      el.progressFill.style.width = state.checkedMatches ? "100%" : state.checkedBreaks ? "65%" : `${state.selected.size * 12}%`;
+    }
+
+    function showFeedback(target, type, title, text) {
+      target.className = `feedback show ${type}`;
+      target.innerHTML = `<h3>${title}</h3><p>${text}</p>`;
+    }
+
+    function checkBreaks() {
+      let correct = 0;
+      state.selected.forEach(id => {
+        const item = situations.find(s => s.id === id);
+        if (item && item.broken) correct++;
+      });
+
+      state.checkedBreaks = true;
+      state.score = correct;
+      renderCards();
+
+      if (correct === 4) {
+        showFeedback(el.feedback1, "good", "Верно: вы нашли все разрывы", "Вы выбрали ситуации, где клиент видит не одну компанию, а несвязанные отделы. Теперь подберите управленческое действие для каждого разрыва.");
+        setTimeout(goStep2, 850);
+      } else {
+        showFeedback(el.feedback1, "warn", `Верно ${correct} из 4`, "Зеленые карточки — настоящие разрывы. Красные — ситуации, где контакт выглядит нормально. Сбросьте выбор и попробуйте еще раз.");
+      }
+      updateStatus();
+    }
+
+    function goStep2() {
+      el.step1.classList.add("hidden");
+      el.step2.classList.remove("hidden");
+      el.tab1.classList.remove("active");
+      el.tab1.classList.add("done");
+      el.tab2.classList.add("active");
+      el.stageText.textContent = "2 из 2";
+      renderMatches();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderMatches() {
+      el.matches.innerHTML = "";
+      const brokenItems = situations.filter(s => s.broken);
+
+      brokenItems.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "match-row";
+        row.dataset.id = item.id;
+
+        const options = ['<option value="">Выберите действие директора</option>']
+          .concat(actions.map(a => `<option value="${a.id}">${a.text}</option>`))
+          .join("");
+
+        row.innerHTML = `
+          <div class="match-problem">
+            <h3>${item.title}</h3>
+            <p>${item.desc}</p>
+          </div>
+          <select data-correct="${item.action}">${options}</select>
+        `;
+        el.matches.appendChild(row);
+      });
+    }
+
+    function checkMatches() {
+      const rows = Array.from(document.querySelectorAll(".match-row"));
+      let correct = 0;
+      let filled = 0;
+
+      rows.forEach(row => {
+        const select = row.querySelector("select");
+        row.classList.remove("correct", "wrong");
+        if (select.value) filled++;
+        if (select.value === select.dataset.correct) {
+          correct++;
+          row.classList.add("correct");
+        } else {
+          row.classList.add("wrong");
+        }
+      });
+
+      if (filled < rows.length) {
+        showFeedback(el.feedback2, "bad", "Заполните все действия", "Для каждого разрыва нужно выбрать управленческое действие.");
+        return;
+      }
+
+      state.checkedMatches = true;
+      state.score = 4 + correct;
+      updateStatus();
+
+      if (correct === rows.length) {
+        showFeedback(el.feedback2, "good", "Все действия выбраны верно", "Вы соединили каждый разрыв с управленческим действием: обещания, владельцы, передача и единый контекст. Так формулировка «сотрудники плохо сработали» превращается в управленческую CX-задачу.");
+        el.resultCard.classList.add("show");
+        setTimeout(() => el.resultCard.scrollIntoView({ behavior: "smooth", block: "start" }), 650);
+      } else {
+        showFeedback(el.feedback2, "warn", `Верно ${correct} из ${rows.length}`, "Проверьте красные строки. Решение должно чинить не настроение сотрудника, а конкретный разрыв в клиентском пути.");
+      }
+    }
+
+    function resetSelection() {
+      state.selected = new Set();
+      state.checkedBreaks = false;
+      state.score = 0;
+      el.feedback1.className = "feedback";
+      renderCards();
+    }
+
+    function backToStep1() {
+      el.step2.classList.add("hidden");
+      el.step1.classList.remove("hidden");
+      el.tab1.classList.add("active");
+      el.tab2.classList.remove("active");
+      el.stageText.textContent = "1 из 2";
+      updateStatus();
+    }
+
+    function restart() {
+      state.selected = new Set();
+      state.checkedBreaks = false;
+      state.checkedMatches = false;
+      state.score = 0;
+      el.feedback1.className = "feedback";
+      el.feedback2.className = "feedback";
+      el.resultCard.classList.remove("show");
+      el.step2.classList.add("hidden");
+      el.step1.classList.remove("hidden");
+      el.tab1.className = "tab active";
+      el.tab2.className = "tab";
+      el.stageText.textContent = "1 из 2";
+      renderCards();
+      renderMatches();
+      updateStatus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function copyResult() {
+      const text = [
+        "Итог задания «Где компания выглядит разрозненной?»",
+        "",
+        "Разрывы клиентского пути:",
+        "1. Реклама обещает индивидуальный подход, но после оплаты клиент попадает в стандартную очередь.",
+        "2. После оплаты клиент не понимает следующий шаг и владельца.",
+        "3. Продажи обещают срок, который исполнение не может выполнить.",
+        "4. Поддержка отвечает быстро, но не видит историю клиента.",
+        "",
+        "Управленческий вывод: клиентский опыт ломается на стыках отделов. Нужно согласовать обещания, назначить владельца перехода, передавать контекст и сделать историю клиента видимой для тех, кто решает вопрос. Бытовую жалобу нужно переводить в CX-формулировку: этап пути → системный разрыв → владелец → действие → показатель."
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Итог скопирован");
+      } catch {
+        showToast("Не удалось скопировать");
+      }
+    }
+
+    function showToast(text) {
+      el.toast.textContent = text;
+      el.toast.classList.add("show");
+      setTimeout(() => el.toast.classList.remove("show"), 1800);
+    }
+
+    el.checkBreaksBtn.addEventListener("click", checkBreaks);
+    el.resetBtn.addEventListener("click", resetSelection);
+    el.backBtn.addEventListener("click", backToStep1);
+    el.checkMatchesBtn.addEventListener("click", checkMatches);
+    el.restartBtn.addEventListener("click", restart);
+    el.copyBtn.addEventListener("click", copyResult);
+
+    renderCards();
+    renderMatches();
+    updateStatus();
+  </script>
+</body>
+</html>
