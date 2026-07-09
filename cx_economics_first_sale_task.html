@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Первая продажа не показывает здоровье бизнеса</title>
+  <style>
+:root{
+  --paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);
+  --blue:#173f75;--blue-soft:#e8effb;--red:#b23b32;--red-soft:#f9e7e3;
+  --green:#267348;--green-soft:#e7f3ea;--yellow:#b7791f;--yellow-soft:#fff1cf;
+  --shadow:0 18px 50px rgba(23,32,51,.13);--r-lg:28px;--r-md:18px;--r-sm:13px;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);
+background:radial-gradient(circle at 8% 0%,rgba(178,59,50,.1),transparent 32%),
+radial-gradient(circle at 92% 0%,rgba(23,63,117,.14),transparent 36%),
+linear-gradient(135deg,#fbf7ef,#eee8dc)}
+button,select,textarea{font-family:inherit}
+.app{width:min(1220px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero{display:grid;grid-template-columns:1.35fr .65fr;gap:20px;margin-bottom:20px}
+.hero-card,.status-card,.workspace,.result-card{background:rgba(255,250,241,.94);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.hero-card{padding:28px;position:relative;overflow:hidden}
+.hero-card:after{content:"";position:absolute;right:-90px;bottom:-105px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:850;letter-spacing:.03em;text-transform:uppercase}
+.eyebrow-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,56px);line-height:.98;letter-spacing:-.045em}
+.subtitle{margin:0;max-width:880px;color:#344054;font-size:18px;line-height:1.5;position:relative;z-index:1}
+.status-card{padding:22px;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.status-title{margin:0 0 10px;color:var(--blue);font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.progress{height:13px;border-radius:999px;background:rgba(23,32,51,.08);overflow:hidden;margin-bottom:10px}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--blue));transition:width .35s ease}
+.status-line{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:750;color:#344054;margin:8px 0}
+.status-line span:last-child{color:var(--blue);font-weight:900}
+.mini-note{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
+.workspace{padding:24px}
+.step-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.tab{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:14px;font-weight:850;border:1px solid transparent}
+.tab.active{background:var(--blue-soft);color:var(--blue);border-color:rgba(23,63,117,.18)}
+.tab.done{background:var(--green-soft);color:var(--green);border-color:rgba(38,115,72,.2)}
+.tab-num{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:currentColor;color:#fff;font-size:12px;font-weight:900}
+.step-title{margin:0 0 10px;font-size:clamp(24px,3vw,36px);line-height:1.08;letter-spacing:-.03em}
+.step-text{margin:0 0 18px;max-width:960px;color:#344054;font-size:16px;line-height:1.55}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.card{border:1px solid var(--line);border-radius:var(--r-md);background:#fff;padding:16px;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(23,32,51,.08);min-height:118px;display:grid;gap:10px;align-content:start}
+.card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35);box-shadow:0 12px 28px rgba(23,32,51,.12)}
+.card.selected{background:var(--blue-soft);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.card.correct{background:var(--green-soft);border-color:rgba(38,115,72,.55)}
+.card.wrong{background:var(--red-soft);border-color:rgba(178,59,50,.55)}
+.card.disabled{cursor:default;pointer-events:none}
+.card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.tag{display:inline-flex;padding:6px 9px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+.checkbox{width:26px;height:26px;border-radius:9px;border:1px solid rgba(23,32,51,.18);background:rgba(255,255,255,.7);display:grid;place-items:center;font-weight:900;color:#fff;flex:0 0 auto}
+.card.selected .checkbox{background:var(--blue);border-color:var(--blue)}
+.card.correct .checkbox{background:var(--green);border-color:var(--green)}
+.card.wrong .checkbox{background:var(--red);border-color:var(--red)}
+.card-title{margin:0;font-size:16px;line-height:1.35;font-weight:780}
+.card-desc{margin:0;color:#344054;line-height:1.45;font-size:14px}
+.data-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.data-box{border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.62);padding:16px}
+.data-box b{display:block;color:var(--blue);font-size:22px;margin-bottom:4px}
+.data-box span{color:#344054;font-size:13px;line-height:1.35}
+.select-list{display:grid;gap:14px;margin-top:18px}
+.select-row{display:grid;grid-template-columns:1fr 370px;gap:14px;align-items:start;padding:16px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.58)}
+.select-row.correct{background:var(--green-soft);border-color:rgba(38,115,72,.45)}
+.select-row.wrong{background:var(--red-soft);border-color:rgba(178,59,50,.45)}
+.select-row h3{margin:0 0 6px;color:var(--blue);font-size:16px}
+.select-row p{margin:0;color:#344054;font-size:14px;line-height:1.45}
+select{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;background:#fff;color:var(--ink);font-size:14px;line-height:1.35}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:var(--r-md);border:1px solid var(--line)}
+.feedback.show{display:block;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.feedback.good{background:var(--green-soft);border-color:rgba(38,115,72,.28)}
+.feedback.warn{background:var(--yellow-soft);border-color:rgba(183,121,31,.28)}
+.feedback.bad{background:var(--red-soft);border-color:rgba(178,59,50,.28)}
+.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn{border:0;border-radius:999px;padding:13px 18px;font-weight:900;cursor:pointer;transition:.18s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}
+.btn.primary{background:var(--blue);color:#fff}.btn.secondary{background:rgba(23,32,51,.08);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.result-card{display:none;padding:26px;margin-top:20px}.result-card.show{display:block}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.result-box{padding:18px;border-radius:var(--r-md);border:1px solid var(--line);background:rgba(255,255,255,.56)}
+.result-box h3{margin:0 0 8px;color:var(--blue);font-size:17px}
+.result-box p,.result-box li{color:#344054;line-height:1.5}.result-box p{margin:0}.result-box ul{margin:0;padding-left:20px}
+.hidden{display:none!important}
+.toast{position:fixed;right:24px;bottom:24px;z-index:20;padding:13px 16px;border-radius:999px;background:var(--ink);color:#fff;font-weight:850;font-size:14px;box-shadow:var(--shadow);opacity:0;transform:translateY(12px);transition:.25s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:980px){.hero,.result-grid{grid-template-columns:1fr}.cards,.data-grid{grid-template-columns:1fr}.select-row{grid-template-columns:1fr}}
+@media(max-width:640px){.app{width:min(100% - 20px,1220px);padding-top:12px}.hero-card,.status-card,.workspace,.result-card{border-radius:20px;padding:20px}.actions{justify-content:stretch}.btn{width:100%}}
+</style>
+</head>
+<body>
+<main class="app">
+  <section class="hero">
+    <div class="hero-card">
+      <div class="eyebrow"><span class="eyebrow-dot"></span>Практика · Экономика клиентского опыта</div>
+      <h1>Первая продажа не показывает здоровье бизнеса</h1>
+      <p class="subtitle">Разберите ситуацию, где заявки и оплаты есть, но будущая выручка уже под риском. Найдите ранние сигналы оттока и выберите управленческое решение.</p>
+    </div>
+    <aside class="status-card">
+      <div>
+        <p class="status-title">Пульт задания</p>
+        <div class="progress"><div id="progressFill" class="progress-fill"></div></div>
+        <div class="status-line"><span>Этап</span><span id="stageText">1 из 3</span></div>
+        <div class="status-line"><span>Верных решений</span><span id="scoreText">0</span></div>
+      </div>
+      <p class="mini-note">Задача — смотреть не только на факт оплаты, а на путь клиента после покупки.</p>
+    </aside>
+  </section>
+
+  <section class="workspace">
+    <div class="step-tabs">
+      <div id="tab1" class="tab active"><span class="tab-num">1</span>Сигналы</div>
+      <div id="tab2" class="tab"><span class="tab-num">2</span>Причина</div>
+      <div id="tab3" class="tab"><span class="tab-num">3</span>Решение</div>
+    </div>
+
+    <section id="step1">
+      <h2 class="step-title">Найдите ранние признаки будущего оттока</h2>
+      <p class="step-text">Компания хорошо продает первую покупку. Но через несколько месяцев клиенты редко возвращаются. Выберите 4 сигнала, которые показывают риск будущей потери выручки.</p>
+
+      <div class="data-grid">
+        <div class="data-box"><b>420</b><span>новых заявок за месяц</span></div>
+        <div class="data-box"><b>31%</b><span>конверсия из заявки в первую покупку</span></div>
+        <div class="data-box"><b>18%</b><span>клиентов покупают повторно</span></div>
+        <div class="data-box"><b>64%</b><span>не делают первое целевое действие после оплаты</span></div>
+      </div>
+
+      <div id="signalCards" class="cards"></div>
+      <div id="feedback1" class="feedback"></div>
+      <div class="actions">
+        <button id="resetSignalsBtn" class="btn secondary" type="button">Сбросить выбор</button>
+        <button id="checkSignalsBtn" class="btn primary" type="button" disabled>Проверить</button>
+      </div>
+    </section>
+
+    <section id="step2" class="hidden">
+      <h2 class="step-title">Определите, где находится проблема</h2>
+      <p class="step-text">Выберите формулировку, которая лучше всего объясняет ситуацию с позиции клиентского опыта и будущей выручки.</p>
+      <div id="reasonCards" class="cards"></div>
+      <div id="feedback2" class="feedback"></div>
+      <div class="actions">
+        <button id="back1Btn" class="btn secondary" type="button">Назад</button>
+        <button id="next2Btn" class="btn primary" type="button" disabled>Дальше</button>
+      </div>
+    </section>
+
+    <section id="step3" class="hidden">
+      <h2 class="step-title">Выберите решение генерального директора</h2>
+      <p class="step-text">Что нужно сделать в первую очередь, если первая продажа есть, но клиент не доходит до результата и не возвращается?</p>
+      <div id="decisionCards" class="cards"></div>
+      <div id="feedback3" class="feedback"></div>
+      <div class="actions">
+        <button id="back2Btn" class="btn secondary" type="button">Назад</button>
+        <button id="finishBtn" class="btn primary" type="button" disabled>Завершить</button>
+      </div>
+    </section>
+  </section>
+
+  <section id="resultCard" class="result-card">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Итог задания</div>
+    <h2 class="step-title">Главный вывод</h2>
+    <p class="step-text">Первая продажа показывает только то, что клиент согласился попробовать. Здоровье бизнеса видно дальше: дошел ли клиент до первого результата, понял ли ценность, вернулся ли и принес ли повторную выручку.</p>
+    <div class="result-grid">
+      <div class="result-box">
+        <h3>Как перенести в свой бизнес</h3>
+        <ul>
+          <li>Определите первое целевое действие клиента после оплаты.</li>
+          <li>Посмотрите, какая доля клиентов до него доходит.</li>
+          <li>Найдите, где клиент остывает: молчит, переносит, не использует, не отвечает.</li>
+          <li>Назначьте владельца перехода от оплаты к первому результату.</li>
+        </ul>
+      </div>
+      <div class="result-box">
+        <h3>Решение руководителя</h3>
+        <p>Управлять не только продажей, а переходом клиента к результату: маршрут, владелец, срок, проверка первого действия и показатель повторной выручки.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copyBtn" class="btn secondary" type="button">Скопировать итог</button>
+      <button id="restartBtn" class="btn primary" type="button">Пройти заново</button>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast">Скопировано</div>
+
+<script>
+const signals=[
+  {id:"s1",tag:"Продажи",title:"Менеджеры выполняют план первой продажи",desc:"Показатель хороший, но сам по себе не говорит о будущей выручке.",correct:false},
+  {id:"s2",tag:"После оплаты",title:"64% клиентов не делают первое целевое действие",desc:"Клиент оплатил, но не вошел в продукт или услугу.",correct:true},
+  {id:"s3",tag:"Поведение",title:"Клиенты реже отвечают после покупки",desc:"Связь с компанией слабеет еще до явного отказа.",correct:true},
+  {id:"s4",tag:"Поддержка",title:"Клиенты задают одни и те же вопросы после оплаты",desc:"Маршрут после покупки непонятен.",correct:true},
+  {id:"s5",tag:"Маркетинг",title:"Рекламные объявления дают много переходов",desc:"Это сигнал верхней части воронки, но не качества опыта после сделки.",correct:false},
+  {id:"s6",tag:"Повторная выручка",title:"Повторные продажи требуют почти такого же усилия, как первая сделка",desc:"Компания не развивает доверие, а каждый раз продает заново.",correct:true},
+  {id:"s7",tag:"Сервис",title:"Сотрудники вежливо отвечают в чате",desc:"Это хорошо, но не доказывает, что клиент получил результат.",correct:false},
+  {id:"s8",tag:"Отчеты",title:"Жалоб почти нет",desc:"Отсутствие жалоб не равно лояльности: клиент может уходить молча.",correct:false}
+];
+
+const reasons=[
+  {id:"r1",title:"Проблема в слабой рекламе",desc:"Нужно увеличить поток новых заявок, чтобы компенсировать низкие повторные покупки.",correct:false},
+  {id:"r2",title:"Проблема после покупки",desc:"Клиент заплатил, но не получил понятного маршрута, первого результата и причины возвращаться.",correct:true},
+  {id:"r3",title:"Проблема только в продажах",desc:"Менеджеры должны продавать убедительнее и закрывать больше первых сделок.",correct:false},
+  {id:"r4",title:"Проблема только в цене",desc:"Клиенты не возвращаются, потому что им всегда дорого.",correct:false}
+];
+
+const decisions=[
+  {id:"d1",title:"Увеличить рекламный бюджет",desc:"Так компания купит больше первых сделок, но не исправит потерю после оплаты.",correct:false},
+  {id:"d2",title:"Дать скидку на повторную покупку",desc:"Скидка может временно подтолкнуть клиента, но не объяснит ценность и не устранит разрыв.",correct:false},
+  {id:"d3",title:"Описать путь после оплаты и назначить владельца первого результата",desc:"Это связывает клиентский опыт с будущей выручкой: клиент быстрее получает ценность и с большей вероятностью возвращается.",correct:true},
+  {id:"d4",title:"Провести тренинг по вежливости",desc:"Вежливость важна, но здесь проблема не только в тоне общения.",correct:false}
+];
+
+const state={selectedSignals:new Set(),signalsChecked:false,reason:null,decision:null,score:0,current:1};
+const el={
+  signalCards:document.getElementById("signalCards"),reasonCards:document.getElementById("reasonCards"),decisionCards:document.getElementById("decisionCards"),
+  feedback1:document.getElementById("feedback1"),feedback2:document.getElementById("feedback2"),feedback3:document.getElementById("feedback3"),
+  checkSignalsBtn:document.getElementById("checkSignalsBtn"),resetSignalsBtn:document.getElementById("resetSignalsBtn"),
+  next2Btn:document.getElementById("next2Btn"),finishBtn:document.getElementById("finishBtn"),
+  back1Btn:document.getElementById("back1Btn"),back2Btn:document.getElementById("back2Btn"),
+  step1:document.getElementById("step1"),step2:document.getElementById("step2"),step3:document.getElementById("step3"),
+  tab1:document.getElementById("tab1"),tab2:document.getElementById("tab2"),tab3:document.getElementById("tab3"),
+  stageText:document.getElementById("stageText"),scoreText:document.getElementById("scoreText"),progressFill:document.getElementById("progressFill"),
+  resultCard:document.getElementById("resultCard"),restartBtn:document.getElementById("restartBtn"),copyBtn:document.getElementById("copyBtn"),toast:document.getElementById("toast")
+};
+
+function cardHtml(item,selected=false,checked=false){
+  let cls="card"+(selected?" selected":"");
+  if(checked){cls+=" disabled"; if(item.correct)cls+=" correct"; if(selected&&!item.correct)cls+=" wrong";}
+  return `<div class="${cls}" data-id="${item.id}">
+    <div class="card-top"><span class="tag">${item.tag||"Вариант"}</span><span class="checkbox">${selected?"✓":""}</span></div>
+    <p class="card-title">${item.title}</p><p class="card-desc">${item.desc}</p></div>`;
+}
+
+function renderSignals(){
+  el.signalCards.innerHTML=signals.map(s=>cardHtml(s,state.selectedSignals.has(s.id),state.signalsChecked)).join("");
+  if(!state.signalsChecked) document.querySelectorAll("#signalCards .card").forEach(c=>c.onclick=()=>toggleSignal(c.dataset.id));
+  el.checkSignalsBtn.disabled=state.selectedSignals.size!==4||state.signalsChecked;
+  update();
+}
+
+function toggleSignal(id){
+  if(state.selectedSignals.has(id))state.selectedSignals.delete(id);
+  else {
+    if(state.selectedSignals.size>=4){toast("Нужно выбрать ровно 4 сигнала");return;}
+    state.selectedSignals.add(id);
+  }
+  renderSignals();
+}
+
+function checkSignals(){
+  let correct=[...state.selectedSignals].filter(id=>signals.find(s=>s.id===id).correct).length;
+  state.score=correct;state.signalsChecked=true;renderSignals();
+  if(correct===4){feedback(el.feedback1,"good","Верно: вы нашли ранние сигналы","Эти сигналы показывают, что будущая выручка теряется после первой продажи.");setTimeout(()=>go(2),800);}
+  else feedback(el.feedback1,"warn",`Верно ${correct} из 4`,"Посмотрите на подсветку. Ранний сигнал оттока связан с поведением клиента после покупки, а не только с верхом воронки.");
+}
+
+function renderSingle(container,items,selectedKey,handler,checked=false){
+  container.innerHTML=items.map(i=>cardHtml(i,state[selectedKey]===i.id,checked && state[selectedKey]!==null)).join("");
+  if(state[selectedKey]===null) container.querySelectorAll(".card").forEach(c=>c.onclick=()=>handler(c.dataset.id));
+}
+
+function chooseReason(id){
+  state.reason=id;
+  const ok=reasons.find(r=>r.id===id).correct;
+  if(ok)state.score++;
+  renderSingle(el.reasonCards,reasons,"reason",chooseReason,true);
+  feedback(el.feedback2,ok?"good":"warn",ok?"Верно":"Не лучший вариант",ok?"Проблема возникает после покупки: клиент не доходит до результата и не видит причины продолжать отношения.":"Этот вариант лечит симптом или уводит внимание в первую продажу. Здесь нужно искать разрыв после оплаты.");
+  el.next2Btn.disabled=false; update();
+}
+
+function chooseDecision(id){
+  state.decision=id;
+  const ok=decisions.find(d=>d.id===id).correct;
+  if(ok)state.score++;
+  renderSingle(el.decisionCards,decisions,"decision",chooseDecision,true);
+  feedback(el.feedback3,ok?"good":"warn",ok?"Верное управленческое решение":"Не лучшее решение",ok?"Так директор связывает клиентский опыт с повторной выручкой: клиент получает первый результат, а компания управляет будущим LTV.":"Это может помочь частично, но не закрывает разрыв между оплатой и первым результатом.");
+  el.finishBtn.disabled=false; update();
+}
+
+function feedback(target,type,title,text){target.className=`feedback show ${type}`;target.innerHTML=`<h3>${title}</h3><p>${text}</p>`;}
+function go(n){
+  state.current=n;
+  [el.step1,el.step2,el.step3].forEach((s,i)=>s.classList.toggle("hidden",i+1!==n));
+  [el.tab1,el.tab2,el.tab3].forEach((t,i)=>{t.classList.toggle("active",i+1===n); if(i+1<n)t.classList.add("done"); else if(i+1>n)t.classList.remove("done");});
+  el.stageText.textContent=n+" из 3";
+  if(n===2)renderSingle(el.reasonCards,reasons,"reason",chooseReason,state.reason!==null);
+  if(n===3)renderSingle(el.decisionCards,decisions,"decision",chooseDecision,state.decision!==null);
+  update(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function update(){el.scoreText.textContent=state.score; el.progressFill.style.width=state.current===1?(state.selectedSignals.size*10)+"%":state.current===2?"65%":state.decision?"100%":"82%";}
+function finish(){el.resultCard.classList.add("show"); el.resultCard.scrollIntoView({behavior:"smooth",block:"start"});}
+function restart(){state.selectedSignals=new Set();state.signalsChecked=false;state.reason=null;state.decision=null;state.score=0;state.current=1;[el.feedback1,el.feedback2,el.feedback3].forEach(f=>f.className="feedback");el.resultCard.classList.remove("show");go(1);renderSignals();}
+async function copy(){await navigator.clipboard.writeText("Первая продажа не показывает здоровье бизнеса. Нужно смотреть, дошел ли клиент после оплаты до первого результата, понял ли ценность, вернулся ли и принес ли повторную выручку.");toast("Итог скопирован");}
+function toast(t){el.toast.textContent=t;el.toast.classList.add("show");setTimeout(()=>el.toast.classList.remove("show"),1800);}
+
+el.checkSignalsBtn.onclick=checkSignals;el.resetSignalsBtn.onclick=()=>{state.selectedSignals=new Set();state.signalsChecked=false;state.score=0;el.feedback1.className="feedback";renderSignals();};
+el.next2Btn.onclick=()=>go(3);el.back1Btn.onclick=()=>go(1);el.back2Btn.onclick=()=>go(2);el.finishBtn.onclick=finish;el.restartBtn.onclick=restart;el.copyBtn.onclick=copy;
+renderSignals();update();
+</script>
+</body>
+</html>
