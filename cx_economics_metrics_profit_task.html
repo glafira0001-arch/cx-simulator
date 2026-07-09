@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Оценка, поведение и деньги</title>
+  <style>
+:root{
+  --paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);
+  --blue:#173f75;--blue-soft:#e8effb;--red:#b23b32;--red-soft:#f9e7e3;
+  --green:#267348;--green-soft:#e7f3ea;--yellow:#b7791f;--yellow-soft:#fff1cf;
+  --shadow:0 18px 50px rgba(23,32,51,.13);--r-lg:28px;--r-md:18px;--r-sm:13px;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);
+background:radial-gradient(circle at 8% 0%,rgba(178,59,50,.1),transparent 32%),
+radial-gradient(circle at 92% 0%,rgba(23,63,117,.14),transparent 36%),
+linear-gradient(135deg,#fbf7ef,#eee8dc)}
+button,select,textarea{font-family:inherit}
+.app{width:min(1220px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero{display:grid;grid-template-columns:1.35fr .65fr;gap:20px;margin-bottom:20px}
+.hero-card,.status-card,.workspace,.result-card{background:rgba(255,250,241,.94);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.hero-card{padding:28px;position:relative;overflow:hidden}
+.hero-card:after{content:"";position:absolute;right:-90px;bottom:-105px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:850;letter-spacing:.03em;text-transform:uppercase}
+.eyebrow-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,56px);line-height:.98;letter-spacing:-.045em}
+.subtitle{margin:0;max-width:880px;color:#344054;font-size:18px;line-height:1.5;position:relative;z-index:1}
+.status-card{padding:22px;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.status-title{margin:0 0 10px;color:var(--blue);font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.progress{height:13px;border-radius:999px;background:rgba(23,32,51,.08);overflow:hidden;margin-bottom:10px}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--blue));transition:width .35s ease}
+.status-line{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:750;color:#344054;margin:8px 0}
+.status-line span:last-child{color:var(--blue);font-weight:900}
+.mini-note{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
+.workspace{padding:24px}
+.step-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.tab{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:14px;font-weight:850;border:1px solid transparent}
+.tab.active{background:var(--blue-soft);color:var(--blue);border-color:rgba(23,63,117,.18)}
+.tab.done{background:var(--green-soft);color:var(--green);border-color:rgba(38,115,72,.2)}
+.tab-num{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:currentColor;color:#fff;font-size:12px;font-weight:900}
+.step-title{margin:0 0 10px;font-size:clamp(24px,3vw,36px);line-height:1.08;letter-spacing:-.03em}
+.step-text{margin:0 0 18px;max-width:960px;color:#344054;font-size:16px;line-height:1.55}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.card{border:1px solid var(--line);border-radius:var(--r-md);background:#fff;padding:16px;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(23,32,51,.08);min-height:118px;display:grid;gap:10px;align-content:start}
+.card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35);box-shadow:0 12px 28px rgba(23,32,51,.12)}
+.card.selected{background:var(--blue-soft);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.card.correct{background:var(--green-soft);border-color:rgba(38,115,72,.55)}
+.card.wrong{background:var(--red-soft);border-color:rgba(178,59,50,.55)}
+.card.disabled{cursor:default;pointer-events:none}
+.card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.tag{display:inline-flex;padding:6px 9px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+.checkbox{width:26px;height:26px;border-radius:9px;border:1px solid rgba(23,32,51,.18);background:rgba(255,255,255,.7);display:grid;place-items:center;font-weight:900;color:#fff;flex:0 0 auto}
+.card.selected .checkbox{background:var(--blue);border-color:var(--blue)}
+.card.correct .checkbox{background:var(--green);border-color:var(--green)}
+.card.wrong .checkbox{background:var(--red);border-color:var(--red)}
+.card-title{margin:0;font-size:16px;line-height:1.35;font-weight:780}
+.card-desc{margin:0;color:#344054;line-height:1.45;font-size:14px}
+.data-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.data-box{border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.62);padding:16px}
+.data-box b{display:block;color:var(--blue);font-size:22px;margin-bottom:4px}
+.data-box span{color:#344054;font-size:13px;line-height:1.35}
+.select-list{display:grid;gap:14px;margin-top:18px}
+.select-row{display:grid;grid-template-columns:1fr 370px;gap:14px;align-items:start;padding:16px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.58)}
+.select-row.correct{background:var(--green-soft);border-color:rgba(38,115,72,.45)}
+.select-row.wrong{background:var(--red-soft);border-color:rgba(178,59,50,.45)}
+.select-row h3{margin:0 0 6px;color:var(--blue);font-size:16px}
+.select-row p{margin:0;color:#344054;font-size:14px;line-height:1.45}
+select{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;background:#fff;color:var(--ink);font-size:14px;line-height:1.35}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:var(--r-md);border:1px solid var(--line)}
+.feedback.show{display:block;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.feedback.good{background:var(--green-soft);border-color:rgba(38,115,72,.28)}
+.feedback.warn{background:var(--yellow-soft);border-color:rgba(183,121,31,.28)}
+.feedback.bad{background:var(--red-soft);border-color:rgba(178,59,50,.28)}
+.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn{border:0;border-radius:999px;padding:13px 18px;font-weight:900;cursor:pointer;transition:.18s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}
+.btn.primary{background:var(--blue);color:#fff}.btn.secondary{background:rgba(23,32,51,.08);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.result-card{display:none;padding:26px;margin-top:20px}.result-card.show{display:block}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.result-box{padding:18px;border-radius:var(--r-md);border:1px solid var(--line);background:rgba(255,255,255,.56)}
+.result-box h3{margin:0 0 8px;color:var(--blue);font-size:17px}
+.result-box p,.result-box li{color:#344054;line-height:1.5}.result-box p{margin:0}.result-box ul{margin:0;padding-left:20px}
+.hidden{display:none!important}
+.toast{position:fixed;right:24px;bottom:24px;z-index:20;padding:13px 16px;border-radius:999px;background:var(--ink);color:#fff;font-weight:850;font-size:14px;box-shadow:var(--shadow);opacity:0;transform:translateY(12px);transition:.25s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:980px){.hero,.result-grid{grid-template-columns:1fr}.cards,.data-grid{grid-template-columns:1fr}.select-row{grid-template-columns:1fr}}
+@media(max-width:640px){.app{width:min(100% - 20px,1220px);padding-top:12px}.hero-card,.status-card,.workspace,.result-card{border-radius:20px;padding:20px}.actions{justify-content:stretch}.btn{width:100%}}
+</style>
+</head>
+<body>
+<main class="app">
+  <section class="hero">
+    <div class="hero-card">
+      <div class="eyebrow"><span class="eyebrow-dot"></span>Практика · Экономика клиентского опыта</div>
+      <h1>Оценка, поведение и деньги</h1>
+      <p class="subtitle">Соберите управленческую связку показателей: что клиент говорит, что клиент делает и как это отражается на выручке. Затем найдите скрытый налог плохого опыта.</p>
+    </div>
+    <aside class="status-card">
+      <div>
+        <p class="status-title">Пульт задания</p>
+        <div class="progress"><div id="progressFill" class="progress-fill"></div></div>
+        <div class="status-line"><span>Этап</span><span id="stageText">1 из 3</span></div>
+        <div class="status-line"><span>Верных решений</span><span id="scoreText">0</span></div>
+      </div>
+      <p class="mini-note">Сильная панель показывает не отдельную красивую цифру, а движение клиента к повторной выручке.</p>
+    </aside>
+  </section>
+
+  <section class="workspace">
+    <div class="step-tabs">
+      <div id="tab1" class="tab active"><span class="tab-num">1</span>Разложить метрики</div>
+      <div id="tab2" class="tab"><span class="tab-num">2</span>Прочитать связку</div>
+      <div id="tab3" class="tab"><span class="tab-num">3</span>Найти потери</div>
+    </div>
+
+    <section id="step1">
+      <h2 class="step-title">Разложите метрики на три слоя</h2>
+      <p class="step-text">Для каждой метрики выберите слой: оценка клиента, поведение клиента или экономика отношений.</p>
+      <div id="metricRows" class="select-list"></div>
+      <div id="feedback1" class="feedback"></div>
+      <div class="actions"><button id="checkMetricsBtn" class="btn primary" type="button">Проверить</button></div>
+    </section>
+
+    <section id="step2" class="hidden">
+      <h2 class="step-title">Прочитайте показатели вместе</h2>
+      <p class="step-text">Выберите правильную управленческую интерпретацию для каждой ситуации.</p>
+      <div id="caseRows" class="select-list"></div>
+      <div id="feedback2" class="feedback"></div>
+      <div class="actions">
+        <button id="back1Btn" class="btn secondary" type="button">Назад</button>
+        <button id="checkCasesBtn" class="btn primary" type="button">Проверить интерпретации</button>
+      </div>
+    </section>
+
+    <section id="step3" class="hidden">
+      <h2 class="step-title">Найдите скрытый налог плохого опыта</h2>
+      <p class="step-text">Сопоставьте сбой в клиентском опыте с бизнес-потерей. Это помогает увидеть, что плохой опыт стоит компании денег, даже если клиент прямо не жалуется.</p>
+      <div id="lossRows" class="select-list"></div>
+      <div id="feedback3" class="feedback"></div>
+      <div class="actions">
+        <button id="back2Btn" class="btn secondary" type="button">Назад</button>
+        <button id="checkLossesBtn" class="btn primary" type="button">Проверить потери</button>
+      </div>
+    </section>
+  </section>
+
+  <section id="resultCard" class="result-card">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Итог задания</div>
+    <h2 class="step-title">Главный вывод</h2>
+    <p class="step-text">NPS, CSAT или количество жалоб нельзя читать отдельно. Руководителю нужно видеть связку: доверяет ли клиент, пользуется ли продуктом, возвращается ли и приносит ли прибыль.</p>
+    <div class="result-grid">
+      <div class="result-box">
+        <h3>Мини-панель директора</h3>
+        <ul>
+          <li>Оценка: NPS, CSAT, CES.</li>
+          <li>Поведение: активность, повторная покупка, продление, рекомендации.</li>
+          <li>Деньги: LTV, CAC, маржинальность, churn.</li>
+        </ul>
+      </div>
+      <div class="result-box">
+        <h3>Правило чтения</h3>
+        <p>Высокая оценка без повторной покупки не доказывает лояльность. Поведение без маржинальности не доказывает прибыль. Деньги без опыта не объясняют, почему клиент остается или уходит.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copyBtn" class="btn secondary" type="button">Скопировать итог</button>
+      <button id="restartBtn" class="btn primary" type="button">Пройти заново</button>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast">Скопировано</div>
+
+<script>
+const metricOptions=[
+  ["","Выберите слой"],
+  ["rating","Оценка клиента"],
+  ["behavior","Поведение клиента"],
+  ["money","Экономика отношений"]
+];
+
+const metrics=[
+  {id:"m1",name:"NPS",desc:"Готовность рекомендовать компанию.",correct:"rating"},
+  {id:"m2",name:"CSAT",desc:"Оценка удовлетворенности после контакта или этапа.",correct:"rating"},
+  {id:"m3",name:"CES",desc:"Насколько легко клиент прошел действие.",correct:"rating"},
+  {id:"m4",name:"Повторная покупка",desc:"Клиент вернулся и снова купил.",correct:"behavior"},
+  {id:"m5",name:"Продление договора",desc:"Клиент продолжил отношения с компанией.",correct:"behavior"},
+  {id:"m6",name:"Активность в продукте",desc:"Клиент реально пользуется тем, что купил.",correct:"behavior"},
+  {id:"m7",name:"LTV",desc:"Сколько денег клиент приносит за срок отношений.",correct:"money"},
+  {id:"m8",name:"CAC",desc:"Сколько стоит привлечение клиента.",correct:"money"},
+  {id:"m9",name:"Churn Rate",desc:"Какая доля клиентов перестала покупать или пользоваться.",correct:"money"}
+];
+
+const cases=[
+  {id:"c1",title:"NPS высокий, но продление падает",desc:"Клиенты хорошо оценивают проект, но не продолжают договор.",correct:"Нужно проверить поведение и экономику: получает ли клиент повторную ценность и видит ли смысл продолжать отношения."},
+  {id:"c2",title:"CSAT высокий, но повторные обращения растут",desc:"Клиенты благодарят сотрудников, но снова и снова возвращаются с той же проблемой.",correct:"Нужно проверять качество решения с первого раза, а не только вежливость ответа."},
+  {id:"c3",title:"Активность есть, но маржинальность падает",desc:"Клиенты много пользуются сервисом, но команда тратит слишком много ручного времени.",correct:"Нужно считать экономику обслуживания и искать, где опыт стал слишком дорогим для компании."}
+];
+
+const interpretations=[
+ "Нужно ничего не менять: если клиент доволен, значит все хорошо.",
+ "Нужно проверить поведение и экономику: получает ли клиент повторную ценность и видит ли смысл продолжать отношения.",
+ "Нужно проверять качество решения с первого раза, а не только вежливость ответа.",
+ "Нужно считать экономику обслуживания и искать, где опыт стал слишком дорогим для компании.",
+ "Нужно увеличить рекламный бюджет, чтобы компенсировать риски."
+];
+
+const losses=[
+  {id:"l1",title:"Клиент повторяет одну информацию разным отделам",desc:"Компания не передает контекст.",correct:"Рост нагрузки команды и раздражение клиента"},
+  {id:"l2",title:"Клиент не понимает следующий шаг после оплаты",desc:"Нет понятного маршрута к первому результату.",correct:"Тихий отток и падение повторной покупки"},
+  {id:"l3",title:"Клиент сам напоминает о сроках",desc:"Компания переложила контроль процесса на клиента.",correct:"Падение доверия и риск ухода к конкуренту"},
+  {id:"l4",title:"Обещание в продаже не совпало с исполнением",desc:"Ожидание было выше реальной возможности компании.",correct:"Компенсации, конфликты и падение NPS"}
+];
+
+const lossOptions=[
+ "Рост нагрузки команды и раздражение клиента",
+ "Тихий отток и падение повторной покупки",
+ "Падение доверия и риск ухода к конкуренту",
+ "Компенсации, конфликты и падение NPS",
+ "Рост числа подписчиков в соцсетях"
+];
+
+const state={stage:1,score:0,metricsChecked:false,casesChecked:false,lossesChecked:false};
+const el={
+ metricRows:document.getElementById("metricRows"),caseRows:document.getElementById("caseRows"),lossRows:document.getElementById("lossRows"),
+ feedback1:document.getElementById("feedback1"),feedback2:document.getElementById("feedback2"),feedback3:document.getElementById("feedback3"),
+ checkMetricsBtn:document.getElementById("checkMetricsBtn"),checkCasesBtn:document.getElementById("checkCasesBtn"),checkLossesBtn:document.getElementById("checkLossesBtn"),
+ back1Btn:document.getElementById("back1Btn"),back2Btn:document.getElementById("back2Btn"),
+ step1:document.getElementById("step1"),step2:document.getElementById("step2"),step3:document.getElementById("step3"),
+ tab1:document.getElementById("tab1"),tab2:document.getElementById("tab2"),tab3:document.getElementById("tab3"),
+ stageText:document.getElementById("stageText"),scoreText:document.getElementById("scoreText"),progressFill:document.getElementById("progressFill"),
+ resultCard:document.getElementById("resultCard"),restartBtn:document.getElementById("restartBtn"),copyBtn:document.getElementById("copyBtn"),toast:document.getElementById("toast")
+};
+
+function optionsHtml(options,selected=""){
+ return options.map(o=>Array.isArray(o)?`<option value="${o[0]}" ${selected===o[0]?"selected":""}>${o[1]}</option>`:`<option value="${o}" ${selected===o?"selected":""}>${o}</option>`).join("");
+}
+
+function renderMetrics(){
+ el.metricRows.innerHTML=metrics.map(m=>`<div class="select-row" data-id="${m.id}">
+  <div><h3>${m.name}</h3><p>${m.desc}</p></div>
+  <select data-correct="${m.correct}">${optionsHtml(metricOptions)}</select>
+ </div>`).join("");
+}
+
+function renderCases(){
+ el.caseRows.innerHTML=cases.map(c=>`<div class="select-row" data-id="${c.id}">
+  <div><h3>${c.title}</h3><p>${c.desc}</p></div>
+  <select data-correct="${c.correct}"><option value="">Выберите интерпретацию</option>${optionsHtml(interpretations)}</select>
+ </div>`).join("");
+}
+
+function renderLosses(){
+ el.lossRows.innerHTML=losses.map(l=>`<div class="select-row" data-id="${l.id}">
+  <div><h3>${l.title}</h3><p>${l.desc}</p></div>
+  <select data-correct="${l.correct}"><option value="">Выберите бизнес-потерю</option>${optionsHtml(lossOptions)}</select>
+ </div>`).join("");
+}
+
+function checkRows(container,feedbackEl,nextStage,totalBase=0){
+ const rows=[...container.querySelectorAll(".select-row")];
+ let correct=0,filled=0;
+ rows.forEach(row=>{
+   const s=row.querySelector("select"); row.classList.remove("correct","wrong");
+   if(s.value)filled++;
+   if(s.value===s.dataset.correct){correct++;row.classList.add("correct");} else row.classList.add("wrong");
+ });
+ if(filled<rows.length){feedback(feedbackEl,"bad","Заполните все строки","Для проверки нужно выбрать вариант в каждой строке.");return;}
+ state.score=totalBase+correct; update();
+ if(correct===rows.length){
+   feedback(feedbackEl,"good","Все верно","Вы правильно прочитали показатели как управленческую связку, а не как отдельные цифры.");
+   if(nextStage)setTimeout(()=>go(nextStage),800); else finish();
+ } else {
+   feedback(feedbackEl,"warn",`Верно ${correct} из ${rows.length}`,"Проверьте красные строки. Выбор должен помогать директору понять связь опыта, поведения и денег.");
+ }
+}
+
+function feedback(target,type,title,text){target.className=`feedback show ${type}`;target.innerHTML=`<h3>${title}</h3><p>${text}</p>`;}
+function go(n){
+ state.stage=n;
+ [el.step1,el.step2,el.step3].forEach((s,i)=>s.classList.toggle("hidden",i+1!==n));
+ [el.tab1,el.tab2,el.tab3].forEach((t,i)=>{t.classList.toggle("active",i+1===n); if(i+1<n)t.classList.add("done"); else if(i+1>n)t.classList.remove("done");});
+ el.stageText.textContent=n+" из 3";
+ update(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function update(){el.scoreText.textContent=state.score; el.progressFill.style.width=state.stage===1?"25%":state.stage===2?"60%":state.lossesChecked?"100%":"82%";}
+function finish(){state.lossesChecked=true;update();el.resultCard.classList.add("show");el.resultCard.scrollIntoView({behavior:"smooth",block:"start"});}
+function restart(){state.stage=1;state.score=0;state.lossesChecked=false;[el.feedback1,el.feedback2,el.feedback3].forEach(f=>f.className="feedback");el.resultCard.classList.remove("show");renderMetrics();renderCases();renderLosses();go(1);}
+async function copy(){await navigator.clipboard.writeText("Показатели клиентского опыта нужно читать вместе: оценка клиента, поведение клиента и экономика отношений. Только такая связка показывает, превращается ли лояльность в повторную выручку.");toast("Итог скопирован");}
+function toast(t){el.toast.textContent=t;el.toast.classList.add("show");setTimeout(()=>el.toast.classList.remove("show"),1800);}
+
+el.checkMetricsBtn.onclick=()=>checkRows(el.metricRows,el.feedback1,2,0);
+el.checkCasesBtn.onclick=()=>checkRows(el.caseRows,el.feedback2,3,9);
+el.checkLossesBtn.onclick=()=>checkRows(el.lossRows,el.feedback3,null,12);
+el.back1Btn.onclick=()=>go(1);el.back2Btn.onclick=()=>go(2);el.restartBtn.onclick=restart;el.copyBtn.onclick=copy;
+renderMetrics();renderCases();renderLosses();update();
+</script>
+</body>
+</html>
