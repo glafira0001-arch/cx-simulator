@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>B2B-встреча до договора</title><style>
+:root{--paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);--blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;--green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;--shadow:0 18px 50px rgba(23,32,51,.13);--r:24px;--rs:14px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),linear-gradient(135deg,#fbf7ef,#eee8dc)}
+.app{width:min(1220px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,54px);line-height:.98;letter-spacing:-.045em}.lead{margin:0;max-width:940px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px}h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}.text{margin:0 0 18px;max-width:980px;color:#344054;font-size:16px;line-height:1.55}
+.casebox{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:18px;margin:18px 0}.casebox h3{margin:0 0 8px;color:var(--blue);font-size:18px}.casebox p{margin:0;color:#344054;line-height:1.5}
+.board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px}.bank{grid-column:1/-1;min-height:135px}.bank,.zone{border:1px dashed rgba(23,32,51,.22);border-radius:18px;background:rgba(255,255,255,.55);padding:15px;min-height:210px}.zone.over,.bank.over{border-color:rgba(23,63,117,.55);background:rgba(232,239,251,.75)}
+.zone-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:12px}.zone-head h3{margin:0;color:var(--blue);font-size:17px}.counter{color:var(--muted);font-size:13px;font-weight:800}
+.cards{display:grid;gap:10px}.bank .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:var(--rs);background:#fff;padding:14px;min-height:92px;box-shadow:0 8px 22px rgba(23,32,51,.08);cursor:grab;transition:.18s ease}.card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35);box-shadow:0 12px 28px rgba(23,32,51,.1)}.card.drag{opacity:.5;transform:scale(.98)}.card.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}.card.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}.card.leftover{opacity:.7}
+.card b{display:block;margin-bottom:6px;font-size:15px;line-height:1.3}.card p{margin:0;color:#344054;line-height:1.42;font-size:14px}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback.bad{background:var(--red2);border-color:rgba(178,59,50,.28)}.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:20px}.result.show{display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.box{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+.toast{position:fixed;right:24px;bottom:24px;padding:13px 16px;border-radius:999px;background:var(--ink);color:#fff;font-weight:850;opacity:0;transform:translateY(12px);transition:.25s ease;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+.order-wrap{display:grid;grid-template-columns:.95fr 1.05fr;gap:16px;margin-top:18px}.order-list{display:grid;gap:10px}.order-card{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;cursor:grab;box-shadow:0 8px 22px rgba(23,32,51,.08);transition:.18s ease}.order-card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}.num{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:900}.order-card b{display:block;margin-bottom:4px;line-height:1.3}.order-card p{margin:0;color:#344054;line-height:1.42;font-size:14px}.order-card.drag{opacity:.5}.order-card.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}.order-card.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}
+.side-note{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:18px}.side-note h3{margin:0 0 8px;color:var(--blue);font-size:18px}.side-note p,.side-note li{color:#344054;line-height:1.5}.side-note ul{margin:0;padding-left:20px}
+@media(max-width:1020px){.board,.grid2,.order-wrap{grid-template-columns:1fr}.bank .cards{grid-template-columns:1fr 1fr}.bank{grid-column:auto}}
+@media(max-width:640px){.app{width:min(100% - 20px,1220px);padding-top:12px}.hero,.panel,.result{border-radius:20px;padding:20px}.bank .cards{grid-template-columns:1fr}.actions{justify-content:stretch}button{width:100%}}
+</style></head>
+<body>
+<main class="app">
+<section class="hero">
+  <div class="eyebrow"><span class="dot"></span>Практика · B2B до договора</div>
+  <h1>Первая встреча как точка доверия</h1>
+  <p class="lead">Соберите содержательную первую встречу для B2B-клиента. Нужно показать, что подрядчик уже понял ситуацию клиента, а не пришел продавать шаблонную презентацию.</p>
+</section>
+
+<section class="panel">
+  <h2>Что вынести на первую экспертную встречу?</h2>
+  <p class="text">Клиент — крупный бренд. В сети растет негатив после запуска нового продукта, часть комментариев переходит в отраслевые Telegram-каналы. Команда подрядчика готовится к первой встрече до договора. Разложите карточки по трем зонам и оставьте лишние формулировки в банке.</p>
+  <div class="casebox"><h3>Цель встречи</h3><p>Клиент должен выйти не с мыслью «нам продали услугу», а с ощущением: «они уже видят наши риски, понимают контекст и помогают вернуть контроль».</p></div>
+
+  <div class="board">
+    <div class="bank" data-zone="bank"><div class="zone-head"><h3>Банк карточек</h3><span id="bankCount" class="counter"></span></div><div id="bank" class="cards"></div></div>
+    <div class="zone" data-zone="risk"><div class="zone-head"><h3>Что уже увидели в ситуации клиента</h3><span id="riskCount" class="counter"></span></div><div id="risk" class="cards"></div></div>
+    <div class="zone" data-zone="move"><div class="zone-head"><h3>Какой следующий ход предлагаем</h3><span id="moveCount" class="counter"></span></div><div id="move" class="cards"></div></div>
+    <div class="zone" data-zone="signal"><div class="zone-head"><h3>Как поймем, что доверие возникло</h3><span id="signalCount" class="counter"></span></div><div id="signal" class="cards"></div></div>
+  </div>
+
+  <div id="feedback" class="feedback"></div>
+  <div class="actions"><button id="reset" class="secondary" type="button">Сбросить</button><button id="check" class="primary" type="button" disabled>Проверить встречу</button></div>
+</section>
+
+<section id="result" class="result">
+  <div class="eyebrow"><span class="dot"></span>Итог</div>
+  <h2>Как выглядит сильная первая встреча</h2>
+  <p class="text">В B2B точка истины возникает до договора, когда клиент видит: подрядчик уже разобрался в его контексте, говорит о рисках и предлагает следующий ход. Это снижает неопределенность и переводит подрядчика из роли продавца в роль эксперта.</p>
+  <div class="grid2">
+    <div class="box"><h3>Что важно показать</h3><ul><li>Где накапливается негатив.</li><li>Какие темы могут вырасти в кризис.</li><li>Какие площадки влияют на репутацию.</li><li>Что тушить срочно, что мониторить, что перестраивать системно.</li></ul></div>
+    <div class="box"><h3>Сигнал доверия</h3><p>Клиент начинает делиться внутренней информацией, подключает более высоких лиц, быстрее назначает следующую встречу и обсуждает стратегию, а не только цену.</p></div>
+  </div>
+</section>
+</main>
+
+<script>
+const cards=[
+ {id:"c1",zone:"risk",title:"Карта очагов негатива",text:"Где негатив уже накапливается и какие темы повторяются."},
+ {id:"c2",zone:"risk",title:"Площадки влияния",text:"Какие каналы и сообщества сильнее всего воздействуют на репутацию бренда."},
+ {id:"c3",zone:"risk",title:"Темы, которые могут вырасти в кризис",text:"Что сейчас выглядит слабым сигналом, но может стать публичной проблемой."},
+ {id:"c4",zone:"move",title:"Срочные действия",text:"Что нужно тушить в ближайшие 48 часов."},
+ {id:"c5",zone:"move",title:"Зона мониторинга",text:"Что отслеживать каждую неделю, чтобы не пропустить рост риска."},
+ {id:"c6",zone:"move",title:"Системная перестройка коммуникации",text:"Какие сообщения, каналы или процессы нужно менять не разово, а устойчиво."},
+ {id:"c7",zone:"signal",title:"Клиент делится внутренним контекстом",text:"Рассказывает то, чего не было в открытых источниках."},
+ {id:"c8",zone:"signal",title:"Клиент подключает более высоких лиц",text:"В обсуждение заходят руководители, которые влияют на решение."},
+ {id:"c9",zone:"signal",title:"Клиент назначает следующий шаг",text:"Быстрее предлагает следующую встречу, аудит или пилот."},
+ {id:"x1",zone:"bank",title:"Презентация «О нас» на 40 слайдов",text:"Рассказывает о подрядчике, но не снижает неопределенность клиента."},
+ {id:"x2",zone:"bank",title:"Список всех услуг компании",text:"Перечень услуг не показывает понимание ситуации клиента."},
+ {id:"x3",zone:"bank",title:"Универсальная скидка при быстром подписании",text:"Снижает цену, но не создает экспертное доверие."}
+];
+let place={}; let checked=false; cards.forEach(c=>place[c.id]="bank");
+const feedback=document.getElementById("feedback"), checkBtn=document.getElementById("check");
+function cardHtml(c){
+ const cls=["card"];
+ if(checked){
+   if(c.zone==="bank"&&place[c.id]==="bank")cls.push("leftover");
+   else if(place[c.id]===c.zone)cls.push("correct");
+   else if(place[c.id]!=="bank")cls.push("wrong");
+ }
+ return `<div class="${cls.join(" ")}" draggable="${!checked}" data-id="${c.id}"><b>${c.title}</b><p>${c.text}</p></div>`;
+}
+function render(){
+ ["bank","risk","move","signal"].forEach(id=>document.getElementById(id).innerHTML="");
+ cards.forEach(c=>document.getElementById(place[c.id]).insertAdjacentHTML("beforeend",cardHtml(c)));
+ document.querySelectorAll(".card").forEach(c=>{c.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",c.dataset.id);c.classList.add("drag")});c.addEventListener("dragend",()=>c.classList.remove("drag"))});
+ const count=z=>Object.values(place).filter(v=>v===z).length;
+ ["bank","risk","move","signal"].forEach(z=>document.getElementById(z+"Count").textContent=count(z)+" карточек");
+ const required=["risk","move","signal"];
+ checkBtn.disabled=required.some(z=>count(z)<3)||checked;
+}
+function dropTo(zone,id){place[id]=zone;render()}
+document.querySelectorAll("[data-zone]").forEach(z=>{
+ z.addEventListener("dragover",e=>{if(checked)return;e.preventDefault();z.classList.add("over")});
+ z.addEventListener("dragleave",()=>z.classList.remove("over"));
+ z.addEventListener("drop",e=>{if(checked)return;e.preventDefault();z.classList.remove("over");dropTo(z.dataset.zone,e.dataTransfer.getData("text/plain"))});
+});
+function show(type,title,text){feedback.className="feedback show "+type;feedback.innerHTML=`<h3>${title}</h3><p>${text}</p>`}
+checkBtn.onclick=()=>{checked=true;let ok=cards.filter(c=>place[c.id]===c.zone).length;render(); if(ok===cards.length){show("good","Встреча собрана верно","Вы построили встречу вокруг ситуации клиента, а не вокруг рассказа о подрядчике.");document.getElementById("result").classList.add("show");document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"})} else show("warn",`Верно ${ok} из ${cards.length}`,"Проверьте красные карточки. Сильная B2B-встреча показывает риски клиента, следующий ход и сигналы доверия.")};
+document.getElementById("reset").onclick=()=>{checked=false;cards.forEach(c=>place[c.id]="bank");feedback.className="feedback";document.getElementById("result").classList.remove("show");render()};
+render();
+</script>
+</body>
+</html>
