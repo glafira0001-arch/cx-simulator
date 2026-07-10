@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Как удержать B2B-клиента до расторжения</title><style>
+:root{--paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);--blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;--green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;--shadow:0 18px 50px rgba(23,32,51,.13);--r:24px;--rs:14px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),linear-gradient(135deg,#fbf7ef,#eee8dc)}
+.app{width:min(1220px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,54px);line-height:.98;letter-spacing:-.045em}.lead{margin:0;max-width:940px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px}h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}.text{margin:0 0 18px;max-width:980px;color:#344054;font-size:16px;line-height:1.55}
+.casebox{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:18px;margin:18px 0}.casebox h3{margin:0 0 8px;color:var(--blue);font-size:18px}.casebox p{margin:0;color:#344054;line-height:1.5}
+.board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px}.bank{grid-column:1/-1;min-height:135px}.bank,.zone{border:1px dashed rgba(23,32,51,.22);border-radius:18px;background:rgba(255,255,255,.55);padding:15px;min-height:210px}.zone.over,.bank.over{border-color:rgba(23,63,117,.55);background:rgba(232,239,251,.75)}
+.zone-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:12px}.zone-head h3{margin:0;color:var(--blue);font-size:17px}.counter{color:var(--muted);font-size:13px;font-weight:800}
+.cards{display:grid;gap:10px}.bank .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:var(--rs);background:#fff;padding:14px;min-height:92px;box-shadow:0 8px 22px rgba(23,32,51,.08);cursor:grab;transition:.18s ease}.card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35);box-shadow:0 12px 28px rgba(23,32,51,.1)}.card.drag{opacity:.5;transform:scale(.98)}.card.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}.card.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}.card.leftover{opacity:.7}
+.card b{display:block;margin-bottom:6px;font-size:15px;line-height:1.3}.card p{margin:0;color:#344054;line-height:1.42;font-size:14px}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback.bad{background:var(--red2);border-color:rgba(178,59,50,.28)}.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:20px}.result.show{display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.box{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+.toast{position:fixed;right:24px;bottom:24px;padding:13px 16px;border-radius:999px;background:var(--ink);color:#fff;font-weight:850;opacity:0;transform:translateY(12px);transition:.25s ease;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+.order-wrap{display:grid;grid-template-columns:.95fr 1.05fr;gap:16px;margin-top:18px}.order-list{display:grid;gap:10px}.order-card{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;cursor:grab;box-shadow:0 8px 22px rgba(23,32,51,.08);transition:.18s ease}.order-card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}.num{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:900}.order-card b{display:block;margin-bottom:4px;line-height:1.3}.order-card p{margin:0;color:#344054;line-height:1.42;font-size:14px}.order-card.drag{opacity:.5}.order-card.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}.order-card.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}
+.side-note{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:18px}.side-note h3{margin:0 0 8px;color:var(--blue);font-size:18px}.side-note p,.side-note li{color:#344054;line-height:1.5}.side-note ul{margin:0;padding-left:20px}
+@media(max-width:1020px){.board,.grid2,.order-wrap{grid-template-columns:1fr}.bank .cards{grid-template-columns:1fr 1fr}.bank{grid-column:auto}}
+@media(max-width:640px){.app{width:min(100% - 20px,1220px);padding-top:12px}.hero,.panel,.result{border-radius:20px;padding:20px}.bank .cards{grid-template-columns:1fr}.actions{justify-content:stretch}button{width:100%}}
+</style></head>
+<body>
+<main class="app">
+<section class="hero">
+  <div class="eyebrow"><span class="dot"></span>Практика · B2B удержание</div>
+  <h1>Сигнал раньше расторжения</h1>
+  <p class="lead">Расположите действия подрядчика в правильном порядке: от тихого сигнала клиента до обновления формата работы и накопления ценности.</p>
+</section>
+
+<section class="panel">
+  <h2>Соберите правильную последовательность действий</h2>
+  <p class="text">B2B-клиент не всегда сразу говорит, что хочет уйти. Сначала появляются тихие сигналы: меняется стратегия, сокращается бюджет, устает команда, снижается вовлеченность ЛПР. Перетащите карточки так, чтобы получилась логика удержания до официального пересмотра договора.</p>
+
+  <div class="order-wrap">
+    <div>
+      <div id="list" class="order-list"></div>
+      <div id="feedback" class="feedback"></div>
+      <div class="actions"><button id="reset" class="secondary" type="button">Перемешать заново</button><button id="check" class="primary" type="button">Проверить порядок</button></div>
+    </div>
+    <aside class="side-note">
+      <h3>Подсказка логики</h3>
+      <p>Сначала подрядчик слышит слабый сигнал, затем уточняет контекст, после этого адаптирует формат работы. Скидка не первый инструмент: сначала нужно сохранить ценность и управляемость отношений.</p>
+      <ul>
+        <li>Не ждать письма о расторжении.</li>
+        <li>Не начинать сразу со скидки.</li>
+        <li>Не спорить с клиентом о регламенте.</li>
+        <li>Показать, что подрядчик понимает новую ситуацию клиента.</li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<section id="result" class="result">
+  <div class="eyebrow"><span class="dot"></span>Итог</div>
+  <h2>Удержание через накопленную ценность</h2>
+  <p class="text">В B2B клиент остается не только из-за цены. Его удерживает накопленный контекст: история решений, знание рисков, понимание внутренних регламентов, доверие ЛПР и способность подрядчика заранее адаптироваться к изменениям.</p>
+  <div class="grid2">
+    <div class="box"><h3>Правильная логика</h3><ul><li>Услышать тихий сигнал.</li><li>Уточнить бизнес-контекст.</li><li>Показать, что изменилось в рисках.</li><li>Предложить новый формат работы.</li><li>Закрепить ценность и следующий шаг.</li></ul></div>
+    <div class="box"><h3>Ошибка</h3><p>Ждать официального запроса на пересмотр договора, а потом спасать контракт скидкой. В этот момент клиент уже эмоционально готовит замену подрядчика.</p></div>
+  </div>
+</section>
+</main>
+
+<script>
+const correct=[
+ {id:"s1",title:"Услышать тихий сигнал",text:"ЛПР говорит о смене стратегии, сокращении бюджета или усталости от текущего формата."},
+ {id:"s2",title:"Уточнить внутренний контекст",text:"Выяснить, что изменилось: цели, риски, руководители, ограничения, ожидания от подрядчика."},
+ {id:"s3",title:"Переоценить риски клиента",text:"Показать, какие угрозы стали важнее и что теперь требует другого уровня сопровождения."},
+ {id:"s4",title:"Предложить новый формат работы",text:"Адаптировать пакет услуг, глубину аналитики, частоту встреч или состав команды."},
+ {id:"s5",title:"Закрепить накопленную ценность",text:"Показать историю решений, данные, знание регламентов и стоимость перехода к новому подрядчику."},
+ {id:"s6",title:"Согласовать следующий шаг",text:"Назначить стратсессию, пилот обновленного формата или план на следующий период."}
+];
+let order=[...correct].sort(()=>Math.random()-.5), checked=false;
+const list=document.getElementById("list"), feedback=document.getElementById("feedback");
+function render(){
+ list.innerHTML=order.map((c,i)=>`<div class="order-card ${checked?(order[i].id===correct[i].id?"correct":"wrong"):""}" draggable="${!checked}" data-id="${c.id}"><div class="num">${i+1}</div><div><b>${c.title}</b><p>${c.text}</p></div></div>`).join("");
+ document.querySelectorAll(".order-card").forEach(card=>{
+  card.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",card.dataset.id);card.classList.add("drag")});
+  card.addEventListener("dragend",()=>card.classList.remove("drag"));
+  card.addEventListener("dragover",e=>{if(checked)return;e.preventDefault()});
+  card.addEventListener("drop",e=>{if(checked)return;e.preventDefault();const from=e.dataTransfer.getData("text/plain");const to=card.dataset.id;move(from,to)});
+ });
+}
+function move(from,to){
+ const fromIndex=order.findIndex(x=>x.id===from), toIndex=order.findIndex(x=>x.id===to);
+ const [item]=order.splice(fromIndex,1);order.splice(toIndex,0,item);render();
+}
+function show(type,title,text){feedback.className="feedback show "+type;feedback.innerHTML=`<h3>${title}</h3><p>${text}</p>`}
+document.getElementById("check").onclick=()=>{checked=true;render();const ok=order.filter((x,i)=>x.id===correct[i].id).length;if(ok===correct.length){show("good","Порядок верный","Вы выстроили удержание до того, как клиент официально пришел пересматривать договор.");document.getElementById("result").classList.add("show");document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"})}else show("warn",`На своих местах ${ok} из ${correct.length}`,"Проверьте красные карточки. Сначала нужно услышать сигнал и понять контекст, а уже потом менять формат и закреплять ценность.")};
+document.getElementById("reset").onclick=()=>{checked=false;order=[...correct].sort(()=>Math.random()-.5);feedback.className="feedback";document.getElementById("result").classList.remove("show");render()};
+render();
+</script>
+</body>
+</html>
