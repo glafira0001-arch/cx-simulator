@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Выберите рабочий сценарий точки истины</title><style>
+:root{--paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);--blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;--green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;--shadow:0 18px 50px rgba(23,32,51,.13);--r:24px;--rs:14px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),linear-gradient(135deg,#fbf7ef,#eee8dc)}
+.app{width:min(1200px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,54px);line-height:.98;letter-spacing:-.045em}.lead{margin:0;max-width:920px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px}h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}.text{margin:0 0 18px;max-width:930px;color:#344054;font-size:16px;line-height:1.55}
+.progress{height:13px;border-radius:999px;background:rgba(23,32,51,.08);overflow:hidden;margin:18px 0 4px}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--blue));transition:.25s ease}
+.case-list{display:grid;gap:18px;margin-top:20px}
+.case{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.58);padding:18px}
+.case-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.case-title{margin:0;color:var(--blue);font-size:18px;line-height:1.25}.case-note{margin:6px 0 0;color:#344054;line-height:1.45;font-size:14px}.badge{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:12px;font-weight:900;white-space:nowrap}
+.options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.option{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;min-height:135px;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(23,32,51,.06)}
+.option:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35);box-shadow:0 12px 28px rgba(23,32,51,.1)}
+.option.selected{background:var(--blue2);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.option.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}
+.option.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}
+.option b{display:block;margin-bottom:8px;font-size:15px;line-height:1.3}.option p{margin:0;color:#344054;font-size:14px;line-height:1.42}
+.explain{display:none;margin-top:12px;padding:14px;border-radius:14px;background:var(--blue2);color:#344054;line-height:1.5;font-size:14px}.explain.show{display:block}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:20px}.result.show{display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.box{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+.toast{position:fixed;right:24px;bottom:24px;padding:13px 16px;border-radius:999px;background:var(--ink);color:#fff;font-weight:850;opacity:0;transform:translateY(12px);transition:.25s ease;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:980px){.options,.grid2{grid-template-columns:1fr}.case-head{display:block}.badge{margin-top:10px}}
+@media(max-width:640px){.app{width:min(100% - 20px,1200px);padding-top:12px}.hero,.panel,.result{border-radius:20px;padding:20px}.actions{justify-content:stretch}button{width:100%}}
+</style></head>
+<body>
+<main class="app">
+<section class="hero">
+  <div class="eyebrow"><span class="dot"></span>Практика · Метод точки истины</div>
+  <h1>Выберите рабочий сценарий точки истины</h1>
+  <p class="lead">На рабочей сессии важно не уйти в общие разговоры про «всех клиентов» и «хороший сервис». Выберите формулировки, с которыми команда действительно сможет найти точку истины, действие, владельца и показатель.</p>
+</section>
+
+<section class="panel">
+  <h2>Выберите лучший вариант для каждой ситуации</h2>
+  <p class="text">В каждом блоке есть три формулировки. Выберите ту, которая лучше всего подходит для работы по методу точки истины: в ней есть конкретный клиентский сегмент, момент пути и риск для доверия или продолжения отношений.</p>
+  <div class="progress"><div id="progress" class="progress-fill"></div></div>
+  <p id="progressText" class="text" style="font-size:14px;margin-bottom:0;">Выбрано 0 из 4</p>
+  <div id="cases" class="case-list"></div>
+  <div id="feedback" class="feedback"></div>
+  <div class="actions">
+    <button id="reset" class="secondary" type="button">Сбросить</button>
+    <button id="check" class="primary" type="button" disabled>Проверить</button>
+  </div>
+</section>
+
+<section id="result" class="result">
+  <div class="eyebrow"><span class="dot"></span>Итог</div>
+  <h2>Как выбирать сценарий для точки истины</h2>
+  <p class="text">Рабочий сценарий достаточно узкий, чтобы команда могла спорить не обо всем клиентском опыте сразу, а о конкретном моменте, где клиент сравнивает ожидание с реальностью.</p>
+  <div class="grid2">
+    <div class="box"><h3>Признаки хорошей формулировки</h3><ul><li>Понятно, о каком сегменте клиентов речь.</li><li>Назван конкретный момент пути.</li><li>Виден риск: уход, отказ, недоверие, непродление, снижение активности.</li><li>Можно назначить владельца и показатель.</li></ul></div>
+    <div class="box"><h3>Формула</h3><p>Не «улучшить опыт клиентов», а «новые клиенты после оплаты, которые за 7 дней не дошли до первого использования и рискуют охладеть к продукту».</p></div>
+  </div>
+  <div class="actions"><button id="copy" class="secondary" type="button">Скопировать правило</button></div>
+</section>
+</main>
+<div id="toast" class="toast">Скопировано</div>
+
+<script>
+const cases=[
+ {
+  id:"case1",
+  title:"Компания хочет снизить отток после первой покупки",
+  note:"Нужно выбрать сценарий для командной сессии.",
+  correct:"b",
+  options:[
+   {id:"a",title:"Все новые клиенты",text:"Слишком широкий сегмент: непонятно, где именно искать риск."},
+   {id:"b",title:"Новые клиенты после оплаты, которые за 7 дней не дошли до первого использования",text:"Есть сегмент, момент пути и риск тихого охлаждения."},
+   {id:"c",title:"Клиенты, которым нужно улучшить сервис",text:"Общая цель без конкретного сценария и поведения."}
+  ],
+  explain:"Лучший вариант — про новых клиентов после оплаты, которые не дошли до первого использования. С ним уже можно искать ожидание, риск, действие, владельца и показатель."
+ },
+ {
+  id:"case2",
+  title:"B2B-компания хочет повысить продления договоров",
+  note:"Нужно выбрать участок, где клиент принимает решение о продолжении отношений.",
+  correct:"c",
+  options:[
+   {id:"a",title:"Все корпоративные клиенты",text:"Слишком широкая группа: у разных клиентов разные причины продления или отказа."},
+   {id:"b",title:"Клиенты, которым не нравится менеджер",text:"Формулировка похожа на жалобу, но не показывает момент пути."},
+   {id:"c",title:"B2B-клиенты за 45 дней до продления, которые снизили активность и не отвечают аккаунту",text:"Есть момент, сегмент и ранний риск непродления."}
+  ],
+  explain:"Рабочая формулировка фиксирует период до продления и поведение клиента. Это помогает действовать раньше, чем договор формально закончится."
+ },
+ {
+  id:"case3",
+  title:"Производитель дорогого продукта хочет усилить доверие перед оплатой",
+  note:"Нужно найти момент, где клиент сравнивает ожидание с ценой.",
+  correct:"a",
+  options:[
+   {id:"a",title:"Покупатели дорогого продукта перед оплатой, которые сомневаются, соответствует ли качество цене",text:"Есть точный момент выбора и риск отказа от покупки."},
+   {id:"b",title:"Все, кто смотрит сайт",text:"Это контакт, но не обязательно точка истины."},
+   {id:"c",title:"Клиенты, которым нужна красивая упаковка",text:"Слишком узко по решению и не описывает управленческий риск."}
+  ],
+  explain:"Вариант перед оплатой лучше всего показывает точку истины: клиент решает, оправдывает ли продукт свои деньги и можно ли доверять компании."
+ },
+ {
+  id:"case4",
+  title:"Сервисная компания хочет снизить негатив после первой серьезной жалобы",
+  note:"Нужно выбрать сценарий, где клиент решает, оставаться или уходить.",
+  correct:"b",
+  options:[
+   {id:"a",title:"Все обращения в поддержку",text:"Не все обращения критичны для доверия и будущего поведения клиента."},
+   {id:"b",title:"Клиенты с первой серьезной жалобой, которые ждут решения проблемы, а не защиты регламента",text:"Есть напряженный момент и риск эмоционального ухода."},
+   {id:"c",title:"Клиенты, которым долго отвечали",text:"Есть симптом, но не хватает контекста: почему ситуация критична и что клиент решает."}
+  ],
+  explain:"Первая серьезная жалоба — сильная точка истины. Клиент оценивает, компания решает проблему или защищает себя."
+ }
+];
+
+const state={};
+const casesEl=document.getElementById("cases"), checkBtn=document.getElementById("check"), progress=document.getElementById("progress"), progressText=document.getElementById("progressText"), feedback=document.getElementById("feedback");
+
+function render(){
+ casesEl.innerHTML=cases.map((c,idx)=>`<div class="case" data-case="${c.id}">
+  <div class="case-head"><div><h3 class="case-title">${idx+1}. ${c.title}</h3><p class="case-note">${c.note}</p></div><span class="badge">Выберите 1 вариант</span></div>
+  <div class="options">${c.options.map(o=>`<div class="option ${state[c.id]===o.id?"selected":""}" data-case="${c.id}" data-option="${o.id}"><b>${o.title}</b><p>${o.text}</p></div>`).join("")}</div>
+  <div id="explain-${c.id}" class="explain">${c.explain}</div>
+ </div>`).join("");
+ document.querySelectorAll(".option").forEach(o=>o.onclick=()=>{state[o.dataset.case]=o.dataset.option;feedback.className="feedback";render()});
+ update();
+}
+function update(){
+ const selected=Object.keys(state).length;
+ progress.style.width=(selected/cases.length*100)+"%";
+ progressText.textContent=`Выбрано ${selected} из ${cases.length}`;
+ checkBtn.disabled=selected<cases.length;
+}
+function show(type,title,text){feedback.className="feedback show "+type;feedback.innerHTML=`<h3>${title}</h3><p>${text}</p>`}
+document.getElementById("check").onclick=()=>{
+ let ok=0;
+ cases.forEach(c=>{
+  const block=document.querySelector(`[data-case="${c.id}"]`);
+  block.querySelectorAll(".option").forEach(o=>{
+   o.classList.remove("correct","wrong");
+   if(o.dataset.option===c.correct)o.classList.add("correct");
+   if(state[c.id]===o.dataset.option && o.dataset.option!==c.correct)o.classList.add("wrong");
+  });
+  document.getElementById(`explain-${c.id}`).classList.add("show");
+  if(state[c.id]===c.correct)ok++;
+ });
+ if(ok===cases.length){show("good","Все формулировки выбраны верно","Вы выбрали сценарии, с которыми можно работать управленчески: искать ожидание, риск, действие, владельца и показатель.");document.getElementById("result").classList.add("show");}
+ else show("warn",`Верно ${ok} из ${cases.length}`,"Посмотрите на подсветку и пояснения. Хорошая формулировка не должна быть ни слишком широкой, ни сразу подмененной решением.");
+};
+document.getElementById("reset").onclick=()=>{Object.keys(state).forEach(k=>delete state[k]);feedback.className="feedback";document.getElementById("result").classList.remove("show");render()};
+document.getElementById("copy").onclick=async()=>{await navigator.clipboard.writeText("Рабочий сценарий точки истины = конкретный клиентский сегмент + момент пути + риск для доверия или продолжения отношений. Формулировка должна позволять назначить действие, владельца и показатель.");const t=document.getElementById("toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)};
+render();
+</script>
+</body>
+</html>
