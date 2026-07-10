@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Конструктор точки истины</title><style>
+:root{--paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);--blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;--green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;--shadow:0 18px 50px rgba(23,32,51,.13);--r:24px;--rs:14px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),linear-gradient(135deg,#fbf7ef,#eee8dc)}
+.app{width:min(1200px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,54px);line-height:.98;letter-spacing:-.045em}.lead{margin:0;max-width:920px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px}h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}.text{margin:0 0 18px;max-width:930px;color:#344054;font-size:16px;line-height:1.55}
+.scenarios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.choice{border:1px solid var(--line);border-radius:18px;background:#fff;padding:16px;cursor:pointer;box-shadow:0 8px 22px rgba(23,32,51,.08);transition:.18s ease;min-height:150px}
+.choice:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}.choice.selected{background:var(--blue2);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.choice b{display:block;margin-bottom:8px;font-size:16px;line-height:1.3}.choice p{margin:0;color:#344054;font-size:14px;line-height:1.45}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+.field{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:15px}.field.full{grid-column:1/-1}
+label{display:block;margin-bottom:8px;color:var(--blue);font-size:15px;font-weight:900}
+textarea,input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.45;resize:vertical}textarea{min-height:88px}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback.bad{background:var(--red2);border-color:rgba(178,59,50,.28)}.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:20px}.result.show{display:block}.output{padding:18px;border:1px solid var(--line);border-radius:18px;background:#fff;color:#344054;line-height:1.55;white-space:pre-wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.box{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+.board{display:grid;grid-template-columns:1.05fr 1.45fr;gap:16px;margin-top:18px}.pool,.slots{border:1px dashed rgba(23,32,51,.22);border-radius:18px;background:rgba(255,255,255,.55);padding:15px}.slots{display:grid;grid-template-columns:1fr 1fr;gap:12px}.slot{min-height:145px;border:1px dashed rgba(23,32,51,.22);border-radius:16px;background:rgba(255,255,255,.72);padding:13px}.slot.over,.pool.over{border-color:rgba(23,63,117,.55);background:rgba(232,239,251,.75)}.slot h3,.pool h3{margin:0 0 10px;color:var(--blue);font-size:17px}
+.cards{display:grid;gap:10px}.card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px;min-height:90px;box-shadow:0 8px 22px rgba(23,32,51,.08);cursor:grab;transition:.18s ease}.card:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}.card.drag{opacity:.5;transform:scale(.98)}.card.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}.card.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}.card.leftover{background:#fff;border-color:var(--line);opacity:.72}.card b{display:block;margin-bottom:6px;font-size:15px;line-height:1.3}.card p{margin:0;color:#344054;line-height:1.42;font-size:14px}.small{font-size:13px;color:var(--muted);line-height:1.4;margin:0 0 12px}
+.toast{position:fixed;right:24px;bottom:24px;padding:13px 16px;border-radius:999px;background:var(--ink);color:#fff;font-weight:850;opacity:0;transform:translateY(12px);transition:.25s ease;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:980px){.scenarios,.form-grid,.grid2,.board{grid-template-columns:1fr}.slots{grid-template-columns:1fr}}
+@media(max-width:640px){.app{width:min(100% - 20px,1200px);padding-top:12px}.hero,.panel,.result{border-radius:20px;padding:20px}.actions{justify-content:stretch}button{width:100%}}
+</style></head>
+<body>
+<main class="app">
+<section class="hero">
+  <div class="eyebrow"><span class="dot"></span>Практика · Конструктор</div>
+  <h1>Конструктор точки истины</h1>
+  <p class="lead">Соберите шаблон точки истины из карточек. В наборе есть лишние варианты: их нужно оставить в банке карточек.</p>
+</section>
+
+<section class="panel">
+  <h2>Кейс: новый клиент после оплаты не дошел до первого использования за 7 дней</h2>
+  <p class="text">Перетащите подходящие элементы в шаблон: сценарий, ожидание, риск, действие компании, владелец и показатель. Лишние карточки оставьте слева.</p>
+
+  <div class="board">
+    <div class="pool" data-zone="pool">
+      <h3>Банк карточек</h3>
+      <p class="small">Не все карточки нужны. Часть формулировок слишком общая или не подходит к кейсу.</p>
+      <div id="pool" class="cards"></div>
+    </div>
+    <div class="slots">
+      <div class="slot" data-slot="scenario"><h3>Клиентский сценарий</h3><div id="scenario" class="cards"></div></div>
+      <div class="slot" data-slot="expectation"><h3>Ожидание клиента</h3><div id="expectation" class="cards"></div></div>
+      <div class="slot" data-slot="risk"><h3>Риск</h3><div id="risk" class="cards"></div></div>
+      <div class="slot" data-slot="action"><h3>Действие компании</h3><div id="action" class="cards"></div></div>
+      <div class="slot" data-slot="owner"><h3>Владелец</h3><div id="owner" class="cards"></div></div>
+      <div class="slot" data-slot="metric"><h3>Показатель</h3><div id="metric" class="cards"></div></div>
+    </div>
+  </div>
+
+  <div id="feedback" class="feedback"></div>
+  <div class="actions">
+    <button id="reset" class="secondary" type="button">Сбросить</button>
+    <button id="check" class="primary" type="button" disabled>Проверить шаблон</button>
+  </div>
+</section>
+
+<section id="result" class="result">
+  <div class="eyebrow"><span class="dot"></span>Итог</div>
+  <h2>Готовая точка истины</h2>
+  <p class="text">Новый клиент после оплаты ждет понятного старта и первого результата. Если компания оставляет его одного, клиент эмоционально отдаляется еще до формального отказа. Управленческое действие — заранее связаться, объяснить маршрут, довести до первого использования и назначить владельца перехода.</p>
+  <div class="grid2">
+    <div class="box"><h3>Что делает шаблон полезным</h3><ul><li>Есть конкретный сценарий.</li><li>Есть ожидание и риск.</li><li>Есть действие компании.</li><li>Есть владелец и показатель.</li></ul></div>
+    <div class="box"><h3>Как применять</h3><p>На рабочей сессии соберите 3–5 таких карточек по самым рискованным моментам пути клиента и оставьте только те, где можно назначить владельца и показатель.</p></div>
+  </div>
+  <div class="actions"><button id="copy" class="secondary" type="button">Скопировать итог</button></div>
+</section>
+</main>
+<div id="toast" class="toast">Скопировано</div>
+
+<script>
+const cards=[
+ {id:"c1",slot:"scenario",title:"Новый клиент после оплаты",text:"Не дошел до первого использования за 7 дней."},
+ {id:"c2",slot:"expectation",title:"Понятный старт",text:"Клиент ждет, что компания объяснит следующий шаг и поможет начать."},
+ {id:"c3",slot:"risk",title:"Тихое охлаждение",text:"Клиент не получает первый результат и постепенно перестает быть активным."},
+ {id:"c4",slot:"action",title:"Сопроводить первый шаг",text:"Связаться заранее, объяснить маршрут и довести до первого использования."},
+ {id:"c5",slot:"owner",title:"Сервис или клиентский успех",text:"Отвечает за переход от оплаты к первому результату."},
+ {id:"c6",slot:"metric",title:"Доля первого использования",text:"Процент клиентов, дошедших до первого действия за 7 дней."},
+ {id:"x1",slot:"pool",title:"Все клиенты, которые купили продукт",text:"Слишком широкая группа: невозможно назначить точное действие."},
+ {id:"x2",slot:"pool",title:"Попросить всех сотрудников быть внимательнее",text:"Общая установка без владельца, правила и проверяемого результата."},
+ {id:"x3",slot:"pool",title:"Количество новых заявок из рекламы",text:"Показывает верх воронки, но не переход от оплаты к первому использованию."},
+ {id:"x4",slot:"pool",title:"Все отделы компании",text:"Размывает ответственность: непонятно, кто контролирует точку истины."}
+];
+let place={}; let checked=false; cards.forEach(c=>place[c.id]="pool");
+const feedback=document.getElementById("feedback"), checkBtn=document.getElementById("check");
+
+function cardHtml(c){
+ const cls=["card"];
+ if(checked){
+   if(c.slot==="pool" && place[c.id]==="pool") cls.push("leftover");
+   else if(place[c.id]===c.slot) cls.push("correct");
+   else if(place[c.id]!=="pool") cls.push("wrong");
+ }
+ return `<div class="${cls.join(" ")}" draggable="${!checked}" data-id="${c.id}"><b>${c.title}</b><p>${c.text}</p></div>`;
+}
+function render(){
+ ["pool","scenario","expectation","risk","action","owner","metric"].forEach(id=>document.getElementById(id).innerHTML="");
+ cards.forEach(c=>document.getElementById(place[c.id]).insertAdjacentHTML("beforeend",cardHtml(c)));
+ document.querySelectorAll(".card").forEach(c=>{c.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",c.dataset.id);c.classList.add("drag")});c.addEventListener("dragend",()=>c.classList.remove("drag"))});
+ const required=["scenario","expectation","risk","action","owner","metric"];
+ checkBtn.disabled=required.some(slot=>!Object.values(place).includes(slot))||checked;
+}
+function dropTo(zone,id){
+ if(zone!=="pool"){
+   const existing=Object.keys(place).find(k=>place[k]===zone);
+   if(existing)place[existing]="pool";
+ }
+ place[id]=zone;render();
+}
+document.querySelectorAll("[data-slot],.pool").forEach(z=>{
+ const zone=z.dataset.slot||"pool";
+ z.addEventListener("dragover",e=>{if(checked)return;e.preventDefault();z.classList.add("over")});
+ z.addEventListener("dragleave",()=>z.classList.remove("over"));
+ z.addEventListener("drop",e=>{if(checked)return;e.preventDefault();z.classList.remove("over");dropTo(zone,e.dataTransfer.getData("text/plain"))});
+});
+function show(type,title,text){feedback.className="feedback show "+type;feedback.innerHTML=`<h3>${title}</h3><p>${text}</p>`}
+checkBtn.onclick=()=>{checked=true;let ok=cards.filter(c=>place[c.id]===c.slot).length;render(); if(ok===cards.length){show("good","Шаблон собран верно","Вы выбрали конкретные элементы точки истины и отсеяли общие формулировки.");document.getElementById("result").classList.add("show");document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"})} else show("warn",`Верно ${ok} из ${cards.length}`,"Проверьте красные карточки. В шаблон должны попасть только конкретные элементы этой точки истины; общие формулировки остаются в банке.")};
+document.getElementById("reset").onclick=()=>{checked=false;cards.forEach(c=>place[c.id]="pool");feedback.className="feedback";document.getElementById("result").classList.remove("show");render()};
+document.getElementById("copy").onclick=async()=>{await navigator.clipboard.writeText("Точка истины: новый клиент после оплаты не дошел до первого использования за 7 дней. Ожидание — понятный старт. Риск — тихое охлаждение. Действие — сопроводить первый шаг. Владелец — сервис/клиентский успех. Показатель — доля клиентов, дошедших до первого действия за 7 дней.");const t=document.getElementById("toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)};
+render();
+</script>
+</body>
+</html>
