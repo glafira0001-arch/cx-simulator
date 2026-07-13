@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CJM фитнес-клуба: соберите карту</title><style>
+:root{--paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);--blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;--green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;--shadow:0 18px 50px rgba(23,32,51,.13);--r:24px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),linear-gradient(135deg,#fbf7ef,#eee8dc)}
+.app{width:min(1240px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,54px);line-height:.98;letter-spacing:-.045em}
+.lead{margin:0;max-width:980px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px}
+h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}
+.text{margin:0 0 18px;max-width:1000px;color:#344054;font-size:16px;line-height:1.55}
+.casebox{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:18px;margin:18px 0}
+.casebox h3{margin:0 0 8px;color:var(--blue);font-size:18px}.casebox p{margin:0;color:#344054;line-height:1.5}
+.table-wrap{overflow:auto;margin-top:18px;border:1px solid var(--line);border-radius:18px;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:1020px}
+th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:14px;vertical-align:top}
+th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}
+th{background:var(--blue2);color:var(--blue);text-align:left;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+.stage{font-weight:900;color:var(--blue);font-size:16px;line-height:1.3}
+select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.35}
+td.correct{background:var(--green2)}td.wrong{background:var(--red2)}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}
+button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}
+.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}
+.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback.bad{background:var(--red2);border-color:rgba(178,59,50,.28)}
+.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:20px}.result.show{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.box{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}
+.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+.dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.metric{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.62);padding:16px}
+.metric b{display:block;color:var(--blue);font-size:28px;margin-bottom:4px}.metric span{display:block;color:#344054;font-size:13px;line-height:1.35}
+.scenarios{display:grid;gap:16px;margin-top:18px}
+.scenario{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.58);padding:18px}
+.scenario h3{margin:0 0 8px;color:var(--blue);font-size:18px}.scenario p{margin:0 0 14px;color:#344054;line-height:1.5}
+.options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.option{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;min-height:120px;cursor:pointer;box-shadow:0 8px 22px rgba(23,32,51,.06);transition:.18s ease}
+.option:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}
+.option.selected{background:var(--blue2);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.option.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}
+.option.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}
+.option b{display:block;margin-bottom:6px;font-size:15px;line-height:1.3}.option p{margin:0;color:#344054;line-height:1.42;font-size:14px}
+.explain{display:none;margin-top:12px;padding:14px;border-radius:14px;background:var(--blue2);color:#344054;line-height:1.5;font-size:14px}.explain.show{display:block}
+@media(max-width:1020px){.grid2,.dashboard{grid-template-columns:1fr 1fr}.options{grid-template-columns:1fr}}
+@media(max-width:640px){.app{width:min(100% - 20px,1240px);padding-top:12px}.hero,.panel,.result{border-radius:20px;padding:20px}.grid2,.dashboard{grid-template-columns:1fr}.actions{justify-content:stretch}button{width:100%}}
+</style></head>
+<body><main class="app">
+<section class="hero"><div class="eyebrow"><span class="dot"></span>Практика · CJM фитнес-клуба</div><h1>Соберите CJM глазами клиента</h1><p class="lead">Заполните укрупненную карту пути фитнес-клуба: действие клиента, боль, ценность, риск и показатель перехода. Важно не описывать внутренние процессы отдела, а увидеть, как клиент движется к результату и продлению.</p></section>
+<section class="panel"><h2>CJM-конструктор</h2><p class="text">Компания продает годовые карты, но директор хочет понять, где клиенты теряют активность. Для каждого этапа выберите правильные элементы карты.</p><div class="casebox"><h3>Правило</h3><p>Формулировка должна звучать не из процесса компании, а из маршрута клиента. Не «менеджер занес данные в CRM», а «клиент ждет, что после оплаты его не потеряют».</p></div>
+<div class="table-wrap"><table><thead><tr><th>Этап</th><th>Действие клиента</th><th>Боль</th><th>Момент ценности</th><th>Риск</th><th>Показатель перехода</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<div id="feedback" class="feedback"></div><div class="actions"><button id="reset" class="secondary" type="button">Сбросить</button><button id="check" class="primary" type="button">Проверить карту</button></div></section>
+<section id="result" class="result"><div class="eyebrow"><span class="dot"></span>Итог</div><h2>Карта стала управляемой</h2><p class="text">CJM показывает не просто последовательность контактов, а качество переходов: где клиент понимает ценность, где теряет ритм, где нужен владелец и какой показатель покажет изменение поведения.</p><div class="grid2"><div class="box"><h3>Что получилось</h3><ul><li>Этапы пути заданы границами маршрута.</li><li>Действия описаны глазами клиента.</li><li>На каждом этапе есть боль, ценность и риск.</li><li>Переходы измеряются показателями.</li></ul></div><div class="box"><h3>Следующий шаг директора</h3><p>Выбрать участок, где потеря клиента обходится дороже всего, назначить владельца и проверить изменение показателя через 2–4 недели.</p></div></div></section>
+</main>
+<script>
+const columns={
+ action:[
+  ["","Выберите действие клиента"],
+  ["interest","Понимает потребность, сравнивает клубы, смотрит цену, отзывы и расписание"],
+  ["buy","Общается с продажами, выбирает карту и оплачивает"],
+  ["start","Приходит в клуб, ищет маршрут, знакомится с тренером и правилами"],
+  ["use","Пробует занятия, формирует регулярность или начинает пропадать"],
+  ["support","Обращается с вопросами, заморозкой, заменой занятия или спорной ситуацией"],
+  ["renew","Оценивает результат за период и решает, продлевать ли карту"]
+ ],
+ pain:[
+  ["","Выберите боль"],
+  ["choice","Не понимает, какой формат и тариф подходят его цели"],
+  ["lost","После оплаты не понимает, куда идти и кто его подхватит"],
+  ["awkward","Чувствует себя потерянным и неуверенным в первом визите"],
+  ["rhythm","Теряет ритм, пропускает занятия и стесняется вернуться"],
+  ["rules","Не понимает правила, расписание или порядок решения проблемы"],
+  ["result","Не видит результата и воспринимает продление как новую продажу"]
+ ],
+ value:[
+  ["","Выберите ценность"],
+  ["goal","Менеджер связывает карту с целью клиента"],
+  ["handoff","Сервис заранее ведет клиента к стартовой тренировке"],
+  ["route","Тренер дает диагностику и понятный маршрут занятий"],
+  ["return","Команда замечает паузу и помогает вернуться"],
+  ["solve","Проблема решается без перекладывания ответственности на клиента"],
+  ["progress","Команда показывает прогресс и накопленную пользу за год"]
+ ],
+ risk:[
+  ["","Выберите риск"],
+  ["wrong","Клиент покупает неподходящую карту и разочаровывается до старта"],
+  ["gap","Продажи закрыли сделку, но сервис не подхватил новичка"],
+  ["alone","Клиент остается один и пропадает без жалобы"],
+  ["silent","Пауза в посещениях превращается в тихий уход"],
+  ["irritation","Раздражение накапливается и снижает готовность продлевать"],
+  ["discount","В конце года продажам приходится продавать скидку вместо ценности"]
+ ],
+ metric:[
+  ["","Выберите показатель"],
+  ["lead_to_buy","Конверсия заявки в покупку карты"],
+  ["buy_to_start","Доля клиентов, дошедших до стартовой тренировки"],
+  ["start_to_plan","Доля клиентов, получивших план занятий после диагностики"],
+  ["frequency","Частота визитов и доля клиентов с паузой более 14 дней"],
+  ["resolution","Скорость решения обращения и повторные обращения по теме"],
+  ["retention","Доля продлений среди активных клиентов"]
+ ]
+};
+const rows=[
+ {stage:"Интерес и выбор клуба",action:"interest",pain:"choice",value:"goal",risk:"wrong",metric:"lead_to_buy"},
+ {stage:"Покупка карты",action:"buy",pain:"lost",value:"handoff",risk:"gap",metric:"buy_to_start"},
+ {stage:"Первый визит и стартовая тренировка",action:"start",pain:"awkward",value:"route",risk:"alone",metric:"start_to_plan"},
+ {stage:"Регулярное использование",action:"use",pain:"rhythm",value:"return",risk:"silent",metric:"frequency"},
+ {stage:"Поддержка и спорные ситуации",action:"support",pain:"rules",value:"solve",risk:"irritation",metric:"resolution"},
+ {stage:"Продление",action:"renew",pain:"result",value:"progress",risk:"discount",metric:"retention"}
+];
+const tbody=document.getElementById("tbody"),feedback=document.getElementById("feedback");
+function selectHtml(col,val){return `<select data-col="${col}" data-correct="${val}">${columns[col].map(o=>`<option value="${o[0]}">${o[1]}</option>`).join("")}</select>`}
+function render(){tbody.innerHTML=rows.map(r=>`<tr><td><div class="stage">${r.stage}</div></td><td>${selectHtml("action",r.action)}</td><td>${selectHtml("pain",r.pain)}</td><td>${selectHtml("value",r.value)}</td><td>${selectHtml("risk",r.risk)}</td><td>${selectHtml("metric",r.metric)}</td></tr>`).join("")}
+function show(type,title,text){feedback.className="feedback show "+type;feedback.innerHTML=`<h3>${title}</h3><p>${text}</p>`}
+document.getElementById("check").onclick=()=>{let total=0,ok=0,filled=0;document.querySelectorAll("td").forEach(td=>td.classList.remove("correct","wrong"));document.querySelectorAll("select").forEach(s=>{total++;if(s.value)filled++;const td=s.closest("td");if(s.value===s.dataset.correct){ok++;td.classList.add("correct")}else td.classList.add("wrong")});if(filled<total){show("bad","Заполните всю карту","Для проверки нужно выбрать вариант в каждой ячейке.");return}if(ok===total){show("good","CJM собрана верно","Вы связали этапы пути с болью, ценностью, риском и показателями переходов.");document.getElementById("result").classList.add("show");document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"})}else show("warn",`Верно ${ok} из ${total}`,"Проверьте красные ячейки. Элемент должен соответствовать именно этому этапу пути клиента.")};
+document.getElementById("reset").onclick=()=>{feedback.className="feedback";document.getElementById("result").classList.remove("show");render()};render();
+</script></body></html>
