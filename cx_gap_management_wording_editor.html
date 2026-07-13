@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Редактор управленческих формулировок</title><style>
+:root{--paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);--blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;--green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;--shadow:0 18px 50px rgba(23,32,51,.13);--r:24px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),linear-gradient(135deg,#fbf7ef,#eee8dc)}
+.app{width:min(1240px,calc(100% - 32px));margin:0 auto;padding:28px 0 44px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,54px);line-height:.98;letter-spacing:-.045em}.lead{margin:0;max-width:1000px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px}h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}.text{margin:0 0 18px;max-width:1000px;color:#344054;font-size:16px;line-height:1.55}
+.casebox{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58);padding:18px;margin:18px 0}.casebox h3{margin:0 0 8px;color:var(--blue);font-size:18px}.casebox p{margin:0;color:#344054;line-height:1.5}
+.map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.stage{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.64);padding:16px;position:relative}.stage:before{content:attr(data-step);position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:950}.stage.correct{background:var(--green2);border-color:rgba(38,115,72,.45)}.stage.wrong{background:var(--red2);border-color:rgba(178,59,50,.45)}
+.stage h3{margin:0 42px 8px 0;color:var(--blue);font-size:18px;line-height:1.25}.stage p{margin:0 0 12px;color:#344054;font-size:14px;line-height:1.45}.label{display:inline-flex;padding:5px 8px;margin:0 0 8px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.35}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback.bad{background:var(--red2);border-color:rgba(178,59,50,.28)}.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:20px}.result.show{display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.box{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+.scenario-list{display:grid;gap:18px;margin-top:18px}.scenario{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.58);padding:18px}.scenario h3{margin:0 0 8px;color:var(--blue);font-size:19px}.scenario p{margin:0 0 14px;color:#344054;line-height:1.5}
+.options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.option{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;min-height:128px;cursor:pointer;box-shadow:0 8px 22px rgba(23,32,51,.06);transition:.18s ease}.option:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}.option.selected{background:var(--blue2);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}.option.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}.option.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}.option b{display:block;margin-bottom:6px;font-size:15px;line-height:1.3}.option p{margin:0;color:#344054;line-height:1.42;font-size:14px}
+.explain{display:none;margin-top:12px;padding:14px;border-radius:14px;background:var(--blue2);color:#344054;line-height:1.5;font-size:14px}.explain.show{display:block}
+@media(max-width:1040px){.map,.options,.grid2{grid-template-columns:1fr 1fr}}@media(max-width:720px){.map,.options,.grid2{grid-template-columns:1fr}.app{width:min(100% - 20px,1240px);padding-top:12px}.hero,.panel,.result{border-radius:20px;padding:20px}.actions{justify-content:stretch}button{width:100%}}
+</style></head>
+<body><main class="app">
+<section class="hero"><div class="eyebrow"><span class="dot"></span>Практика · Формулировка пробела</div><h1>Редактор управленческих формулировок</h1><p class="lead">Переведите слабые формулировки в управленческие задачи. Хорошая формулировка показывает этап, системную причину и эффект для клиента, а не обвиняет отдел.</p></section>
+<section class="panel"><h2>Выберите рабочую формулировку</h2><p class="text">Команда принесла симптомы: «клиенты недовольны», «поддержка плохо работает», «продажи обещают лишнее». Ваша задача — выбрать формулировку, с которой директор может назначить владельца, показатель и изменение процесса.</p>
+<div id="scenarios" class="scenario-list"></div><div id="feedback" class="feedback"></div><div class="actions"><button id="reset" class="secondary" type="button">Сбросить</button><button id="check" class="primary" type="button" disabled>Проверить формулировки</button></div></section>
+<section id="result" class="result"><div class="eyebrow"><span class="dot"></span>Итог</div><h2>Формулировка стала управленческой</h2><p class="text">Рабочая формулировка переводит разговор от виноватых к системе. Она показывает, где в клиентском пути возник пробел, почему он повторяется и какое поведение клиента или показатель нужно изменить.</p><div class="grid2"><div class="box"><h3>Плохая формулировка</h3><ul><li>«Клиенты недовольны».</li><li>«Поддержка плохо работает».</li><li>«Продажи обещают лишнее».</li><li>«Клиенты ничего не читают».</li></ul></div><div class="box"><h3>Рабочая формулировка</h3><p>После покупки нет владельца адаптации, поэтому клиент не доходит до первого использования. Это уже управленческая задача: есть этап, причина, риск и будущий показатель.</p></div></div></section>
+</main>
+<script>
+const cases=[
+ {id:"c1",symptom:"Клиенты недовольны после покупки",correct:"b",explain:"Рабочая формулировка показывает этап, отсутствие владельца и эффект: клиент не доходит до первого использования."},
+ {id:"c2",symptom:"Поддержка плохо работает",correct:"c",explain:"Слабая формулировка обвиняет поддержку. Рабочая показывает потерю контекста между каналами и повторение проблемы клиентом."},
+ {id:"c3",symptom:"Продажи обещают лишнее",correct:"a",explain:"Задача не в том, чтобы наказать продажи, а в том, чтобы согласовать обещания с операционной системой."},
+ {id:"c4",symptom:"Клиенты не читают инструкции",correct:"b",explain:"Если клиенты массово не понимают инструкцию, это пробел продукта или онбординга, а не дефект клиента."},
+ {id:"c5",symptom:"Жалобы закрываются, но возвращаются",correct:"c",explain:"Если проблема повторяется, обратная связь не замкнулась в изменение процесса."}
+];
+const options={
+ c1:[
+  {id:"a",title:"Клиенты недостаточно мотивированы после покупки",text:"Формулировка переносит ответственность на клиента."},
+  {id:"b",title:"После покупки нет владельца адаптации, поэтому клиент не доходит до первого использования",text:"Есть этап, системная причина и риск для поведения клиента."},
+  {id:"c",title:"Сервису нужно внимательнее общаться с новичками",text:"Слишком общее пожелание без владельца перехода и показателя."}
+ ],
+ c2:[
+  {id:"a",title:"Поддержка должна быстрее отвечать на вопросы",text:"Может быть полезно, но не объясняет повторение информации."},
+  {id:"b",title:"Нужно провести обучение операторов поддержке",text:"Решение предложено до диагностики причины."},
+  {id:"c",title:"Клиент повторяет проблему трем сотрудникам, потому что контекст не передается между каналами",text:"Есть поведение клиента, причина и место системного разрыва."}
+ ],
+ c3:[
+  {id:"a",title:"Обещания в продаже не согласованы с операционными возможностями, поэтому клиент получает разрыв ожиданий",text:"Формулировка переводит спор отделов в управленческую задачу."},
+  {id:"b",title:"Менеджеры по продажам слишком оптимистичны",text:"Оценочное суждение о людях вместо диагностики системы."},
+  {id:"c",title:"Нужно запретить менеджерам обещать сроки",text:"Решение слишком грубое и не проверяет операционную возможность."}
+ ],
+ c4:[
+  {id:"a",title:"Клиенты невнимательно изучают материалы",text:"Обвиняет клиента и не меняет путь."},
+  {id:"b",title:"На этапе первого использования инструкция не снимает ключевой вопрос, поэтому клиент обращается в поддержку",text:"Есть этап, причина и эффект для сервиса."},
+  {id:"c",title:"Поддержке нужно чаще отправлять ссылку на инструкцию",text:"Усиливает ручную компенсацию, но не меняет источник проблемы."}
+ ],
+ c5:[
+  {id:"a",title:"Нужно отвечать на жалобы более дружелюбно",text:"Тон важен, но проблема в повторяемости."},
+  {id:"b",title:"Клиенты часто жалуются на одно и то же",text:"Это наблюдение, а не управленческая задача."},
+  {id:"c",title:"Повторяющаяся жалоба закрывается ответом клиенту, но не передается владельцу процесса для изменения регламента",text:"Формулировка показывает незамкнутый цикл обратной связи."}
+ ]
+};
+const state={}, scenarios=document.getElementById("scenarios"), feedback=document.getElementById("feedback"), checkBtn=document.getElementById("check");
+function render(checked=false){scenarios.innerHTML=cases.map((c,i)=>`<div class="scenario"><h3>${i+1}. Симптом: ${c.symptom}</h3><p>Выберите формулировку, которая превращает симптом в управленческую задачу.</p><div class="options">${options[c.id].map(o=>{const cls=["option"];if(state[c.id]===o.id)cls.push("selected");if(checked&&o.id===c.correct)cls.push("correct");if(checked&&state[c.id]===o.id&&o.id!==c.correct)cls.push("wrong");return `<div class="${cls.join(" ")}" data-case="${c.id}" data-option="${o.id}"><b>${o.title}</b><p>${o.text}</p></div>`}).join("")}</div><div id="explain-${c.id}" class="explain">${c.explain}</div></div>`).join("");if(!checked)document.querySelectorAll(".option").forEach(o=>o.onclick=()=>{state[o.dataset.case]=o.dataset.option;feedback.className="feedback";render()});checkBtn.disabled=Object.keys(state).length<cases.length}
+function show(type,title,text){feedback.className="feedback show "+type;feedback.innerHTML=`<h3>${title}</h3><p>${text}</p>`}
+document.getElementById("check").onclick=()=>{let ok=cases.filter(c=>state[c.id]===c.correct).length;render(true);cases.forEach(c=>document.getElementById("explain-"+c.id).classList.add("show"));if(ok===cases.length){show("good","Формулировки выбраны верно","Вы перевели симптомы в управленческие задачи, с которыми можно назначить владельца и показатель.");document.getElementById("result").classList.add("show");document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"})}else show("warn",`Верно ${ok} из ${cases.length}`,"Проверьте красные варианты. Рабочая формулировка должна показывать этап, системную причину и эффект для клиента.")};
+document.getElementById("reset").onclick=()=>{Object.keys(state).forEach(k=>delete state[k]);feedback.className="feedback";document.getElementById("result").classList.remove("show");render()};render();
+</script></body></html>
