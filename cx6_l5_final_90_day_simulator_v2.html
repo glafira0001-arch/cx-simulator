@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финальный симулятор 90-дневного плана</title>
+<style>
+:root{
+  --paper:#fffaf1;--ink:#172033;--muted:#667085;--line:rgba(23,32,51,.14);
+  --blue:#173f75;--blue2:#e8effb;--red:#b23b32;--red2:#f9e7e3;
+  --green:#267348;--green2:#e7f3ea;--yellow:#b7791f;--yellow2:#fff1cf;
+  --shadow:0 18px 50px rgba(23,32,51,.13);--r:24px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);
+  background:radial-gradient(circle at 10% 0%,rgba(178,59,50,.1),transparent 30%),
+  radial-gradient(circle at 90% 0%,rgba(23,63,117,.14),transparent 35%),
+  linear-gradient(135deg,#fbf7ef,#eee8dc);
+}
+.app{width:min(1180px,calc(100% - 28px));margin:0 auto;padding:24px 0 40px}
+.hero,.panel,.result{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.hero{padding:28px;margin-bottom:18px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-80px;bottom:-110px;width:280px;height:280px;border-radius:50%;border:30px solid rgba(23,63,117,.06)}
+.badge{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;margin-bottom:16px;border-radius:999px;background:var(--blue2);color:var(--blue);font-size:13px;font-weight:850;text-transform:uppercase;letter-spacing:.03em}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+h1{margin:0 0 12px;font-size:clamp(30px,4vw,52px);line-height:.98;letter-spacing:-.045em}
+.lead{margin:0;max-width:980px;color:#344054;font-size:18px;line-height:1.5}
+.panel{padding:24px;margin-bottom:18px}
+h2{margin:0 0 10px;font-size:clamp(24px,3vw,34px);letter-spacing:-.03em}
+.text{margin:0 0 18px;max-width:980px;color:#344054;font-size:16px;line-height:1.55}
+.scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.scenario{border:1px solid var(--line);border-radius:20px;background:#fff;padding:18px;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(23,32,51,.06);min-height:210px}
+.scenario:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}
+.scenario.selected{background:var(--blue2);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.scenario h3{margin:0 0 8px;color:var(--blue);font-size:19px;line-height:1.25}
+.scenario p{margin:0;color:#344054;line-height:1.45}
+.tag{display:inline-flex;padding:5px 8px;margin-bottom:8px;border-radius:999px;background:rgba(23,32,51,.06);color:#475467;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+.workspace{display:none}.workspace.show{display:block}
+.dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
+.metric{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.66);padding:14px}
+.metric b{display:block;color:var(--blue);font-size:25px;margin-bottom:4px}
+.metric span{display:block;color:#344054;font-size:13px;line-height:1.35}
+.step-card{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.66);padding:18px;margin-top:14px}
+.step-card h3{margin:0 0 8px;color:var(--blue);font-size:19px}
+.step-card p{margin:0 0 12px;color:#344054;line-height:1.5}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.option{border:1px solid var(--line);border-radius:16px;background:#fff;padding:13px;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(23,32,51,.06);min-height:120px}
+.option:hover{transform:translateY(-2px);border-color:rgba(23,63,117,.35)}
+.option.selected{background:var(--blue2);border-color:rgba(23,63,117,.55);box-shadow:0 0 0 3px rgba(23,63,117,.1)}
+.option.correct{background:var(--green2);border-color:rgba(38,115,72,.55)}
+.option.wrong{background:var(--red2);border-color:rgba(178,59,50,.55)}
+.option b{display:block;margin-bottom:5px;font-size:14px;line-height:1.3}
+.option p{margin:0;color:#344054;font-size:13px;line-height:1.38}
+.explain{display:none;margin-top:12px;padding:14px;border-radius:14px;background:var(--blue2);color:#344054;line-height:1.5;font-size:14px}
+.explain.show{display:block}
+.plan-preview{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.68);padding:18px;margin-top:18px}
+.plan-preview h3{margin:0 0 8px;color:var(--blue)}
+.plan-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.plan-part{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}
+.plan-part b{display:block;color:var(--blue);margin-bottom:6px}
+.plan-part p{margin:0;color:#344054;line-height:1.4;font-size:14px}
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s ease}
+button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(23,32,51,.14)}
+.primary{background:var(--blue);color:#fff}.secondary{background:rgba(23,32,51,.08);color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.feedback{display:none;margin-top:18px;padding:18px;border-radius:18px;border:1px solid var(--line)}
+.feedback.show{display:block}.feedback.good{background:var(--green2);border-color:rgba(38,115,72,.28)}
+.feedback.warn{background:var(--yellow2);border-color:rgba(183,121,31,.28)}.feedback.bad{background:var(--red2);border-color:rgba(178,59,50,.28)}
+.feedback h3{margin:0 0 8px;font-size:18px}.feedback p{margin:0;color:#344054;line-height:1.5}
+.result{display:none;padding:24px;margin-top:18px}.result.show{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.box{padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}
+.box h3{margin:0 0 8px;color:var(--blue);font-size:17px}
+.box p,.box li{color:#344054;line-height:1.5}.box ul{margin:0;padding-left:20px}
+@media(max-width:900px){.scenario-grid,.dashboard,.plan-list,.grid2{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .app{width:min(100% - 18px,1180px);padding-top:12px}
+  .hero,.panel,.result{border-radius:20px;padding:18px}
+  .scenario-grid,.dashboard,.plan-list,.grid2{grid-template-columns:1fr}
+  .actions{justify-content:stretch}button{width:100%}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<section class="hero">
+  <div class="badge"><span class="dot"></span>Практика · Финал курса</div>
+  <h1>90-дневный штаб генерального директора</h1>
+  <p class="lead">Выберите один клиентский сценарий и соберите для него управленческий план: точка истины, главный пробел, владелец, показатель и ограниченное изменение на 30 дней.</p>
+</section>
+
+<section class="panel">
+  <h2>1. Выберите сценарий для 90-дневного цикла</h2>
+  <p class="text">Сценарий должен быть достаточно узким, чтобы за 90 дней увидеть путь, найти пробел, назначить владельца и проверить эффект.</p>
+  <div id="scenarios" class="scenario-grid"></div>
+</section>
+
+<section id="workspace" class="panel workspace">
+  <h2 id="workTitle">2. Соберите план</h2>
+  <p id="workText" class="text"></p>
+  <div id="dashboard" class="dashboard"></div>
+  <div id="questions"></div>
+  <div id="planPreview" class="plan-preview"></div>
+  <div id="feedback" class="feedback"></div>
+  <div class="actions">
+    <button id="reset" class="secondary" type="button">Сбросить</button>
+    <button id="check" class="primary" type="button" disabled>Проверить план</button>
+  </div>
+</section>
+
+<section id="result" class="result">
+  <div class="badge"><span class="dot"></span>Итог</div>
+  <h2>План готов к запуску</h2>
+  <p class="text">Вы собрали не общий лозунг про клиентский опыт, а управленческий цикл: узкий сценарий, точка истины, пробел, один владелец, показатель и пилот изменения.</p>
+  <div class="grid2">
+    <div class="box">
+      <h3>Что должен удерживать генеральный директор</h3>
+      <ul>
+        <li>Фокус на одном сценарии.</li>
+        <li>Факты вместо мнений.</li>
+        <li>Одного владельца пробела.</li>
+        <li>Показатель результата.</li>
+        <li>Решение о масштабировании после проверки.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Что нельзя делать</h3>
+      <p>Запускать большую реформу сервиса без сценария, владельца и метрики. Такой план выглядит красиво, но не управляет поведением клиента и команды.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+const data = {"fitness": {"tag": "B2C · фитнес", "title": "Новый клиент после покупки карты", "text": "Клиент оплатил годовую карту, но за первую неделю не дошел до стартовой тренировки.", "metrics": [["43%", "доходят до стартовой тренировки"], ["18 дней", "средняя пауза до первого визита"], ["низкая", "готовность к продлению"], ["сервис", "ключевой владелец"]], "questions": [{"id": "truth", "title": "Точка истины", "text": "Где клиент принимает главное решение о доверии и ценности?", "correct": "first_action", "options": [["first_action", "Первое действие после оплаты", "Клиент понимает, что его не потеряли и ведут к результату."], ["contract", "Подписание договора", "Документы уже не снимают риск потеряться после оплаты."], ["birthday", "Поздравление с днем рождения", "Приятно, но не влияет на вход в продукт."]], "explain": "Для этого сценария точка истины — не покупка, а первый управляемый шаг после оплаты."}, {"id": "gap", "title": "Главный пробел", "text": "Какой системный разрыв сильнее всего мешает сценарию?", "correct": "owner", "options": [["owner", "Нет владельца адаптации", "Продажи закрыли сделку, сервис подключается только после жалобы."], ["price", "Цена карты завышена", "Цена уже оплачена и не объясняет отсутствие первого действия."], ["design", "Плохой дизайн сайта", "Сайт не главный разрыв после покупки."]], "explain": "Клиент не должен сам выяснять, что делать после оплаты."}, {"id": "owner", "title": "Один владелец", "text": "Кто должен отвечать за изменение процесса?", "correct": "service", "options": [["sales", "Продажи", "Продажи важны для покупки и продления, но не должны сопровождать каждый шаг."], ["service", "Сервис", "Сервис ведет адаптацию и доводит клиента до первого действия."], ["all", "Все вместе", "Совместная ответственность без владельца снова создает серую зону."]], "explain": "Участники могут помогать, но владелец адаптации — сервис."}, {"id": "metric", "title": "Показатель", "text": "Как проверить результат через поведение клиента?", "correct": "seven_days", "options": [["seven_days", "Доля клиентов, дошедших до первого действия за 7 дней", "Показывает, начал ли клиент реально пользоваться продуктом."], ["likes", "Лайки в соцсетях клуба", "Не проверяют прохождение сценария."], ["calls", "Количество звонков менеджеров", "Это активность команды, а не результат клиента."]], "explain": "Показатель должен фиксировать переход клиента дальше."}, {"id": "pilot", "title": "Ограниченное изменение на 30 дней", "text": "Какой пилот запустить в третьем месяце?", "correct": "service_call", "options": [["service_call", "Сервис связывается после оплаты, назначает первое действие и контролирует приход", "Проверяет гипотезу и меняет участок пути."], ["new_ads", "Запустить рекламу о преимуществах клуба", "Это привлечение, а не адаптация после покупки."], ["discount", "Дать скидку на продление уже сейчас", "Рано: клиент еще не вошел в продукт."]], "explain": "Пилот должен менять конкретный разрыв в маршруте клиента."}]}, "b2b": {"tag": "B2B · продление", "title": "B2B-клиент перед продлением", "text": "Клиент получает отчеты, но ЛПР не видит управленческой ценности и начинает давить на цену.", "metrics": [["7/10", "NPS у команды клиента"], ["риск", "непродления"], ["слабо", "результат для ЛПР"], ["аккаунт", "ключевой владелец"]], "questions": [{"id": "truth", "title": "Точка истины", "text": "Где клиент принимает решение о продолжении отношений?", "correct": "value_for_lpr", "options": [["value_for_lpr", "Отчет переведен на язык ЛПР", "ЛПР видит риск, эффект и управленческую пользу."], ["more_pages", "Отчет стал длиннее", "Объем не равен ценности."], ["friendly_chat", "Аккаунт вежливо общается", "Тон важен, но не решает вопрос продления."]], "explain": "В B2B продление зависит от того, видит ли ЛПР ценность результата."}, {"id": "gap", "title": "Главный пробел", "text": "Какой системный разрыв мешает продлению?", "correct": "value_translation", "options": [["value_translation", "Результат не переведен на язык управленческой пользы", "Команда делает работу, но клиент не может защитить бюджет."], ["slow_payment", "Клиент долго оплачивает счета", "Это симптом, но не главная причина непродления."], ["too_many_meetings", "Слишком много встреч", "Количество встреч само по себе не объясняет потерю ценности."]], "explain": "Пробел — не в вежливости, а в управленческой упаковке результата."}, {"id": "owner", "title": "Один владелец", "text": "Кто должен отвечать за изменение процесса?", "correct": "account", "options": [["analyst", "Только аналитик", "Аналитик дает данные, но не всегда владеет контекстом ЛПР."], ["account", "Аккаунт-команда", "Аккаунт держит контекст, приоритеты и язык пользы для клиента."], ["client", "Сам клиент", "Клиент не должен сам доказывать себе ценность подрядчика."]], "explain": "Аккаунт собирает экспертизу и переводит ее в управленческую ценность."}, {"id": "metric", "title": "Показатель", "text": "Как проверить эффект изменения?", "correct": "renewal_risk", "options": [["renewal_risk", "Доля клиентов с понятным обоснованием продления для ЛПР", "Проверяет, появился ли управленческий аргумент."], ["file_count", "Количество отправленных файлов", "Это активность, а не ценность."], ["meeting_count", "Количество встреч с клиентом", "Встреч может стать больше, а ценность не появится."]], "explain": "Показатель должен проверять готовность клиента продлеваться, а не объем коммуникации."}, {"id": "pilot", "title": "Ограниченное изменение на 30 дней", "text": "Какой пилот запустить?", "correct": "executive_summary", "options": [["executive_summary", "Короткий executive summary для ЛПР с рисками, эффектом и следующим решением", "Проверяет перевод результата на язык руководства."], ["free_hours", "Добавить бесплатные часы аналитики", "Может убить маржу и не решить проблему ценности."], ["new_design", "Перерисовать презентацию в красивом стиле", "Визуал не заменяет управленческий смысл."]], "explain": "Пилот должен помочь ЛПР увидеть ценность до разговора о цене."}]}, "premium": {"tag": "Дорогой продукт", "title": "Покупатель дорогого микрофона перед решением", "text": "Клиент хочет купить, но боится ошибиться: звук нельзя выбрать по картинке и характеристикам.", "metrics": [["60%", "оплачивают после теста"], ["20%", "возвращаются через 2–3 месяца"], ["высокий", "страх ошибки"], ["продажи", "ключевой владелец"]], "questions": [{"id": "truth", "title": "Точка истины", "text": "Где клиент принимает решение о покупке?", "correct": "real_test", "options": [["real_test", "Тест микрофона в своей рабочей среде", "Клиент проверяет звук на своем голосе, помещении и оборудовании."], ["catalog", "Просмотр каталога", "Каталог не снимает риск неподходящего звука."], ["review", "Чтение восторженного отзыва", "Чужой отзыв не гарантирует результат в его задаче."]], "explain": "Для дорогого продукта точка истины — реальная проверка в своем сценарии."}, {"id": "gap", "title": "Главный пробел", "text": "Что мешает покупке сильнее всего?", "correct": "risk_not_removed", "options": [["risk_not_removed", "Компания не снимает риск неверного выбора", "Клиент боится, что продукт не подойдет под его задачу."], ["no_discount", "Нет скидки", "Для профессионала ключевой барьер — риск ошибки, а не только цена."], ["few_posts", "Мало постов в соцсетях", "Контент не заменяет реальную проверку продукта."]], "explain": "Главный разрыв — страх ошибки, который нужно перевести в действие."}, {"id": "owner", "title": "Один владелец", "text": "Кто должен отвечать за изменение процесса?", "correct": "sales_product", "options": [["support", "Поддержка", "Поддержка важна после проблемы, но покупочный риск снимают до сделки."], ["sales_product", "Продажи вместе с продуктовой экспертизой", "Продавец выясняет задачу и предлагает тест/модель под сценарий."], ["warehouse", "Склад", "Склад не управляет выбором модели и риском покупки."]], "explain": "Продажа дорогого продукта становится консультацией."}, {"id": "metric", "title": "Показатель", "text": "Как проверить, что риск снижен?", "correct": "test_to_buy", "options": [["test_to_buy", "Конверсия из тест-драйва в покупку сразу или через 2–3 месяца", "Показывает, что сомнение перешло в действие."], ["views", "Просмотры карточки товара", "Просмотры не доказывают снижение риска."], ["calls", "Количество консультационных звонков", "Звонки — активность, а не покупочное поведение."]], "explain": "Честный показатель — покупка после проверки продукта в бою."}, {"id": "pilot", "title": "Ограниченное изменение на 30 дней", "text": "Какой пилот запустить?", "correct": "test_drive", "options": [["test_drive", "Тест-драйв с депозитом и консультацией по задаче", "Снижает риск клиента и защищает экономику компании."], ["big_discount", "Большая скидка на первую покупку", "Скидка не гарантирует, что звук подойдет."], ["more_reviews", "Собрать больше отзывов", "Отзывы помогают, но не заменяют тест в рабочей среде."]], "explain": "Пилот должен переводить сомнение в реальное использование."}]}};
+let current = null;
+let answers = {};
+
+const scenariosEl = document.getElementById('scenarios');
+const workspace = document.getElementById('workspace');
+const dashboard = document.getElementById('dashboard');
+const questions = document.getElementById('questions');
+const preview = document.getElementById('planPreview');
+const feedback = document.getElementById('feedback');
+const checkBtn = document.getElementById('check');
+
+function renderScenarios() {
+  scenariosEl.innerHTML = Object.entries(data).map(([id,s]) => {
+    const cls = ['scenario'];
+    if (current === id) cls.push('selected');
+    return `<div class="${cls.join(' ')}" data-id="${id}">
+      <span class="tag">${s.tag}</span>
+      <h3>${s.title}</h3>
+      <p>${s.text}</p>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.scenario').forEach(card => {
+    card.onclick = () => {
+      current = card.dataset.id;
+      answers = {};
+      feedback.className = 'feedback';
+      document.getElementById('result').classList.remove('show');
+      renderScenarios();
+      renderWorkspace();
+    };
+  });
+}
+
+function renderWorkspace(checked=false) {
+  if (!current) return;
+  const s = data[current];
+  workspace.classList.add('show');
+  document.getElementById('workTitle').textContent = '2. Соберите план: ' + s.title;
+  document.getElementById('workText').textContent = s.text;
+  dashboard.innerHTML = s.metrics.map(m => `<div class="metric"><b>${m[0]}</b><span>${m[1]}</span></div>`).join('');
+  questions.innerHTML = s.questions.map((q, idx) => {
+    const opts = q.options.map(o => {
+      const cls = ['option'];
+      if (answers[q.id] === o[0]) cls.push('selected');
+      if (checked && o[0] === q.correct) cls.push('correct');
+      if (checked && answers[q.id] === o[0] && o[0] !== q.correct) cls.push('wrong');
+      return `<div class="${cls.join(' ')}" data-q="${q.id}" data-a="${o[0]}"><b>${o[1]}</b><p>${o[2]}</p></div>`;
+    }).join('');
+    return `<div class="step-card">
+      <span class="tag">решение ${idx+1} из ${s.questions.length}</span>
+      <h3>${q.title}</h3>
+      <p>${q.text}</p>
+      <div class="options">${opts}</div>
+      <div id="explain-${q.id}" class="explain">${q.explain}</div>
+    </div>`;
+  }).join('');
+
+  if (!checked) {
+    document.querySelectorAll('.option').forEach(o => {
+      o.onclick = () => {
+        answers[o.dataset.q] = o.dataset.a;
+        feedback.className = 'feedback';
+        document.getElementById('result').classList.remove('show');
+        renderWorkspace();
+      };
+    });
+  }
+  checkBtn.disabled = Object.keys(answers).length < s.questions.length;
+  renderPreview();
+}
+
+function labelFor(qid, value) {
+  if (!current || !value) return 'не выбрано';
+  const q = data[current].questions.find(x => x.id === qid);
+  const o = q.options.find(x => x[0] === value);
+  return o ? o[1] : 'не выбрано';
+}
+
+function renderPreview() {
+  preview.innerHTML = `<h3>Черновик 90-дневного плана</h3>
+    <div class="plan-list">
+      <div class="plan-part"><b>Первые 30 дней</b><p>Сценарий: ${current ? data[current].title : 'не выбран'}. Точка истины: ${labelFor('truth', answers.truth)}.</p></div>
+      <div class="plan-part"><b>Вторые 30 дней</b><p>Главный пробел: ${labelFor('gap', answers.gap)}. Владелец: ${labelFor('owner', answers.owner)}.</p></div>
+      <div class="plan-part"><b>Третьи 30 дней</b><p>Показатель: ${labelFor('metric', answers.metric)}. Пилот: ${labelFor('pilot', answers.pilot)}.</p></div>
+    </div>`;
+}
+
+function show(type,title,text) {
+  feedback.className = 'feedback show ' + type;
+  feedback.innerHTML = `<h3>${title}</h3><p>${text}</p>`;
+}
+
+document.getElementById('check').onclick = () => {
+  const s = data[current];
+  let ok = 0;
+  s.questions.forEach(q => {
+    if (answers[q.id] === q.correct) ok++;
+  });
+  renderWorkspace(true);
+  s.questions.forEach(q => document.getElementById('explain-' + q.id).classList.add('show'));
+  if (ok === s.questions.length) {
+    show('good','План собран верно','Это рабочий 90-дневный цикл: сценарий узкий, пробел понятен, владелец один, показатель проверяет эффект, пилот меняет процесс.');
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+  } else {
+    show('warn',`Верно ${ok} из ${s.questions.length}`,'Проверьте красные варианты. Финальный план должен связывать сценарий, точку истины, пробел, владельца, показатель и ограниченное изменение.');
+  }
+};
+
+document.getElementById('reset').onclick = () => {
+  answers = {};
+  feedback.className = 'feedback';
+  document.getElementById('result').classList.remove('show');
+  renderWorkspace();
+};
+
+renderScenarios();
+</script>
+</body>
+</html>
