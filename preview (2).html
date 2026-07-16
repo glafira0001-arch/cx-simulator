@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Ловушка безотказности</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background:#f7f7f5;
+    padding:30px;
+    color:#222;
+}
+
+.container {
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.chat {
+    background:#eef3f8;
+    padding:20px;
+    border-radius:15px;
+    margin:20px 0;
+}
+
+.message {
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    margin:10px 0;
+}
+
+button {
+    width:100%;
+    text-align:left;
+    padding:16px;
+    margin:10px 0;
+    border:none;
+    border-radius:12px;
+    background:#f0f2f5;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover {
+    background:#dfe8f5;
+}
+
+.result {
+    display:none;
+    margin-top:25px;
+    padding:20px;
+    border-radius:15px;
+    background:#fff4e5;
+}
+
+.good {
+    background:#e8f5e9;
+}
+
+.bad {
+    background:#fdecea;
+}
+
+h2 {
+    margin-top:0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Ситуация: «Невинная просьба»</h2>
+
+<p>
+Вы руководитель проекта. Пятница, 16:40.
+В понедельник важная встреча с клиентом.
+Ваш сотрудник пишет:
+</p>
+
+
+<div class="chat">
+
+<div class="message">
+<b>Алексей:</b><br>
+«Привет! Можешь быстро посмотреть мою презентацию?
+Там буквально на 20 минут. Очень нужна твоя экспертиза 🙏»
+</div>
+
+</div>
+
+
+<p>
+Вы понимаете, что сегодня у вас уже запланировано:
+</p>
+
+<ul>
+<li>закончить собственный отчет;</li>
+<li>подготовиться к понедельничной встрече;</li>
+<li>уехать домой вовремя.</li>
+</ul>
+
+
+<h3>Что вы ответите?</h3>
+
+
+<button onclick="show('a')">
+А. «Да, конечно, присылай. Посмотрю вечером»
+</button>
+
+
+<button onclick="show('b')">
+Б. «Сейчас не успею посмотреть качественно. Давай обсудим, когда у меня будет окно»
+</button>
+
+
+<button onclick="show('c')">
+В. «Постараюсь посмотреть, если получится»
+</button>
+
+
+<button onclick="show('d')">
+Г. «Не могу сейчас, у меня свои задачи»
+</button>
+
+
+
+<div id="a" class="result bad">
+
+<b>Через неделю:</b><br><br>
+
+Вы посмотрели презентацию вечером. 
+Алексей был благодарен и попросил помочь еще с одним документом.
+
+Проблема: ваше «20 минут» превратилось в 1,5 часа.
+Собственная подготовка осталась на воскресенье.
+
+<b>Что произошло:</b><br>
+Вы не помогли из ресурса — вы купили временное облегчение от чувства вины.
+
+</div>
+
+
+
+<div id="b" class="result good">
+
+<b>Через неделю:</b><br><br>
+
+Алексей нашел время в вашем календаре, получил обратную связь и подготовился заранее.
+
+<b>Что произошло:</b><br>
+Вы не отказались от помощи. Вы отказались от хаотичного способа помогать.
+
+</div>
+
+
+
+<div id="c" class="result bad">
+
+<b>Через неделю:</b><br><br>
+
+Вы так и не нашли времени.
+Алексей ждал ответа и был уверен, что задача в работе.
+
+<b>Что произошло:</b><br>
+Попытка избежать дискомфорта создала неопределенность для обоих.
+
+</div>
+
+
+
+<div id="d" class="result">
+
+<b>Через неделю:</b><br><br>
+
+Алексей сначала расстроился, но быстро нашел другой вариант.
+
+<b>Что произошло:</b><br>
+Чужое небольшое разочарование оказалось менее серьезным, чем вы ожидали.
+
+</div>
+
+
+</div>
+
+
+<script>
+
+function show(id){
+
+let blocks=document.querySelectorAll('.result');
+
+blocks.forEach(function(item){
+item.style.display="none";
+});
+
+document.getElementById(id).style.display="block";
+
+}
+
+</script>
+
+
+</body>
+</html>
