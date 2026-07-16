@@ -1,0 +1,8 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Заезженная пластинка</title>
+<style>body{font-family:Arial;background:#f6f6f2;padding:30px}.box{max-width:850px;margin:auto;background:#fff;padding:30px;border-radius:20px}.item{padding:15px;background:#edf2f7;margin:10px;cursor:pointer}</style></head>
+<body><div class="box"><h2>Соберите диалог с манипулятором</h2><p>Нажимайте реплики в правильной последовательности.</p>
+<div id="out"></div><div id="list"></div>
+<script>
+let arr=["Я понимаю, что это важно. Но на этой неделе я не беру дополнительные задачи.","Ну ты же можешь просто задержаться сегодня?","Да, понимаю. Но на этой неделе я не беру дополнительные задачи.","Все остальные же помогают, почему ты отказываешься?","Да, понимаю. Но на этой неделе я не беру дополнительные задачи."];
+let n=0;arr.forEach(x=>{let d=document.createElement("div");d.className="item";d.textContent=x;d.onclick=()=>{if(d.textContent==arr[n]){document.getElementById("out").innerHTML+=`<p>${d.textContent}</p>`;d.style.display="none";n++}};list.appendChild(d)});
+</script></div></body></html>
