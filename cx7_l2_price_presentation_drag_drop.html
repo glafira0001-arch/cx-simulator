@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Презентация стоимости ремонта</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+.container{max-width:900px;margin:auto;padding:30px}
+.box{background:white;border-radius:22px;padding:30px;box-shadow:0 8px 25px #0002}
+.list{min-height:420px;border:2px dashed #c9d6e8;border-radius:16px;padding:15px}
+.card{background:#eef4ff;border:2px solid #dbe5f3;border-radius:12px;padding:16px;margin:10px 0;cursor:grab}
+.card.dragging{opacity:.5}
+button{background:#2878e8;color:white;border:0;padding:14px 22px;border-radius:12px;cursor:pointer;margin:10px 5px 0 0}
+.result{display:none;margin-top:20px;padding:20px;border-radius:15px;background:#eef8f0}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="box">
+<h1>Соберите идеальный разговор о цене</h1>
+
+<p>После диагностики клиент ждет стоимость ремонта. Расставьте шаги мастера в правильном порядке.</p>
+
+<p><b>Перетащите карточки мышкой:</b> от первого действия до финального предложения ремонта.</p>
+
+<div id="list" class="list">
+
+<div class="card" draggable="true" data-order="3">
+Озвучить стоимость по формуле: «Деталь + Работа + Выгода». Например: новый насос — 1800 рублей, работа — 2000 рублей, техника снова работает.
+</div>
+
+<div class="card" draggable="true" data-order="1">
+Завершить диагностику, убрать инструмент и перейти к разговору о результате осмотра.
+</div>
+
+<div class="card" draggable="true" data-order="5">
+Сразу оправдываться: «Я понимаю, что дорого, но у меня тоже расходы».
+</div>
+
+<div class="card" draggable="true" data-order="4">
+Предложить следующий шаг: «Запчасть есть, ремонт займет около 40 минут. Делаем?»
+</div>
+
+<div class="card" draggable="true" data-order="2">
+Показать клиенту проблему: неисправную деталь, следы износа или причину поломки.
+</div>
+
+</div>
+
+<button onclick="check()">Проверить порядок</button>
+<button onclick="resetTask()">Перемешать заново</button>
+
+<div id="result" class="result"></div>
+
+</div>
+</div>
+
+<script>
+const list=document.getElementById('list');
+let dragged=null;
+
+document.querySelectorAll('.card').forEach(card=>{
+card.addEventListener('dragstart',()=>{dragged=card;card.classList.add('dragging')});
+card.addEventListener('dragend',()=>{dragged=null;card.classList.remove('dragging')});
+});
+
+list.addEventListener('dragover',e=>{
+e.preventDefault();
+const after=getAfterElement(list,e.clientY);
+if(after==null) list.appendChild(dragged);
+else list.insertBefore(dragged,after);
+});
+
+function getAfterElement(container,y){
+const els=[...container.querySelectorAll('.card:not(.dragging)')];
+return els.reduce((closest,child)=>{
+const box=child.getBoundingClientRect();
+const offset=y-box.top-box.height/2;
+if(offset<0 && offset>closest.offset){
+return {offset:offset,element:child};
+}else return closest;
+},{offset:-Infinity}).element;
+}
+
+function check(){
+let result=document.getElementById('result');
+let orders=[...document.querySelectorAll('.card')].map(x=>x.dataset.order).join(',');
+result.style.display='block';
+
+if(orders==="1,2,3,4,5"){
+result.innerHTML="<b>Отлично!</b><br>Правильная логика: сначала доказать проблему, затем объяснить цену и предложить действие. Клиент понимает ценность ремонта.";
+}else{
+result.innerHTML="<b>Есть ошибка.</b><br>Помните: клиент должен сначала увидеть проблему и понять ценность, а не услышать цену без объяснения.";
+}
+}
+
+function resetTask(){
+[...document.querySelectorAll('.card')].sort(()=>Math.random()-0.5).forEach(x=>list.appendChild(x));
+document.getElementById('result').style.display='none';
+}
+</script>
+</body>
+</html>
