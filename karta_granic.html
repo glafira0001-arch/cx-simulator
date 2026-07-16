@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Карта личных границ</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f7f7f5;padding:30px;color:#222}
+.box{max-width:900px;margin:auto;background:white;padding:35px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.card{background:#f4f6f8;padding:20px;border-radius:15px;margin:15px 0}
+button{width:100%;padding:15px;margin:8px 0;border:none;border-radius:12px;background:#e9eef5;font-size:16px;cursor:pointer;text-align:left}
+button:hover{background:#d8e4f3}
+.result{display:none;margin-top:20px;padding:20px;border-radius:15px;background:#fff3cd}
+.good{background:#e8f5e9}
+.bad{background:#fdecea}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>Чью просьбу вы готовы разочаровать?</h2>
+
+<p>Вы руководитель отдела из 8 человек. Пятница, 17:30. В понедельник у команды важная презентация перед советом директоров.</p>
+
+<p>У вас есть только <b>3 часа свободного времени сегодня вечером</b>.</p>
+
+<div class="card">
+<b>Ситуация 1. Сотрудник</b>
+<p>«Мне нужна ваша помощь. Я подготовил часть презентации, но не уверен в расчетах. Если вы посмотрите сегодня, я буду увереннее».</p>
+</div>
+
+<div class="card">
+<b>Ситуация 2. Руководитель</b>
+<p>«Можете задержаться и доработать стратегию? В понедельник будет важное обсуждение».</p>
+</div>
+
+<div class="card">
+<b>Ситуация 3. Семья</b>
+<p>«Мы давно планировали этот вечер вместе. Ты снова задержишься?»</p>
+</div>
+
+<h3>Кому вы отдадите свои 3 часа?</h3>
+
+<button onclick="show('team')">👥 Команде: помочь сотруднику</button>
+<button onclick="show('boss')">📈 Руководителю: доработать стратегию</button>
+<button onclick="show('family')">🏠 Семье: сохранить обещание</button>
+
+<div id="team" class="result bad">
+<b>Ваш выбор: команда</b><br><br>
+Вы помогли сотруднику, но есть риск стать человеком, который постоянно спасает чужие задачи.<br><br>
+Вопрос для размышления: где заканчивается развитие сотрудника и начинается выполнение его работы за него?
+</div>
+
+<div id="boss" class="result bad">
+<b>Ваш выбор: работа</b><br><br>
+Презентация стала лучше, но вы снова отдали ресурс внешнему приоритету.<br><br>
+Вопрос для размышления: какую ценность вы защищаете, когда всегда выбираете срочность?
+</div>
+
+<div id="family" class="result good">
+<b>Ваш выбор: семья</b><br><br>
+Вы сохранили свой приоритет, но приняли, что кто-то может быть недоволен.<br><br>
+Вопрос для размышления: чье недовольство вы готовы выдержать ради важных для вас вещей?
+</div>
+
+<h3>Финальный вопрос</h3>
+<p><b>Когда я говорю «нет», я не отказываюсь от человека. Я защищаю __________.</b></p>
+
+</div>
+
+<script>
+function show(id){
+document.querySelectorAll('.result').forEach(x=>x.style.display='none');
+document.getElementById(id).style.display='block';
+}
+</script>
+</body>
+</html>
