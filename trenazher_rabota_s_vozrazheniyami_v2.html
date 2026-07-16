@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: Работа с возражениями</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f5f7;padding:20px;color:#222}
+.container{max-width:900px;margin:auto;background:#fff;border-radius:20px;padding:25px;box-shadow:0 10px 30px #0001}
+h1{font-size:28px}
+.chat{background:#eef1f4;border-radius:15px;padding:20px;min-height:450px}
+.msg{max-width:78%;padding:12px 16px;border-radius:15px;margin:10px 0;line-height:1.45;animation:show .3s}
+.client{background:white;margin-right:auto}
+.master{background:#dff4dc;margin-left:auto}
+.system{background:#fff1b8;margin:auto;width:85%;font-size:14px}
+.buttons button,.restart{display:block;width:100%;padding:14px;margin:10px 0;border:0;border-radius:12px;background:#2d6cdf;color:white;font-size:16px;cursor:pointer}
+.buttons button:hover,.restart:hover{background:#214fa8}
+.result{background:#f5f5f5;border-radius:15px;padding:20px;margin-top:20px}
+@keyframes show{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Тренажёр «Сложный клиент: цена, дефекты и конфликт»</h1>
+<p>Вы проходите реальный диалог с клиентом. Ваши решения влияют на доверие и итог отношений.</p>
+<div class="chat" id="chat"></div>
+<div class="buttons" id="buttons"></div>
+<div id="result"></div>
+</div>
+
+<script>
+const scenarios={
+start:{
+client:"Клиент: «8 000 рублей за подшипники? Это слишком дорого. За такие деньги можно новую машину купить».",
+answers:[
+["Сказать, что хорошие мастера дешево не работают",-10,"Вы заняли оборонительную позицию. Клиент слышит спор, а не решение.","conflict"],
+["Сразу предложить скидку",-5,"Клиент получает сигнал, что цену можно было снизить сразу.","price"],
+["Уточнить сомнение и объяснить выгоду ремонта",15,"Вы перевели разговор из эмоций в расчёт. Клиент готов слушать дальше.","trust"]
+],
+next:"competitor"},
+competitor:{
+client:"Клиент: «Другой мастер обещал дешевле. Почему я должен выбрать вас?»",
+answers:[
+["Сказать, что другие мастера делают плохо",-10,"Вы втягиваете клиента в спор о конкурентах.","conflict"],
+["Объяснить разницу в деталях, гарантии и результате",15,"Клиент начинает сравнивать не только цену.","trust"],
+["Сразу предложить дешёвую деталь",-5,"Вы уступаете до того, как показали ценность.","price"]
+],
+next:"defect"},
+defect:{
+client:"Во время ремонта вы нашли скрытый дефект: повреждено крепление ТЭНа.",
+answers:[
+["Продолжить ремонт и сказать о доплате в конце",-15,"Клиент чувствует себя поставленным перед фактом.","conflict"],
+["Показать проблему и согласовать дополнительные работы",15,"Клиент видит честность и контроль ситуации.","trust"],
+["Сказать, что техника старая и это не ваша проблема",-10,"Ответственность мастера снижается в глазах клиента.","conflict"]
+],
+next:"complaint"},
+complaint:{
+client:"Через неделю клиент пишет: «После ремонта снова шумит. Верните деньги».",
+answers:[
+["Ответить, что это не ваша вина",-15,"Конфликт усиливается. Клиент чувствует отсутствие поддержки.","conflict"],
+["Отложить ответ до выяснения ситуации",-5,"Пауза без объяснения выглядит как игнорирование.","conflict"],
+["Предложить проверку и решение по гарантии",15,"Клиент видит ответственность мастера.","trust"]
+],
+next:null}
+};
+
+let current, trust, history;
+
+function startGame(){
+current="start"; trust=50; history=[];
+document.getElementById("result").innerHTML="";
+render();
+}
+
+function addMessage(text,type){
+document.getElementById("chat").innerHTML+=`<div class="msg ${type}">${text}</div>`;
+document.getElementById("chat").scrollTop=document.getElementById("chat").scrollHeight;
+}
+
+function render(){
+document.getElementById("chat").innerHTML="";
+document.getElementById("buttons").innerHTML="";
+let s=scenarios[current];
+
+history.forEach(x=>addMessage(x.text,x.type));
+addMessage(s.client,"client");
+
+s.answers.forEach(a=>{
+let b=document.createElement("button");
+b.textContent=a[0];
+b.onclick=()=>{
+document.getElementById("buttons").innerHTML="";
+addMessage("Вы: "+a[0],"master");
+addMessage(a[2],"system");
+trust+=a[1];
+history.push({text:"Вы: "+a[0],type:"master"},{text:a[2],type:"system"});
+
+setTimeout(()=>{
+if(s.next){current=s.next;render();}
+else finish();
+},2500);
+};
+document.getElementById("buttons").appendChild(b);
+});
+}
+
+function finish(){
+let title=trust>=90?"Эксперт по работе с клиентами":trust>=60?"Хороший мастер, но есть зоны роста":"Сильный техник, которому нужно развивать коммуникацию";
+
+document.getElementById("result").innerHTML=
+`<div class="result"><h2>${title}</h2>
+<p>Уровень доверия клиента: ${trust}</p>
+<p>Вы завершили весь сценарий. Проанализируйте, где вы потеряли или сохранили доверие.</p>
+<button class="restart" onclick="startGame()">Пройти ещё раз</button></div>`;
+}
+
+startGame();
+</script>
+</div>
+</body>
+</html>
