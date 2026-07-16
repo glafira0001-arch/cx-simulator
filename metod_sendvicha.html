@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Метод Сэндвича</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f6f5f1;padding:30px;color:#222}
+.box{max-width:950px;margin:auto;background:#fff;padding:35px;border-radius:22px;box-shadow:0 12px 35px rgba(0,0,0,.1)}
+.chat{background:#eef3f8;padding:20px;border-radius:16px;margin:20px 0}
+.msg{background:#fff;padding:15px;border-radius:12px;margin:10px 0}
+.part{padding:15px;border-radius:12px;margin:10px 0;background:#f5f6f7}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font-size:16px}
+button{width:100%;padding:15px;border:0;border-radius:12px;background:#e4edf6;margin-top:10px;font-size:16px;cursor:pointer}
+button:hover{background:#d5e4f2}
+.result{display:none;margin-top:20px;background:#eaf5eb;padding:20px;border-radius:15px}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h2>Практика: «Соберите отказ, который выдержит давление»</h2>
+
+<p>
+Ваша задача — не выбрать правильный вариант, а самостоятельно построить ответ.
+Представьте, что вы уже несколько раз помогали этому человеку, и теперь он воспринимает вашу помощь как норму.
+</p>
+
+<div class="chat">
+
+<div class="msg">
+<b>Коллега:</b><br>
+«Привет! Можешь сегодня вечером быстро посмотреть презентацию?
+Мне нужно отправить ее завтра утром. Ты всегда хорошо находишь ошибки».
+</div>
+
+</div>
+
+<p>
+Ваша цель: отказать так, чтобы человек понял три вещи:
+</p>
+
+<ul>
+<li>вы услышали его задачу;</li>
+<li>ваше решение окончательное;</li>
+<li>вы не отвергаете человека.</li>
+</ul>
+
+
+<h3>Шаг 1. Признание</h3>
+
+<p>
+Напишите первую часть ответа. Покажите, что вы понимаете ситуацию другого человека.
+</p>
+
+<input id="one" placeholder="Например: Я понимаю, что для тебя важно...">
+
+
+<h3>Шаг 2. Твердое «нет»</h3>
+
+<p>
+Теперь уберите оправдания. Напишите отказ, который опирается на ваши приоритеты.
+</p>
+
+<input id="two" placeholder="Например: Сейчас я не могу взять эту задачу, потому что...">
+
+
+<h3>Шаг 3. Доброе пожелание</h3>
+
+<p>
+Завершите сообщение без обещания помочь и без чувства вины.
+</p>
+
+<input id="three" placeholder="Например: Желаю, чтобы...">
+
+
+<button onclick="check()">Собрать свой сэндвич</button>
+
+
+<div id="result" class="result"></div>
+
+
+<h3>Второй уровень сложности</h3>
+
+<p>
+Теперь представьте, что после вашего отказа человек отвечает:
+</p>
+
+<div class="msg">
+<b>Коллега:</b><br>
+«Жаль. Просто я думал, что на тебя всегда можно рассчитывать».
+</div>
+
+<p>
+Напишите второй ответ. Условие: нельзя оправдываться, спорить и доказывать, что вы хороший человек.
+</p>
+
+<input placeholder="Ваш ответ после давления...">
+
+</div>
+
+
+<script>
+function check(){
+
+let a=document.getElementById('one').value;
+let b=document.getElementById('two').value;
+let c=document.getElementById('three').value;
+
+let result=document.getElementById('result');
+
+if(a && b && c){
+
+result.style.display='block';
+
+result.innerHTML=
+"<b>Проверьте свой отказ:</b><br><br>"+
+"✓ Есть ли признание ситуации другого человека?<br>"+
+"✓ Есть ли четкое решение без 'может быть' и 'постараюсь'?<br>"+
+"✓ Не пытаетесь ли вы компенсировать отказ лишними объяснениями?<br><br>"+
+"Хороший сэндвич не делает отказ слабее. Он показывает уважение без отказа от собственных границ.";
+
+}
+
+}
+</script>
+
+</body>
+</html>
