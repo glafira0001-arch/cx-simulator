@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Первый звонок мастера</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+.container{max-width:1000px;margin:auto;padding:30px}
+.box{background:#fff;padding:30px;border-radius:22px;box-shadow:0 8px 25px #0002}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+.zone{min-height:250px;border:2px dashed #b8c6dc;border-radius:16px;padding:15px;background:#fafcff}
+.card{background:#eef4ff;padding:15px;border-radius:12px;margin:10px 0;cursor:grab;border:2px solid transparent}
+.card:hover{border-color:#2f80ed}
+button{background:#2f80ed;color:white;border:0;padding:12px 22px;border-radius:10px;margin-top:20px;cursor:pointer}
+.result{margin-top:20px;padding:20px;border-radius:14px;display:none}
+.good{background:#eaf8ef}
+.bad{background:#fff0f0}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="box">
+<h1>Соберите сценарий профессионального звонка</h1>
+
+<p>Клиент звонит мастеру. Перетащите карточки в правильную колонку.</p>
+
+<div class="columns">
+<div class="zone" id="do" ondrop="drop(event)" ondragover="allow(event)">
+<h3>✅ Что делает профессиональный мастер</h3>
+</div>
+
+<div class="zone" id="mistake" ondrop="drop(event)" ondragover="allow(event)">
+<h3>❌ Ошибка новичка</h3>
+</div>
+</div>
+
+<h3>Карточки:</h3>
+<div id="cards">
+<div class="card" draggable="true" ondragstart="drag(event)" id="c1" data-answer="do">
+Представиться: «Здравствуйте, частный мастер Алексей, слушаю вас».
+</div>
+
+<div class="card" draggable="true" ondragstart="drag(event)" id="c2" data-answer="do">
+Спросить марку техники, модель и симптомы поломки.
+</div>
+
+<div class="card" draggable="true" ondragstart="drag(event)" id="c3" data-answer="mistake">
+Сразу назвать точную цену ремонта без осмотра.
+</div>
+
+<div class="card" draggable="true" ondragstart="drag(event)" id="c4" data-answer="do">
+Объяснить условия диагностики и назвать конкретное время приезда.
+</div>
+
+<div class="card" draggable="true" ondragstart="drag(event)" id="c5" data-answer="mistake">
+Сказать клиенту: «Буду где-нибудь после обеда».
+</div>
+
+<div class="card" draggable="true" ondragstart="drag(event)" id="c6" data-answer="mistake">
+Обещать гарантию на 10 лет до диагностики.
+</div>
+</div>
+
+<button onclick="check()">Проверить</button>
+<button onclick="resetTask()">Пройти заново</button>
+
+<div id="result" class="result"></div>
+
+</div>
+</div>
+
+<script>
+let start=document.getElementById('cards');
+
+function allow(e){e.preventDefault();}
+
+function drag(e){e.dataTransfer.setData("text",e.target.id);}
+
+function drop(e){
+e.preventDefault();
+let id=e.dataTransfer.getData("text");
+let card=document.getElementById(id);
+e.currentTarget.appendChild(card);
+}
+
+function check(){
+let ok=true;
+document.querySelectorAll('.card').forEach(c=>{
+let parent=c.parentElement.id;
+if(parent!==c.dataset.answer) ok=false;
+});
+let r=document.getElementById('result');
+r.style.display='block';
+if(ok){
+r.className='result good';
+r.innerHTML='<b>Отлично!</b><br>Выстроена правильная логика первого звонка: сначала доверие и диагностика, затем условия выезда.';
+}else{
+r.className='result bad';
+r.innerHTML='<b>Есть ошибки.</b><br>Проверьте карточки еще раз. Главная цель звонка — не назвать цену любой ценой, а понять проблему и договориться о диагностике.';
+}
+}
+
+function resetTask(){
+let cards=document.getElementById('cards');
+document.querySelectorAll('.card').forEach(c=>cards.appendChild(c));
+document.getElementById('result').style.display='none';
+}
+</script>
+</body>
+</html>
