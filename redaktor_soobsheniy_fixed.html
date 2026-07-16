@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Редактор переписки</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f6f5f1;padding:30px;color:#222}
+.box{max-width:900px;margin:auto;background:#fff;padding:35px;border-radius:20px;box-shadow:0 10px 30px #0002}
+.card{background:#f1f4f7;padding:20px;border-radius:15px;margin:20px 0}
+.option{display:block;width:100%;padding:15px;margin:10px 0;border:0;border-radius:12px;background:#e9eff6;text-align:left;cursor:pointer;font-size:16px}
+.option:hover{background:#dce8f5}
+.correct{background:#dff3df}
+.wrong{background:#fde4e2}
+.feedback{display:none;margin-top:15px;padding:15px;border-radius:12px}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h2>Практика: «Уберите лишнюю вину из сообщения»</h2>
+
+<p>
+Извинение не всегда означает вежливость. Иногда оно незаметно ставит вас в позицию виноватого.
+Выберите формулировку, которая сохраняет уважение, но не делает вас обязанным оправдываться.
+</p>
+
+<div class="card">
+<h3>Ситуация 1</h3>
+<p><b>Вы задержали ответ на сообщение коллеги.</b></p>
+
+<p>❌ Исходный вариант:</p>
+<p>«Извини, что так долго отвечал, у меня тут столько всего навалилось, я совсем не успеваю...»</p>
+
+<button class="option" onclick="check(this,false)">
+«Извините еще раз, постараюсь быстрее отвечать в следующий раз»
+</button>
+
+<button class="option" onclick="check(this,true)">
+«Спасибо за ожидание. Возвращаюсь с ответом: сейчас не смогу взять эту задачу»
+</button>
+
+<div class="feedback"></div>
+</div>
+
+
+<div class="card">
+<h3>Ситуация 2</h3>
+<p><b>Вас пригласили на встречу, но вы не можете участвовать.</b></p>
+
+<p>❌ Исходный вариант:</p>
+<p>«Прости, я не смогу прийти, просто у меня сложились обстоятельства...»</p>
+
+<button class="option" onclick="check(this,true)">
+«К сожалению, я не смогу присутствовать на встрече»
+</button>
+
+<button class="option" onclick="check(this,false)">
+«Очень неудобно, но если получится, я попробую освободиться»
+</button>
+
+<div class="feedback"></div>
+</div>
+
+
+<div class="card">
+<h3>Ситуация 3</h3>
+<p><b>Вы не успели выполнить задачу к сроку.</b></p>
+
+<p>Какое сообщение звучит из позиции равного партнера?</p>
+
+<button class="option" onclick="check(this,true)">
+«Спасибо за понимание. Отправлю результат сегодня до 16:00»
+</button>
+
+<button class="option" onclick="check(this,false)">
+«Я правда хотел сделать раньше, просто день был очень тяжелый»
+</button>
+
+<div class="feedback"></div>
+</div>
+
+
+</div>
+
+<script>
+function check(btn,correct){
+let box=btn.parentElement.querySelector(".feedback");
+box.style.display="block";
+
+if(correct){
+box.className="feedback correct";
+box.innerHTML="<b>Верно.</b><br>Фраза признает ситуацию, но не создает позицию виноватого. Вы переходите от оправдания к факту и решению.";
+}else{
+box.className="feedback wrong";
+box.innerHTML="<b>Не лучший вариант.</b><br>Здесь вы снова объясняете, почему имеете право на свое решение, вместо спокойной фиксации факта.";
+}
+}
+</script>
+
+</body>
+</html>
