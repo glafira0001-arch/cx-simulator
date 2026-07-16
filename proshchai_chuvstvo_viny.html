@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Прощай, чувство вины</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f6f5f1;padding:30px;color:#222}
+.container{max-width:950px;margin:auto;background:#fff;padding:35px;border-radius:22px;box-shadow:0 12px 35px rgba(0,0,0,.1)}
+.card{background:#f2f5f7;padding:22px;border-radius:16px;margin:20px 0}
+.chat{background:#eef3f8;padding:15px;border-radius:14px}
+.msg{background:white;padding:14px;border-radius:12px;margin:10px 0}
+button{width:100%;padding:15px;margin:8px 0;border:0;border-radius:12px;background:#e8eef5;font-size:16px;text-align:left;cursor:pointer}
+button:hover{background:#d9e5f3}
+.result{display:none;margin-top:20px;padding:20px;border-radius:15px;background:#fff3cd}
+textarea{width:100%;height:100px;border-radius:12px;border:1px solid #ccc;padding:12px;font-size:16px}
+.green{background:#e7f5e8}
+.red{background:#fde8e7}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Практика: «Разговор с чувством вины»</h2>
+
+<p>
+Вы отказали человеку. Отказ был спокойным и честным, но через 30 минут появляется знакомое ощущение:
+«Может быть, я поступил неправильно? Нужно было объяснить подробнее?»
+</p>
+
+<div class="chat">
+
+<div class="msg">
+<b>Коллега:</b><br>
+«Можешь взять еще одну задачу? Там ненадолго, но очень нужно помочь».
+</div>
+
+<div class="msg">
+<b>Вы:</b><br>
+«Не смогу взять эту задачу сейчас. У меня уже есть запланированные приоритеты».
+</div>
+
+<div class="msg">
+<b>Через 30 минут:</b><br>
+«Он, наверное, думает, что я эгоистичный человек... Может, стоило написать еще одно сообщение?»
+</div>
+
+</div>
+
+
+<h3>Этап 1. Найдите настоящую причину дискомфорта</h3>
+
+<p>
+Что именно вызывает неприятное чувство?
+</p>
+
+<button onclick="show('a')">
+А. Я действительно нарушил свое обещание или поступил нечестно
+</button>
+
+<button onclick="show('b')">
+Б. Человек может быть недоволен моим решением, и мне тяжело это выдерживать
+</button>
+
+<button onclick="show('c')">
+В. Я привык считать хорошим человеком того, кто всегда помогает
+</button>
+
+
+<div id="a" class="result">
+<b>Проверьте факт:</b><br><br>
+Если вы нарушили обещание — это действительно зона ответственности.
+Но если вы просто отказались от новой просьбы, проблема может быть не в поступке, а в привычке считать любой отказ ошибкой.
+</div>
+
+<div id="b" class="result">
+<b>Главная ловушка:</b><br><br>
+Вы можете быть ответственным за свою честность и уважение.
+Но вы не можете управлять чужим разочарованием.
+Чужая эмоция не всегда означает вашу вину.
+</div>
+
+<div id="c" class="result">
+<b>Старая установка:</b><br><br>
+Иногда чувство вины появляется не потому, что вы сделали что-то плохое, а потому что вы сделали что-то новое.
+Граница воспринимается мозгом как нарушение старого правила.
+</div>
+
+
+<div class="card">
+
+<h3>Этап 2. Проведите «проверку катастрофы»</h3>
+
+<p>
+Закончите цепочку максимально честно:
+</p>
+
+<p>
+<b>Я отказал человеку → теперь он может...</b>
+</p>
+
+<textarea placeholder="Введите свой самый страшный сценарий"></textarea>
+
+<br><br>
+
+<button onclick="show('catastrophe')">
+Проверить сценарий
+</button>
+
+
+<div id="catastrophe" class="result green">
+
+<b>Теперь задайте три вопроса:</b>
+
+<ul>
+<li>Это точно произойдет или это только предположение?</li>
+<li>Если человек действительно расстроится — смогу ли я это пережить?</li>
+<li>Действительно ли хороший человек обязан предотвращать любое чужое недовольство?</li>
+</ul>
+
+<p>
+Часто проблема не в последствиях отказа, а в переоценке того, насколько они опасны.
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<h3>Этап 3. Самое сложное: не отправлять второе сообщение</h3>
+
+<p>
+Вы уже отказали. Через час появляется желание написать:
+</p>
+
+<div class="msg">
+«Извини еще раз, просто я правда хотел помочь, но сейчас такая ситуация...»
+</div>
+
+<p>
+Ваша задача — написать новое сообщение, которое вы <b>хотите отправить из чувства вины</b>, а затем переделать его.
+</p>
+
+<textarea placeholder="Сообщение из чувства вины"></textarea>
+
+<br><br>
+
+<textarea placeholder="Новая версия: коротко, уважительно, без оправданий"></textarea>
+
+</div>
+
+
+<div class="card">
+
+<h3>Финальный вывод</h3>
+
+<p>
+Закончите фразу:
+</p>
+
+<p>
+<b>
+«Я могу быть хорошим человеком, даже если я не __________».
+</b>
+</p>
+
+</div>
+
+
+</div>
+
+
+<script>
+function show(id){
+document.querySelectorAll('.result').forEach(x=>x.style.display='none');
+document.getElementById(id).style.display='block';
+}
+</script>
+
+</body>
+</html>
