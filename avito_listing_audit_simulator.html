@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Аудит объявления мастера</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f4f6;padding:25px;color:#222}
+.container{max-width:950px;margin:auto;background:#fff;padding:30px;border-radius:24px;box-shadow:0 10px 30px #0002}
+.card{background:#f8fafc;border-radius:18px;padding:22px;margin-bottom:20px}
+.option{border:1px solid #ddd;border-radius:14px;padding:15px;margin:10px 0;cursor:pointer;background:#fff}
+.option.selected{border:3px solid #2563eb;background:#eff6ff}
+button{width:100%;padding:15px;border:0;border-radius:12px;background:#2563eb;color:white;font-size:16px;margin-top:12px;cursor:pointer}
+.feedback{padding:18px;border-radius:14px;margin-top:15px}
+.good{background:#dcfce7}.bad{background:#fee2e2}.mid{background:#fef3c7}
+.result{background:#eef2ff;padding:22px;border-radius:18px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Симулятор «Аудит объявления мастера на Авито»</h1>
+<p>Вы готовите объявление о ремонте бытовой техники. Ваша задача — сделать так, чтобы клиент доверился вам еще до первого звонка.</p>
+<div id="app"></div>
+</div>
+
+<script>
+let step=0;
+let score=50;
+let selected=[];
+
+const stages=[
+{
+title:"Этап 1. Соберите галерею объявления",
+text:"Выберите 5 элементов, которые должны попасть в фотографии объявления.",
+multi:true,
+items:[
+["Портрет мастера рядом с техникой",20],
+["Разобранная техника во время ремонта",20],
+["Старая деталь рядом с новой",20],
+["Логотип компании крупным планом",-10],
+["Красивая фотография новой кухни",-10],
+["Сертификат об обучении",5],
+["Набор инструментов без процесса работы",5],
+["Фото результата до/после",20]
+],
+explain:"Сильная галерея показывает человека, процесс, проблему и результат. Клиент покупает доверие, а не просто ремонт."
+},
+{
+title:"Этап 2. Первый экран объявления",
+text:"У вас есть возможность поставить главным акцентом только один элемент. Что важнее всего?",
+items:[
+["Лицо мастера и реальная фотография работы",20],
+["Самый низкий возможный ценник",-10],
+["Красивый рекламный слоган",-5],
+["Большой список всех услуг",-5]
+],
+explain:"Первый страх клиента — кого он пустит домой. Поэтому сначала нужно показать настоящего человека."
+},
+{
+title:"Этап 3. Клиент сравнивает вас с конкурентом",
+text:"Конкурент дешевле на 1000 рублей. Его объявление: красивые картинки, но нет фото процесса. У вас есть реальные ремонты. Что делать?",
+items:[
+["Объяснить ценность: показать реальные работы, детали и гарантию",20],
+["Снизить цену еще сильнее",-10],
+["Добавить больше рекламных слов: лучший мастер города",-5],
+["Убрать фотографии сложного ремонта, чтобы профиль выглядел красивее",-10]
+],
+explain:"Реальные доказательства позволяют конкурировать не только ценой."
+},
+{
+title:"Этап 4. Финальный аудит",
+text:"Что должно остаться в вашей стратегии после урока?",
+items:[
+["Каждое фото должно отвечать на вопрос клиента: почему мне можно доверять",20],
+["Главное — сделать максимально красивые фотографии",-5],
+["Лучше показать только чистую технику, без следов ремонта",-10],
+["Фото нужны только для красоты объявления",-10]
+],
+explain:"Фотографии в объявлении — это инструмент продаж и снижения страха клиента."
+}
+];
+
+function render(){
+selected=[];
+let s=stages[step];
+let html=`<div class="card"><h2>${s.title}</h2><p>${s.text}</p><div id="options">`;
+s.items.forEach((x,i)=>{
+html+=`<div class="option" onclick="selectOption(${i})" id="o${i}">${x[0]}</div>`;
+});
+html+=`</div><button onclick="check()">Проверить</button></div>`;
+document.getElementById("app").innerHTML=html;
+}
+
+function selectOption(i){
+let el=document.getElementById("o"+i);
+if(stages[step].multi){
+if(selected.includes(i)){selected=selected.filter(x=>x!==i);el.classList.remove("selected")}
+else if(selected.length<5){selected.push(i);el.classList.add("selected")}
+}else{
+selected=[i];
+document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));
+el.classList.add("selected");
+}
+}
+
+function check(){
+let points=0;
+selected.forEach(i=>points+=stages[step].items[i][1]);
+score+=points;
+
+document.getElementById("app").innerHTML+=`
+<div class="feedback ${points>0?'good':'bad'}">
+${points>0?"Хорошее решение. ":"Решение может снизить доверие клиента. "}
+<br><br>${stages[step].explain}
+</div>
+<button onclick="next()">Продолжить</button>`;
+}
+
+function next(){
+step++;
+if(step<stages.length)render();
+else finish();
+}
+
+function finish(){
+document.getElementById("app").innerHTML=`
+<div class="result">
+<h2>Ваш результат</h2>
+<p>Индекс доверия объявления: ${score}</p>
+<p>${score>=120?"Вы строите объявление как профессиональный бренд: показываете доказательства, а не обещания.":"Ваше объявление можно усилить: больше внимания нужно уделять доверию и доказательствам работы."}</p>
+<button onclick="location.reload()">Пройти еще раз</button>
+</div>`;
+}
+render();
+</script>
+</body>
+</html>
