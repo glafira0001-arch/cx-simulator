@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Сарафанное радио: найди правильный контакт</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f7fb;color:#182033;margin:0}
+.container{max-width:900px;margin:auto;padding:30px}
+.box{background:#fff;border-radius:22px;padding:30px;box-shadow:0 8px 25px rgba(0,0,0,.08)}
+.card{border:2px solid #dbe3ef;border-radius:16px;padding:18px;margin:12px 0;cursor:pointer}
+.card:hover{background:#f4f8ff}
+.selected{border-color:#2878e8;background:#eaf3ff}
+button{background:#2878e8;color:#fff;border:0;padding:14px 22px;border-radius:12px;cursor:pointer;margin:8px}
+.result{display:none;margin-top:20px;padding:20px;border-radius:14px;background:#eef8f0}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="box">
+
+<h1>Кому написать первым?</h1>
+
+<p><b>Ситуация:</b> Вы только закончили обучение по ремонту бытовой техники. У вас еще нет отзывов и постоянных клиентов. Нужно получить первые заказы через знакомых и соседей.</p>
+
+<p>Перед вами четыре стратегии. Выберите ту, которая поможет запустить сарафанное радио без навязывания и потери репутации.</p>
+
+<div class="card" onclick="select(1,this)">
+<b>Вариант А</b><br>
+Отправить всем знакомым одинаковое сообщение: «Ремонт стиральных машин дешево. Обращайтесь».
+</div>
+
+<div class="card" onclick="select(2,this)">
+<b>Вариант Б</b><br>
+Написать нескольким людям из своего круга короткое личное сообщение: рассказать о новой квалификации и попросить переслать контакт тем, кому может быть нужен мастер.
+</div>
+
+<div class="card" onclick="select(3,this)">
+<b>Вариант В</b><br>
+Каждый день публиковать рекламу в районных чатах и отмечать всех участников группы.
+</div>
+
+<div class="card" onclick="select(4,this)">
+<b>Вариант Г</b><br>
+Сразу предложить бесплатный ремонт всем соседям, чтобы набрать как можно больше клиентов.
+</div>
+
+<button onclick="check()">Проверить</button>
+<button onclick="resetTask()">Пройти заново</button>
+
+<div id="result" class="result"></div>
+
+</div>
+</div>
+
+<script>
+let answer=null;
+
+function select(n,e){
+answer=n;
+document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected'));
+e.classList.add('selected');
+}
+
+function check(){
+let r=document.getElementById('result');
+r.style.display='block';
+
+if(answer===2){
+r.innerHTML="<b>Правильно!</b><br><br>Сарафанное радио работает через доверие, а не через массовую рекламу. Личные сообщения знакомым дают человеку понятный повод помочь вам, но не создают ощущения навязчивости.";
+}else{
+r.innerHTML="<b>Попробуйте еще раз.</b><br><br>На старте важно не количество отправленных сообщений, а качество первого контакта. Агрессивная реклама и бесплатная работа обесценивают мастера.";
+}
+}
+
+function resetTask(){
+answer=null;
+document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected'));
+document.getElementById('result').style.display='none';
+}
+</script>
+
+</body>
+</html>
