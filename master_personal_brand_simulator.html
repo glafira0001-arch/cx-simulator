@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Симулятор личного бренда мастера</title>
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f2f4f7;
+padding:24px;
+color:#202124;
+}
+.container{
+max-width:950px;
+margin:auto;
+background:#fff;
+border-radius:24px;
+padding:30px;
+box-shadow:0 12px 35px rgba(0,0,0,.12);
+}
+h1{font-size:30px;margin-bottom:10px}
+.subtitle{color:#666;margin-bottom:25px}
+.panel{
+background:#f8fafc;
+border-radius:18px;
+padding:22px;
+margin:18px 0;
+border:1px solid #e5e7eb;
+}
+.stats{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:12px;
+}
+.stat{
+background:white;
+padding:15px;
+border-radius:14px;
+text-align:center;
+border:1px solid #eee;
+}
+.stat b{font-size:22px;display:block}
+.client{
+background:#fff;
+border-left:5px solid #2563eb;
+padding:18px;
+border-radius:12px;
+}
+button{
+width:100%;
+padding:15px;
+margin:8px 0;
+border:none;
+border-radius:14px;
+background:#2563eb;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+button:hover{background:#1d4ed8}
+.feedback{
+padding:18px;
+border-radius:14px;
+margin-top:15px;
+line-height:1.5;
+}
+.good{background:#dcfce7}
+.bad{background:#fee2e2}
+.mid{background:#fef3c7}
+.result{
+background:#eef2ff;
+padding:24px;
+border-radius:18px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Симулятор «Из мастера в локальный бренд»</h1>
+<p class="subtitle">
+Вы управляете развитием своего ремонтного бизнеса. Ваши решения влияют на доверие клиентов, количество заявок и возможность перейти к более дорогим услугам.
+</p>
+
+<div id="app"></div>
+</div>
+
+<script>
+
+let step=0;
+let score=50;
+let brand=0;
+let income=4500;
+
+const stages=[
+
+{
+title:"Стартовая ситуация. Вы — мастер-одиночка",
+content:`
+<div class="stats">
+<div class="stat">Заказы<b>35</b>в месяц</div>
+<div class="stat">Средний чек<b>4500 ₽</b></div>
+<div class="stat">Авито<b>90%</b>источника клиентов</div>
+<div class="stat">Повторные<b>5%</b></div>
+</div>
+<p>Ваша цель — увеличить доход, не увеличивая количество выездов.</p>
+`,
+question:"После ремонта клиент говорит: «Спасибо, всё работает. Если что — буду знать, кому звонить». Что вы делаете?",
+answers:[
+["Просто оставить номер телефона","mid","Вы не ошиблись, но упустили момент. Клиент доволен сейчас, однако у него нет причины активно рекомендовать вас."],
+["Показать результат, оставить гарантию и попросить честный отзыв","good","Вы создаете систему: довольный клиент помогает вам получать новые заказы."],
+["Попросить рассказать о вас знакомым, потому что нужны клиенты","bad","Прямая просьба о помощи может поставить клиента в неудобное положение."]
+]
+},
+
+{
+title:"Этап 2. Между заказами есть свободный час",
+content:"У вас появляется возможность создать контент. Что станет частью вашей стратегии?",
+question:"Какой контент вы начинаете делать регулярно?",
+answers:[
+["Фото техники после ремонта с подписью «Еще один довольный клиент»","mid","Это подтверждает работу, но почти не показывает вашу экспертность."],
+["Короткие видео процесса: проблема → ремонт → результат","good","Люди начинают доверять вам еще до первого обращения."],
+["Ничего не делать. Лучше взять дополнительный заказ","bad","Вы сохраняете текущий доход, но не создаете источник будущих клиентов."]
+]
+},
+
+{
+title:"Этап 3. Первый результат",
+content:`
+Ваш ролик набрал 50 000 просмотров.<br><br>
+Комментарии:
+<br>«А сколько стоит ремонт?»
+<br>«Вы работаете в нашем районе?»
+<br>«Можно вызвать?»
+`,
+question:"Как выстраиваете обработку таких обращений?",
+answers:[
+["Отвечать всем вечером после завершения заказов","bad","Вы теряете горячих клиентов: человек может найти другого мастера."],
+["Создать понятный шаблон ответа: район, диагностика, стоимость, ссылка на отзывы","good","Вы превращаете интерес в реальные заявки."],
+["Считать такие сообщения просто просмотрами и не обращать внимания","bad","Охваты сами по себе не создают бизнес."]
+]
+},
+
+{
+title:"Этап 4. Переход в премиум",
+content:`
+<div class="stats">
+<div class="stat">Заказы<b>55</b></div>
+<div class="stat">Чек<b>6000 ₽</b></div>
+<div class="stat">Соцсети + рекомендации<b>60%</b></div>
+<div class="stat">Загрузка<b>100%</b></div>
+</div>
+`,
+question:"Вы расписаны на три недели вперед. Ваш следующий шаг?",
+answers:[
+["Оставить цены как есть. Главное — много заказов","bad","Вы упираетесь в предел своего времени."],
+["Поднять цены на 20–30% и оставить больше времени на развитие","good","Вы переходите от продажи часов к продаже экспертизы."],
+["Сразу нанять нескольких мастеров","mid","Масштабирование возможно, но сначала нужна понятная система работы."]
+]
+}
+
+];
+
+function render(){
+let s=stages[step];
+
+document.getElementById("app").innerHTML=`
+<div class="panel">
+<h2>${s.title}</h2>
+${s.content}
+<div class="client"><b>Ситуация:</b><br>${s.question}</div>
+<div id="answers"></div>
+</div>
+`;
+
+s.answers.forEach((a,i)=>{
+let btn=document.createElement("button");
+btn.innerText=a[0];
+btn.onclick=()=>choose(i);
+document.getElementById("answers").appendChild(btn);
+});
+}
+
+function choose(i){
+let a=stages[step].answers[i];
+
+if(a[1]=="good"){
+score+=20;
+brand+=20;
+income+=500;
+}else if(a[1]=="mid"){
+score+=5;
+}else{
+score-=15;
+}
+
+document.getElementById("app").innerHTML+=`
+<div class="feedback ${a[1]}">${a[2]}</div>
+<button onclick="next()">Продолжить развитие бизнеса</button>
+`;
+}
+
+function next(){
+step++;
+if(step<stages.length){
+render();
+}else{
+finish();
+}
+}
+
+function finish(){
+let result=score>=120?
+"Владелец локального бренда. Вы создаете систему, где клиенты приходят не только из рекламы, а из доверия.":
+score>=80?
+"Эксперт с личным брендом. Основа есть, но часть возможностей роста теряется.":
+"Сильный мастер, но пока вы продаете только свое время.";
+
+document.getElementById("app").innerHTML=`
+<div class="result">
+<h2>Ваш результат</h2>
+<p><b>${result}</b></p>
+<p>Индекс доверия: ${score}</p>
+<p>Главный вывод: личный бренд строится не из красивых публикаций, а из системы: качественный сервис → доказательство экспертности → рекомендации → рост цены.</p>
+<button onclick="location.reload()">Пройти ещё раз</button>
+</div>
+`;
+}
+
+render();
+
+</script>
+
+</body>
+</html>
