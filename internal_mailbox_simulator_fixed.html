@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Внутренняя почта</title>
+<style>
+:root{
+  --bg:#f3f6fb;--card:#fff;--text:#182238;--muted:#6a768c;
+  --blue:#3865dc;--violet:#7557cf;--green:#27865f;--amber:#dd9334;--red:#cb4f5c;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(31,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(56,101,220,.12),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(117,87,207,.11),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#1e315f,#4f3979);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:850px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.mail-layout{display:grid;grid-template-columns:320px 1fr;gap:20px}
+.inbox{border:1px solid var(--line);border-radius:20px;background:#fbfcfe;overflow:hidden}
+.inbox-head{padding:18px;border-bottom:1px solid var(--line)}
+.inbox-head strong{font-size:18px}
+.mail-item{
+  padding:15px 16px;border-bottom:1px solid var(--line);cursor:pointer;background:#fff;transition:.15s
+}
+.mail-item:last-child{border-bottom:0}
+.mail-item:hover{background:#f6f8fd}
+.mail-item.active{background:#eef2ff;border-left:4px solid var(--blue)}
+.mail-item.done{opacity:.7}
+.mail-subject{font-weight:800;margin-bottom:5px}
+.mail-preview{color:var(--muted);font-size:13px;line-height:1.35}
+.viewer{border:1px solid var(--line);border-radius:20px;padding:20px;background:#fff}
+.viewer-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.viewer h2{margin:0 0 6px;font-size:27px}
+.meta{color:var(--muted);font-size:13px}
+.message{
+  margin-top:18px;padding:18px;border:1px solid var(--line);border-left:5px solid var(--violet);
+  border-radius:16px;background:#fafbfe;line-height:1.55
+}
+.steps{margin-top:20px}
+.step-title{font-size:19px;font-weight:900;margin-bottom:10px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:15px;border-radius:15px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:94px;transition:.17s
+}
+.choice:hover{transform:translateY(-2px);border-color:#abb8e6;box-shadow:0 9px 22px rgba(56,101,220,.08)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:14px;padding:15px;border-radius:14px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.bad{background:#fff0f2;color:#7d2a35}
+.progress-wrap{margin-top:18px}
+.progress-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.progress{height:9px;background:#e9edf5;border-radius:99px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:.35s}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#21376b,#5f438a);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.review-item b{display:block;margin:5px 0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:860px){
+  .mail-layout,.choices,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Итоговый интерактив</div>
+  <h1>Внутренняя почта</h1>
+  <p>Каждая сильная эмоция приходит не как приговор, а как сообщение. Ваша задача — открыть письмо, назвать состояние, найти телесный маркер, понять защищаемую ценность и выбрать минимальное действие.</p>
+  <div class="badges">
+    <span class="badge">4 эмоциональных письма</span>
+    <span class="badge">4 шага распаковки</span>
+    <span class="badge">Итоговый профиль ошибок</span>
+  </div>
+</section>
+
+<noscript>
+<section class="panel">
+  <h2>Для прохождения задания нужно включить JavaScript</h2>
+  <p>Откройте страницу в обычном браузере и разрешите выполнение JavaScript.</p>
+</section>
+</noscript>
+<section id="game" class="panel">
+  <div class="mail-layout">
+    <aside class="inbox">
+      <div class="inbox-head"><strong>Входящие</strong><div class="meta">Непрочитанные сигналы</div></div>
+      <div id="mailList"></div>
+    </aside>
+
+    <main class="viewer">
+      <div class="viewer-head">
+        <div>
+          <h2 id="mailTitle"></h2>
+          <div class="meta" id="mailMeta"></div>
+        </div>
+        <span id="scoreLabel">Баллы: 0</span>
+      </div>
+
+      <div class="message" id="mailText"></div>
+
+      <div class="progress-wrap">
+        <div class="progress-head"><span id="stepLabel">Шаг 1 из 4</span><span id="mailProgress">Письмо 1 из 4</span></div>
+        <div class="progress"><span id="progressBar"></span></div>
+      </div>
+
+      <div class="steps">
+        <div class="step-title" id="question"></div>
+        <div id="choices" class="choices"></div>
+        <div id="feedback" class="feedback"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" onclick="restart()">Начать заново</button>
+        <button class="btn primary" id="nextBtn" disabled>Продолжить</button>
+      </div>
+    </main>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const mails=[
+{
+ subject:"Почему меня так раздражают эти вопросы?",
+ preview:"Коллега снова отвлекает вас от сложной задачи...",
+ title:"Письмо №1: раздражение",
+ meta:"От: лимбическая система · Приоритет: средний",
+ text:"Вы готовите сложный отчет. Коллега уже третий раз подходит с вопросом, который можно было задать позже. Челюсти сжимаются, хочется резко ответить.",
+ emotion:"Гнев",
+ body:"Сжатые челюсти и напряжение в плечах",
+ value:"Уважение и границы",
+ action:"Спокойно сказать: «Я сейчас занят сложным отчетом. Давай соберем вопросы и обсудим их через час».",
+ emotionOptions:["Гнев","Страх","Вина","Печаль"],
+ bodyOptions:["Сжатые челюсти и напряжение в плечах","Тяжесть в груди и упадок сил","Холод в животе и дрожь","Желание спрятаться от людей"],
+ valueOptions:["Уважение и границы","Безопасность и подготовка","Социальные связи и этика","Принятие реальности и смыслы"],
+ actionOptions:[
+ "Спокойно сказать: «Я сейчас занят сложным отчетом. Давай соберем вопросы и обсудим их через час».",
+ "Подавить раздражение и продолжить отвечать.",
+ "Резко попросить больше никогда не подходить.",
+ "Сразу пожаловаться руководителю."
+ ],
+ explain:"Сигнал связан не с тем, что вы «плохой человек», а с нарушенной границей концентрации. Минимальное действие — сделать правило контакта ясным."
+},
+{
+ subject:"Почему я откладываю важную встречу?",
+ preview:"Вы перепроверяете материалы и боитесь критики...",
+ title:"Письмо №2: тревога",
+ meta:"От: лимбическая система · Приоритет: высокий",
+ text:"Завтра важная презентация. Вы каждые десять минут открываете материалы, представляете провал и не можете перейти к финальной подготовке. В животе холод, дыхание становится поверхностным.",
+ emotion:"Страх",
+ body:"Холод в животе и поверхностное дыхание",
+ value:"Безопасность и подготовка",
+ action:"Определить один дефицит информации и подготовить ответ на наиболее вероятный сложный вопрос.",
+ emotionOptions:["Гнев","Страх","Вина","Печаль"],
+ bodyOptions:["Холод в животе и поверхностное дыхание","Сжатые кулаки и жар в лице","Тяжесть в конечностях","Желание оправдываться"],
+ valueOptions:["Уважение и границы","Безопасность и подготовка","Социальные связи и этика","Принятие реальности и смыслы"],
+ actionOptions:[
+ "Определить один дефицит информации и подготовить ответ на наиболее вероятный сложный вопрос.",
+ "Повторять: «Я совершенно спокоен».",
+ "Отложить презентацию, пока страх не исчезнет.",
+ "Перепроверить весь проект с самого начала."
+ ],
+ explain:"Страх здесь сообщает не о трусости, а о важности задачи и дефиците подготовки. Полезное действие уменьшает конкретную неопределенность."
+},
+{
+ subject:"Почему я не могу включиться в новую задачу?",
+ preview:"Старый проект остановили, а сил на новое нет...",
+ title:"Письмо №3: печаль",
+ meta:"От: лимбическая система · Приоритет: низкая энергия",
+ text:"Проект, в который вы вложили несколько месяцев, закрыли. Коллеги уже обсуждают новые задачи, а вы чувствуете тяжесть в теле, пустоту и не хотите говорить.",
+ emotion:"Печаль",
+ body:"Тяжесть в теле и снижение энергии",
+ value:"Принятие реальности и смыслы",
+ action:"Признать значимость проекта и выписать, какие две наработки можно сохранить для будущего.",
+ emotionOptions:["Гнев","Страх","Вина","Печаль"],
+ bodyOptions:["Тяжесть в теле и снижение энергии","Жар и желание спорить","Холод и учащенное дыхание","Напряжение в челюсти"],
+ valueOptions:["Уважение и границы","Безопасность и подготовка","Социальные связи и этика","Принятие реальности и смыслы"],
+ actionOptions:[
+ "Признать значимость проекта и выписать, какие две наработки можно сохранить для будущего.",
+ "Немедленно взять новую сложную задачу.",
+ "Удалить все материалы, чтобы быстрее забыть.",
+ "Убедить себя, что проект ничего не значил."
+ ],
+ explain:"Печаль не доказывает слабость. Она помогает обновить ожидания и отделить утраченное будущее от опыта, который можно сохранить."
+},
+{
+ subject:"Почему я снова прокручиваю этот разговор?",
+ preview:"Вы понимаете, что подвели коллегу...",
+ title:"Письмо №4: вина",
+ meta:"От: лимбическая система · Приоритет: требует ответа",
+ text:"Вы пообещали коллеге передать данные к пятнице, но забыли. Из-за этого он работал в выходные. Вы снова и снова думаете: «Я безответственный и никчемный».",
+ emotion:"Вина",
+ body:"Тяжесть в груди и желание оправдываться",
+ value:"Социальные связи и этика",
+ action:"Признать конкретный ущерб, извиниться без самообвинения и предложить способ компенсировать последствия.",
+ emotionOptions:["Гнев","Страх","Вина","Печаль"],
+ bodyOptions:["Тяжесть в груди и желание оправдываться","Жар и напряжение в руках","Холод в животе","Общее снижение энергии"],
+ valueOptions:["Уважение и границы","Безопасность и подготовка","Социальные связи и этика","Принятие реальности и смыслы"],
+ actionOptions:[
+ "Признать конкретный ущерб, извиниться без самообвинения и предложить способ компенсировать последствия.",
+ "Долго объяснять, почему вы были перегружены.",
+ "Назвать себя безответственным, чтобы показать искренность.",
+ "Избегать коллегу, пока неловкость не пройдет."
+ ],
+ explain:"Вина указывает не на вашу никчемность, а на нарушенный стандарт отношений. Ее задача — помочь восстановить связь через конкретное исправление."
+}
+];
+
+const questions=[
+ {key:"emotion",text:"1. Дайте письму имя: что это за эмоция?",suffix:"Options"},
+ {key:"body",text:"2. Где сигнал проявляется в теле?",suffix:"Options"},
+ {key:"value",text:"3. Какую ценность защищает эмоция?",suffix:"Options"},
+ {key:"action",text:"4. Какое минимальное действие следует из письма?",suffix:"Options"}
+];
+
+let mailIndex=0,step=0,score=0,history=[],completed=new Set();
+const $=id=>document.getElementById(id);
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
+function renderMailList(){
+ const list=$("mailList");list.innerHTML="";
+ mails.forEach((m,i)=>{
+   const d=document.createElement("div");
+   d.className="mail-item"+(i===mailIndex?" active":"")+(completed.has(i)?" done":"");
+   d.innerHTML=`<div class="mail-subject">${m.subject}</div><div class="mail-preview">${m.preview}</div>`;
+   d.onclick=()=>{if(completed.has(i)||i===mailIndex)return;};
+   list.appendChild(d);
+ });
+}
+
+function render(){
+ const m=mails[mailIndex],q=questions[step];
+ renderMailList();
+ $("mailTitle").textContent=m.title;$("mailMeta").textContent=m.meta;$("mailText").textContent=m.text;
+ $("scoreLabel").textContent=`Баллы: ${score}`;
+ $("stepLabel").textContent=`Шаг ${step+1} из 4`;
+ $("mailProgress").textContent=`Письмо ${mailIndex+1} из ${mails.length}`;
+ $("progressBar").style.width=(((mailIndex*4+step)/(mails.length*4))*100)+"%";
+ $("question").textContent=q.text;
+ $("feedback").className="feedback";$("feedback").textContent="";
+ $("nextBtn").disabled=true;
+ const options=m[q.suffix],correct=m[q.key],box=$("choices");
+ box.innerHTML="";box.dataset.locked="0";
+ shuffle(options).forEach(text=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=text;
+   b.onclick=()=>choose(text,correct,b,q.key);box.appendChild(b);
+ });
+}
+
+function choose(text,correct,btn,key){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";[...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const ok=text===correct;if(ok)score++;
+ history.push({mail:mailIndex,key,choice:text,correct,ok});
+ const f=$("feedback");f.className=`feedback show ${ok?"good":"bad"}`;
+ f.textContent=ok?"Точно. Сигнал распакован корректно.":`Более точный вариант: «${correct}».`;
+ $("scoreLabel").textContent=`Баллы: ${score}`;$("nextBtn").disabled=false;
+}
+
+$("nextBtn").onclick=()=>{
+ if(step<3){step++;render()}
+ else{
+   completed.add(mailIndex);mailIndex++;step=0;
+   if(mailIndex<mails.length){render();window.scrollTo({top:0,behavior:"smooth"})}
+   else showResult();
+ }
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=mails.length*4,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=88){
+   title="Точный переводчик сигналов";
+   desc="Вы хорошо отделяете эмоцию от самооценки, замечаете телесный маркер и переводите сигнал в конкретное действие.";
+ }else if(pct>=63){
+   title="Письмо прочитано не полностью";
+   desc="Вы распознаете часть сигналов, но иногда перескакиваете от эмоции сразу к действию или путаете ценность с самообвинением.";
+ }else{
+   title="Внутренняя почта уходит в спам";
+   desc="Вы чаще реагируете на эмоцию как на проблему, которую нужно убрать, чем как на сообщение о ценности и потребности.";
+ }
+ const reviews=mails.map((m,i)=>{
+   const a=history.filter(x=>x.mail===i),n=a.filter(x=>x.ok).length;
+   return `<div class="review-item"><span class="tag ${n===4?"good":n>=2?"mid":"bad"}">${n}/4</span><b>${m.title}</b><p>${m.explain}</p></div>`
+ }).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+   <p>Рабочая формула проста: назвать эмоцию → заметить тело → определить функцию → выбрать минимальное действие. Чем меньше самооценки и чем больше конкретики, тем полезнее сигнал.</p></div>
+ </div>
+ <div class="review"><h2>Разбор писем</h2>${reviews}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ mailIndex=0;step=0;score=0;history=[];completed=new Set();
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ render();window.scrollTo({top:0,behavior:"smooth"});
+}
+window.addEventListener("DOMContentLoaded", function () {
+  try {
+    render();
+  } catch (error) {
+    console.error(error);
+    document.getElementById("mailTitle").textContent = "Задание не загрузилось";
+    document.getElementById("mailText").textContent =
+      "Обновите страницу. Если ошибка повторяется, откройте файл в новой вкладке браузера.";
+  }
+});
+</script>
+</body>
+</html>
