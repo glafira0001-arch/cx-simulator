@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>90 секунд до ответа</title>
+<style>
+:root{
+  --bg:#f4f6fb;--card:#fff;--text:#182238;--muted:#66728a;
+  --red:#e65050;--orange:#f49b36;--blue:#365edc;--green:#27885e;
+  --line:#dfe5ef;--shadow:0 16px 42px rgba(31,45,78,.11)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,Arial,sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 5%,rgba(230,80,80,.12),transparent 25%),
+    radial-gradient(circle at 95% 15%,rgba(54,94,220,.12),transparent 24%),
+    var(--bg);
+}
+.app{max-width:1050px;margin:auto;padding:24px 16px 54px}
+.hero{
+  background:linear-gradient(135deg,#261f38,#6b252b);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);overflow:hidden;position:relative
+}
+.hero:after{
+  content:"";position:absolute;right:-80px;top:-100px;width:270px;height:270px;
+  border-radius:50%;background:rgba(255,255,255,.07)
+}
+.kicker{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1;margin:10px 0 14px}
+.hero p{max-width:760px;line-height:1.55;font-size:18px;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;background:rgba(255,255,255,.12);border-radius:999px;font-size:13px}
+.panel{background:var(--card);border-radius:24px;margin-top:20px;padding:24px;box-shadow:var(--shadow)}
+.topline{display:flex;justify-content:space-between;gap:14px;align-items:center}
+.progress{height:10px;background:#edf0f5;border-radius:99px;overflow:hidden;margin-top:12px}
+.progress span{height:100%;display:block;width:0;background:linear-gradient(90deg,var(--red),var(--orange));transition:.35s}
+.case{
+  margin-top:20px;padding:20px;border:1px solid var(--line);border-left:5px solid var(--red);
+  border-radius:18px;background:#fafbfe
+}
+.case strong{display:block;margin-bottom:8px}
+.case p{margin:0;line-height:1.55}
+.timer{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-top:18px;padding:16px 18px;background:#fff4f1;border-radius:17px
+}
+.clock{font-size:36px;font-weight:900;color:#9e3137;min-width:98px}
+.timer small{color:var(--muted);line-height:1.4}
+.stage{margin-top:24px}
+.stage h2{font-size:25px;margin:0 0 8px}
+.stage .hint{color:var(--muted);line-height:1.45;margin-bottom:15px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;border-radius:16px;padding:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.4;min-height:104px;transition:.17s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab8e8;box-shadow:0 10px 24px rgba(54,94,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}
+.feedback.good{background:#edf8f3;color:#155f41}
+.feedback.mid{background:#fff5e8;color:#805019}
+.feedback.bad{background:#fff0f1;color:#812b34}
+.axes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.axis{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fafbfe}
+.axis-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e6eaf1;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#justiceBar{background:var(--green)} #controlBar{background:var(--blue)} #riskBar{background:var(--red)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;cursor:pointer;font-size:15px}
+.btn.primary{color:#fff;background:linear-gradient(90deg,#cc444b,#ef8e37)}
+.btn.secondary{background:#edf1f7;color:#26344d}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-head{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{
+  color:#fff;background:linear-gradient(135deg,#2d2346,#7a2d35);
+  padding:22px;border-radius:20px
+}
+.scorebox strong{font-size:52px;display:block;margin:7px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.route{margin-top:20px}
+.route-item{border-top:1px solid var(--line);padding:15px 0}
+.route-item:first-child{border-top:0}
+.route-item b{display:block;margin-bottom:5px}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:6px}
+.tag.good{background:#e3f5eb;color:#176342}
+.tag.mid{background:#fff0d9;color:#835016}
+.tag.bad{background:#fde4e7;color:#892d38}
+@media(max-width:760px){
+ .choices,.axes,.result-head{grid-template-columns:1fr}
+ .hero,.panel{padding:19px}.clock{font-size:30px}.timer{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="kicker">Интерактивный тренажер</div>
+  <h1>90 секунд до ответа</h1>
+  <p>Вы оказались в ситуации, где коллега публично присваивает большую часть вашей работы. Решения придется принимать поэтапно: сначала справиться с телесным импульсом, затем вернуть себе авторство и выбрать способ разговора после совещания.</p>
+  <div class="badges">
+    <span class="badge">Не тест на «правильную фразу»</span>
+    <span class="badge">4 этапа решения</span>
+    <span class="badge">Несколько правдоподобных ловушек</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="topline">
+    <strong id="stepLabel">Этап 1 из 4</strong>
+    <span id="totalScore">Баллы: 0</span>
+  </div>
+  <div class="progress"><span id="progressBar"></span></div>
+
+  <div class="case">
+    <strong>Кейс «Невидимый соавтор»</strong>
+    <p>На общем совещании Николай презентует проект, в котором около 70% работы выполнили вы. Он говорит: «Я собрал данные», «Я проанализировал», «Я пришел к выводу». Вы чувствуете жар, учащенное сердцебиение и желание резко перебить его.</p>
+  </div>
+
+  <div class="timer">
+    <div class="clock" id="clock">01:30</div>
+    <small id="timerText">Это условная пауза для тренировки. Вам не нужно ждать полторы минуты: выберите действие, которое лучше всего помогает не превратить импульс в публичный конфликт.</small>
+  </div>
+
+  <div class="axes">
+    <div class="axis">
+      <div class="axis-head"><span>Справедливость</span><b id="justiceNum">0</b></div>
+      <div class="meter"><span id="justiceBar"></span></div>
+    </div>
+    <div class="axis">
+      <div class="axis-head"><span>Самоконтроль</span><b id="controlNum">0</b></div>
+      <div class="meter"><span id="controlBar"></span></div>
+    </div>
+    <div class="axis">
+      <div class="axis-head"><span>Риск конфликта</span><b id="riskNum">0</b></div>
+      <div class="meter"><span id="riskBar"></span></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <h2 id="stageTitle"></h2>
+    <div class="hint" id="stageHint"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" onclick="restart()">Начать заново</button>
+    <button class="btn primary" id="nextBtn" disabled>Продолжить</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const stages=[
+{
+ title:"Первые секунды: что сделать с импульсом?",
+ hint:"Все варианты выглядят разумно, но некоторые лишь маскируют гнев или усиливают внутреннее напряжение.",
+ options:[
+  {text:"Сразу перебить: «Вообще-то большую часть анализа делал я».",score:0,j:2,c:-2,r:3,level:"bad",fb:"Вы обозначили границу, но сделали это в форме публичного столкновения. Теперь спор будет идти не только об авторстве, но и о допустимости вашего тона."},
+  {text:"Молча открыть заметки, медленно выдохнуть и несколько раз незаметно сжать и разжать пальцы.",score:3,j:0,c:3,r:-1,level:"good",fb:"Это не решает вопрос авторства, но снижает вероятность импульсивного ответа и сохраняет возможность действовать точнее через несколько минут."},
+  {text:"Улыбнуться и сказать себе: «Ничего страшного, главное — общий результат».",score:1,j:-2,c:1,r:-1,level:"mid",fb:"Внешне конфликт снижается, но вы обесцениваете собственную границу. Подавленный гнев обычно возвращается позднее — уже в виде дистанции, сарказма или отказа помогать."},
+  {text:"Начать мысленно перечислять все случаи, когда Николай присваивал чужую работу.",score:0,j:0,c:-3,r:2,level:"bad",fb:"Вы не выражаете гнев вслух, но продолжаете усиливать его внутренними повторами. Это снижает шанс на точный и соразмерный ответ."}
+ ]
+},
+{
+ title:"Внутренний рефрейминг: что сказать себе?",
+ hint:"Выберите формулировку, которая признает эмоцию, но не превращает интерпретацию в доказанный факт.",
+ options:[
+  {text:"«Он специально унижает меня перед всеми. Я должен поставить его на место».",score:0,j:1,c:-2,r:3,level:"bad",fb:"Вы мгновенно приписали коллеге намерение. Это усиливает гнев и толкает к наказанию, а не к восстановлению авторства."},
+  {text:"«Я злюсь, потому что мой вклад сейчас становится невидимым. Мне нужно спокойно вернуть авторство».",score:3,j:3,c:3,r:-1,level:"good",fb:"Вы отделили факт эмоции от догадок о мотивах коллеги и связали гнев с конкретной нарушенной границей."},
+  {text:"«Настоящие профессионалы не злятся из-за таких мелочей».",score:0,j:-3,c:0,r:0,level:"bad",fb:"Эта мысль подавляет сигнал вместо его анализа. Гнев не исчезает, а превращается в внутреннее самообвинение."},
+  {text:"«Сейчас не время чувствовать. Потом разберусь».",score:1,j:-1,c:2,r:0,level:"mid",fb:"Отсрочка может быть полезна, но здесь нет признания причины гнева и плана восстановления границы."}
+ ]
+},
+{
+ title:"Конец презентации: как вернуть себе видимость?",
+ hint:"Нужно обозначить вклад, не превращая совещание в расследование и не отдавая авторство обратно.",
+ options:[
+  {text:"«Николай отлично представил общие выводы. Я дополню части X и Y: на этих этапах я проводил анализ и могу ответить на технические вопросы».",score:3,j:3,c:3,r:-1,level:"good",fb:"Вы возвращаете авторство через факты и экспертизу. При этом не лишаете коллегу лица перед аудиторией и не уходите в пассивность."},
+  {text:"«Хочу уточнить: 70% этой работы сделал я, а Николай сейчас просто ее презентует».",score:1,j:3,c:-1,r:3,level:"mid",fb:"Факт вклада обозначен, но формулировка обесценивает коллегу и почти неизбежно переводит разговор в публичный спор о процентах."},
+  {text:"Ничего не говорить на совещании, а после отправить всем письмо с полным перечнем своих задач.",score:1,j:2,c:1,r:2,level:"mid",fb:"Вы пытаетесь восстановить справедливость, но письмо после встречи может выглядеть как скрытая атака и создать второй конфликт."},
+  {text:"Задать Николаю максимально сложный технический вопрос, чтобы показать, что он не знает проект.",score:0,j:1,c:-2,r:3,level:"bad",fb:"Это косвенная месть. Авторство не становится яснее, зато появляется публичная борьба за статус."}
+ ]
+},
+{
+ title:"После совещания: как закрепить границу?",
+ hint:"Публичное уточнение вернуло часть видимости, но не устранило причину ситуации.",
+ options:[
+  {text:"Лично сказать Николаю: «На презентации мой вклад прозвучал как твой. В следующих выступлениях давай заранее распределять блоки и называть авторов анализа».",score:3,j:3,c:3,r:-2,level:"good",fb:"Вы описываете наблюдаемое поведение, эффект и конкретное правило на будущее. Это восстанавливает границу без чтения мыслей и обвинений в характере."},
+  {text:"Сказать: «Ты постоянно присваиваешь чужую работу. Еще раз — и я пойду к руководству».",score:1,j:2,c:-1,r:3,level:"mid",fb:"Граница обозначена, но обобщение «постоянно» и угроза повышают защитную реакцию. Разговор быстро сместится с факта на спор о личности."},
+  {text:"Больше не делиться с Николаем материалами и позволить ему провалиться в следующий раз.",score:0,j:0,c:-2,r:3,level:"bad",fb:"Это скрытое наказание. Оно не делает правила сотрудничества яснее и создает риск для общего результата."},
+  {text:"Ничего не обсуждать: вы уже обозначили вклад на совещании, этого достаточно.",score:1,j:1,c:1,r:0,level:"mid",fb:"Ситуация частично исправлена, но без договоренности о будущем тот же сценарий может повториться."}
+ ]
+}
+];
+
+let current=0,total=0,justice=0,control=0,risk=0,history=[];
+const $=id=>document.getElementById(id);
+
+function clamp(v){return Math.max(0,Math.min(10,v))}
+function updateAxes(){
+ justice=clamp(justice);control=clamp(control);risk=clamp(risk);
+ $("justiceNum").textContent=justice;$("controlNum").textContent=control;$("riskNum").textContent=risk;
+ $("justiceBar").style.width=(justice*10)+"%";
+ $("controlBar").style.width=(control*10)+"%";
+ $("riskBar").style.width=(risk*10)+"%";
+}
+function render(){
+ const s=stages[current];
+ $("stepLabel").textContent=`Этап ${current+1} из ${stages.length}`;
+ $("totalScore").textContent=`Баллы: ${total}`;
+ $("progressBar").style.width=`${current/stages.length*100}%`;
+ $("stageTitle").textContent=s.title;$("stageHint").textContent=s.hint;
+ $("feedback").className="feedback";$("feedback").textContent="";
+ $("nextBtn").disabled=true;
+ const box=$("choices");box.innerHTML="";
+ s.options.forEach((o,i)=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=o.text;
+   b.onclick=()=>choose(i,b);box.appendChild(b);
+ });
+ $("clock").textContent=current===0?"01:30":"—";
+ $("timerText").textContent=current===0
+  ?"Это условная пауза для тренировки. Вам не нужно ждать полторы минуты: выберите действие, которое помогает не превратить импульс в публичный конфликт."
+  :"Импульс уже ослаб. Теперь важна точность: признать границу, не приписывать мотивы и выбрать соразмерное действие.";
+}
+function choose(i,btn){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";
+ [...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const o=stages[current].options[i];
+ total+=o.score;justice+=o.j;control+=o.c;risk+=o.r;updateAxes();
+ history.push({stage:stages[current].title,choice:o.text,level:o.level,fb:o.fb,score:o.score});
+ const f=$("feedback");f.className=`feedback show ${o.level}`;f.textContent=o.fb;
+ $("totalScore").textContent=`Баллы: ${total}`;$("nextBtn").disabled=false;
+}
+$("nextBtn").onclick=()=>{
+ current++;
+ if(current<stages.length){$("choices").dataset.locked="0";render();$("stageTitle").scrollIntoView({behavior:"smooth",block:"center"});}
+ else showResult();
+};
+function showResult(){
+ $("game").classList.add("hidden");
+ const result=$("result");result.classList.remove("hidden");
+ const pct=Math.round(total/(stages.length*3)*100);
+ let title,desc;
+ if(pct>=85 && risk<=3){
+  title="Холодная аргументация";
+  desc="Вы не подавили гнев, а использовали его как сигнал о нарушенной границе. Ваш маршрут возвращает авторство и снижает вероятность эскалации.";
+ }else if(pct>=55){
+  title="Граница обозначена, но цена высока";
+  desc="Вы стремитесь восстановить справедливость, однако часть решений повышает риск публичной борьбы, скрытой мести или повторного конфликта.";
+ }else{
+  title="Импульс управляет сценарием";
+  desc="Ваши решения либо подавляют гнев, либо превращают его в наказание. В обоих случаях граница остается неясной и ситуация может повториться.";
+ }
+ const items=history.map(h=>`<div class="route-item">
+   <span class="tag ${h.level}">${h.score}/3</span><b>${h.stage}</b>
+   <div>${h.choice}</div><p>${h.fb}</p>
+ </div>`).join("");
+ result.innerHTML=`<div class="result-head">
+   <div class="scorebox"><div class="kicker">Итоговый профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает ваш маршрут</h3><p>${desc}</p>
+   <p><b>Справедливость:</b> ${justice}/10 · <b>Самоконтроль:</b> ${control}/10 · <b>Риск конфликта:</b> ${risk}/10</p>
+   <p>Конструктивный гнев не требует быть мягким. Он требует точно назвать вклад, обозначить правило и не подменять восстановление границы наказанием.</p></div>
+ </div>
+ <div class="route"><h2>Разбор ваших решений</h2>${items}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ result.scrollIntoView({behavior:"smooth"});
+}
+function restart(){
+ current=0;total=0;justice=0;control=0;risk=0;history=[];
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ $("choices").dataset.locked="0";updateAxes();render();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateAxes();render();
+</script>
+</body>
+</html>
