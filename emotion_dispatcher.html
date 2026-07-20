@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Эмоциональный диспетчер</title>
+<style>
+:root{
+  --bg:#f3f6fb;--card:#fff;--text:#182238;--muted:#68758c;
+  --blue:#3966dc;--violet:#7257cf;--green:#2b875f;--amber:#df9436;--red:#cc4f5b;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(32,47,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(57,102,220,.12),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(114,87,207,.11),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1120px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#1d315f,#4d3578);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:830px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.topline{display:flex;justify-content:space-between;gap:14px;align-items:center}
+.progress{height:10px;background:#ebeff6;border-radius:99px;overflow:hidden;margin-top:12px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:.35s}
+.case{
+  margin-top:20px;padding:20px;border:1px solid var(--line);border-left:5px solid var(--blue);
+  border-radius:18px;background:#fafbfe;line-height:1.55
+}
+.scale{
+  margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px
+}
+.level{
+  border-radius:16px;padding:15px;border:1px solid var(--line);background:#fbfcfe
+}
+.level.low{border-top:4px solid var(--green)}
+.level.mid{border-top:4px solid var(--amber)}
+.level.high{border-top:4px solid var(--red)}
+.level strong{display:block;margin-bottom:5px}
+.level small{color:var(--muted);line-height:1.4}
+.stage{margin-top:24px}
+.stage h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:112px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab7e8;box-shadow:0 10px 24px rgba(57,102,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#accuracyBar{background:var(--blue)}#safetyBar{background:var(--green)}#overloadBar{background:var(--red)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#21376c,#5c4089);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.review-item b{display:block;margin:5px 0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:820px){
+  .choices,.scale,.dashboard,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный тренажер</div>
+  <h1>Эмоциональный диспетчер</h1>
+  <p>Одинаковая эмоция на разных уровнях интенсивности требует разных действий. Ваша задача — распознать состояние, не перепутать анализ с перегрузкой и выбрать инструмент, который действительно возвращает управление.</p>
+  <div class="badges">
+    <span class="badge">6 неоднозначных ситуаций</span>
+    <span class="badge">Шкала интенсивности</span>
+    <span class="badge">Инструмент под состояние</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="topline">
+    <strong id="caseLabel">Ситуация 1 из 6</strong>
+    <span id="scoreLabel">Баллы: 0</span>
+  </div>
+  <div class="progress"><span id="progressBar"></span></div>
+
+  <div class="scale">
+    <div class="level low"><strong>Низкий уровень</strong><small>Сигнал заметен, но мышление и выбор сохранены.</small></div>
+    <div class="level mid"><strong>Средний уровень</strong><small>Эмоция влияет на поведение, но анализ еще возможен.</small></div>
+    <div class="level high"><strong>Высокий уровень</strong><small>Сначала физиологическое торможение, решения позже.</small></div>
+  </div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Точность</span><b id="accuracyNum">0</b></div><div class="meter"><span id="accuracyBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Безопасность</span><b id="safetyNum">0</b></div><div class="meter"><span id="safetyBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Перегрузка</span><b id="overloadNum">0</b></div><div class="meter"><span id="overloadBar"></span></div></div>
+  </div>
+
+  <div class="case">
+    <strong id="caseTitle"></strong><br>
+    <span id="caseText"></span>
+  </div>
+
+  <div class="stage">
+    <h2 id="stageTitle"></h2>
+    <div class="hint" id="stageHint"></div>
+    <div id="choices" class="choices"></div>
+    <div id="feedback" class="feedback"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" onclick="restart()">Начать заново</button>
+    <button class="btn primary" id="nextBtn" disabled>Продолжить</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const cases=[
+{
+ title:"Коллега снова отвлекает",
+ text:"Вы готовите сложный отчет. Коллега в третий раз за двадцать минут подходит с вопросом. Вы раздражены, но понимаете речь, можете сформулировать просьбу и продолжаете работать.",
+ level:"Низкий уровень",
+ tool:"Спокойно обозначить границу: «Я сейчас занят отчетом. Давай соберем вопросы и обсудим их через час».",
+ levelOptions:["Низкий уровень","Средний уровень","Высокий уровень","Эмоции здесь нет"],
+ toolOptions:[
+  "Спокойно обозначить границу: «Я сейчас занят отчетом. Давай соберем вопросы и обсудим их через час».",
+  "Ничего не говорить и заставить себя не раздражаться.",
+  "Выйти из кабинета и использовать только физическое заземление.",
+  "Сразу пожаловаться руководителю на нарушение границ."
+ ],
+ explain:"Раздражение уже сообщает о нарушении концентрации, но когнитивные функции сохранены. Здесь не нужна кризисная самопомощь: достаточно назвать границу и предложить понятный формат контакта."
+},
+{
+ title:"Письмо с критикой",
+ text:"Вы получили резкое письмо от руководства. Сердце бьется быстрее, хочется немедленно написать длинный ответ. При этом вы способны перечитать письмо и выделить конкретные претензии.",
+ level:"Средний уровень",
+ tool:"Сделать паузу, выписать факты отдельно от интерпретаций и подготовить ответ после снижения интенсивности.",
+ levelOptions:["Низкий уровень","Средний уровень","Высокий уровень","Эмоции здесь нет"],
+ toolOptions:[
+  "Ответить сразу, пока вы хорошо чувствуете несправедливость.",
+  "Сделать паузу, выписать факты отдельно от интерпретаций и подготовить ответ после снижения интенсивности.",
+  "Повторять себе: «Я совершенно спокоен».",
+  "Удалить письмо и не возвращаться к нему."
+ ],
+ explain:"Анализ еще доступен, но импульс уже искажает решение. Полезна короткая пауза и структурирование, а не немедленная реакция."
+},
+{
+ title:"Паника перед выступлением",
+ text:"За пять минут до выхода вы почти не слышите вопросы коллег, не можете вспомнить начало презентации, руки дрожат, дыхание поверхностное.",
+ level:"Высокий уровень",
+ tool:"Не анализировать причины. Сфокусироваться на медленном выдохе, опоре стоп и нескольких простых физических действиях.",
+ levelOptions:["Низкий уровень","Средний уровень","Высокий уровень","Обычное волнение"],
+ toolOptions:[
+  "Спросить себя, откуда идет страх и что он означает для вашей карьеры.",
+  "Не анализировать причины. Сфокусироваться на медленном выдохе, опоре стоп и нескольких простых физических действиях.",
+  "Принять решение отменить все будущие выступления.",
+  "Быстро перечитать всю презентацию и добавить новые аргументы."
+ ],
+ explain:"На пике эмоции задача — не понять себя, а снизить физиологическую интенсивность. Анализ и решения возвращаются позже."
+},
+{
+ title:"Эйфория после предложения",
+ text:"Вам неожиданно предложили перейти в стартап с долей в компании. Вы почти не спали от возбуждения и уже хотите уволиться сегодня, хотя условия еще не проверены.",
+ level:"Высокий уровень",
+ tool:"Отложить необратимые решения, восстановить сон и вернуться к условиям после снижения возбуждения.",
+ levelOptions:["Низкий уровень","Средний уровень","Высокий уровень","Это не эмоция, а ясность"],
+ toolOptions:[
+  "Уволиться сразу: сильный импульс показывает, что предложение ваше.",
+  "Отложить необратимые решения, восстановить сон и вернуться к условиям после снижения возбуждения.",
+  "Подавить радость и искать только недостатки предложения.",
+  "Согласиться устно, а детали проверить потом."
+ ],
+ explain:"Правило «не решать на пике» относится не только к страху и гневу. Эйфория тоже сужает внимание и повышает готовность игнорировать риски."
+},
+{
+ title:"Легкое беспокойство перед встречей",
+ text:"До встречи с клиентом два часа. Вы слегка напряжены, но можете спокойно просмотреть материалы и заметить, что не подготовили ответ на один вероятный вопрос.",
+ level:"Низкий уровень",
+ tool:"Использовать сигнал как подсказку: подготовить недостающий ответ и сделать несколько спокойных выдохов.",
+ levelOptions:["Низкий уровень","Средний уровень","Высокий уровень","Паника"],
+ toolOptions:[
+  "Использовать сигнал как подсказку: подготовить недостающий ответ и сделать несколько спокойных выдохов.",
+  "Отменить встречу, потому что тревога указывает на опасность.",
+  "Провести глубокий анализ всей своей неуверенности.",
+  "Игнорировать напряжение: оно не содержит полезной информации."
+ ],
+ explain:"На низком уровне тревога может работать как диагностический сигнал. Здесь полезны и небольшая подготовка, и простая физиологическая регуляция."
+},
+{
+ title:"Конфликт в мессенджере",
+ text:"В переписке коллега обвиняет вас в срыве срока. Вы читаете сообщение снова и снова, мысли ускоряются, но все еще можете отложить телефон и описать факты на бумаге.",
+ level:"Средний уровень",
+ tool:"Выйти из переписки, снизить интенсивность, затем отделить факты от обвинений и только после этого отвечать.",
+ levelOptions:["Низкий уровень","Средний уровень","Высокий уровень","Эмоции уже полностью под контролем"],
+ toolOptions:[
+  "Немедленно отправить скриншоты, доказывающие вашу правоту.",
+  "Выйти из переписки, снизить интенсивность, затем отделить факты от обвинений и только после этого отвечать.",
+  "Использовать только дыхание и вообще не возвращаться к содержанию конфликта.",
+  "Написать резкий черновик и сразу отправить, чтобы не подавлять гнев."
+ ],
+ explain:"Интенсивность уже мешает коммуникации, но анализ возможен после короткой паузы. Нужны оба этапа: сначала торможение, затем разбор."
+}
+];
+
+let index=0,phase=1,score=0,accuracy=0,safety=0,overload=0,history=[];
+const $=id=>document.getElementById(id);
+function clamp(v){return Math.max(0,Math.min(10,v))}
+function updateMeters(){
+ accuracy=clamp(accuracy);safety=clamp(safety);overload=clamp(overload);
+ $("accuracyNum").textContent=accuracy;$("safetyNum").textContent=safety;$("overloadNum").textContent=overload;
+ $("accuracyBar").style.width=accuracy*10+"%";$("safetyBar").style.width=safety*10+"%";$("overloadBar").style.width=overload*10+"%";
+}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function renderChoices(items,correct,kind){
+ const box=$("choices");box.innerHTML="";box.dataset.locked="0";
+ shuffle(items).forEach(text=>{
+  const b=document.createElement("button");b.className="choice";b.textContent=text;
+  b.onclick=()=>choose(text,correct,kind,b);box.appendChild(b);
+ });
+}
+function render(){
+ const c=cases[index];
+ $("caseLabel").textContent=`Ситуация ${index+1} из ${cases.length}`;
+ $("scoreLabel").textContent=`Баллы: ${score}`;
+ $("progressBar").style.width=((index+(phase-1)/2)/cases.length*100)+"%";
+ $("caseTitle").textContent=c.title;$("caseText").textContent=c.text;
+ $("feedback").className="feedback";$("feedback").textContent="";$("nextBtn").disabled=true;
+ if(phase===1){
+  $("stageTitle").textContent="1. Определите интенсивность";
+  $("stageHint").textContent="Оценивайте не название эмоции, а доступность мышления, речи и выбора.";
+  renderChoices(c.levelOptions,c.level,"level");
+ }else{
+  $("stageTitle").textContent="2. Выберите инструмент";
+  $("stageHint").textContent="Инструмент должен соответствовать интенсивности. Полезный анализ на одном уровне может стать перегрузкой на другом.";
+  renderChoices(c.toolOptions,c.tool,"tool");
+ }
+}
+function choose(text,correct,kind,btn){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";[...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const ok=text===correct;
+ if(ok){score+=2;accuracy+=2;safety+=kind==="tool"?2:1;overload-=1}
+ else{
+   accuracy-=1;
+   if(kind==="tool"){
+     const isHigh=cases[index].level==="Высокий уровень";
+     const thinking=text.includes("анализ")||text.includes("причин")||text.includes("перечитать");
+     if(isHigh&&thinking){overload+=3;safety-=2}else{overload+=1;safety-=1}
+   }
+ }
+ history.push({case:index,phase:kind,choice:text,correct,ok});
+ updateMeters();$("scoreLabel").textContent=`Баллы: ${score}`;
+ const f=$("feedback");
+ f.className=`feedback show ${ok?"good":"bad"}`;
+ f.textContent=ok ? (kind==="level"?"Интенсивность определена точно.":"Инструмент соответствует состоянию.") :
+ `Более точный вариант: «${correct}».`;
+ $("nextBtn").disabled=false;
+}
+$("nextBtn").onclick=()=>{
+ if(phase===1){phase=2;render()}
+ else{
+   index++;phase=1;
+   if(index<cases.length){render();window.scrollTo({top:0,behavior:"smooth"})}
+   else showResult();
+ }
+};
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=cases.length*4,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85&&overload<=2){
+  title="Точная саморегуляция";
+  desc="Вы различаете интенсивность и не требуете от мозга сложного анализа тогда, когда сначала нужна физиологическая стабилизация.";
+ }else if(pct>=60){
+  title="Инструмент иногда опережает диагностику";
+  desc="Вы знаете полезные техники, но временами выбираете их по названию эмоции, а не по текущей интенсивности.";
+ }else{
+  title="Логика включается не вовремя";
+  desc="Вы склонны либо анализировать состояние на пике, либо применять кризисную самопомощь там, где уже можно спокойно обозначить границу или разобрать ситуацию.";
+ }
+ const reviews=cases.map((c,i)=>{
+  const a=history.filter(x=>x.case===i),n=a.filter(x=>x.ok).length;
+  return `<div class="review-item"><span class="tag ${n===2?"good":n===1?"mid":"bad"}">${n}/2</span><b>${c.title}</b><p>${c.explain}</p></div>`
+ }).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+  <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+  <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+  <p><b>Точность:</b> ${accuracy}/10 · <b>Безопасность:</b> ${safety}/10 · <b>Перегрузка:</b> ${overload}/10</p>
+  <p>Главный принцип: сначала определить интенсивность, затем выбирать инструмент. Чем выше уровень эмоции, тем проще и телеснее должно быть первое действие.</p></div>
+ </div>
+ <div class="review"><h2>Разбор ситуаций</h2>${reviews}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+function restart(){
+ index=0;phase=1;score=0;accuracy=0;safety=0;overload=0;history=[];
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ updateMeters();render();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();render();
+</script>
+</body>
+</html>
