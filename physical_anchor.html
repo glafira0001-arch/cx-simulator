@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Физический якорь</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172238;--muted:#68758c;
+  --blue:#3b67dc;--violet:#7458cf;--green:#2c8a62;--amber:#dc9534;--red:#c94f5c;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(30,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(59,103,220,.11),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(116,88,207,.10),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#203862,#4d3a78);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:870px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--blue);
+  border-radius:18px;background:#fbfcfe;line-height:1.55
+}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;color:var(--muted)}
+.tab.active{background:#eef3ff;color:#294fae;border-color:#bac8ef}
+.step h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:108px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab7e8;box-shadow:0 10px 24px rgba(59,103,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.sequence{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.slot{
+  min-height:150px;border:2px dashed #cdd6e7;border-radius:16px;padding:12px;background:#fbfcfe
+}
+.slot strong{display:block;margin-bottom:9px}
+.item{
+  border:1px solid var(--line);border-radius:13px;padding:11px;background:#fff;cursor:pointer;margin-bottom:9px;line-height:1.35
+}
+.item.selected{outline:2px solid var(--violet)}
+.counter{
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center
+}
+.counter-box{
+  min-height:260px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,#f7faff,#f4f2ff);
+  display:flex;flex-direction:column;align-items:center;justify-content:center
+}
+.number{font-size:74px;font-weight:900;color:#2e4fa8}
+.answer-row{display:flex;gap:10px;margin-top:14px}
+.answer-row input{
+  width:140px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;text-align:center
+}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#groundBar{background:var(--green)}#focusBar{background:var(--blue)}#stormBar{background:var(--red)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#22396b,#5e4689);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:7px}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:900px){
+  .grid,.counter,.dashboard,.result-grid{grid-template-columns:1fr}
+  .sequence{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный тренажер</div>
+  <h1>Физический якорь</h1>
+  <p>Когда мысли разгоняются, задача не в том, чтобы немедленно все понять. Сначала нужно вернуть мозгу опору на внешнюю реальность: стопы, предметы, поверхности, звуки, запахи и вкус.</p>
+  <div class="badges">
+    <span class="badge">Скан стоп</span>
+    <span class="badge">Метод 5–4–3–2–1</span>
+    <span class="badge">Счет через 7</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Ситуация</strong><br>
+    После резкого разговора вы чувствуете жар, сердцебиение и желание немедленно ответить. Мысли скачут вперед: «все закончится плохо», «я не справлюсь», «надо срочно что-то решить».
+  </div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Опора</span><b id="groundNum">0</b></div><div class="meter"><span id="groundBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Внешний фокус</span><b id="focusNum">0</b></div><div class="meter"><span id="focusBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Ментальная буря</span><b id="stormNum">6</b></div><div class="meter"><span id="stormBar"></span></div></div>
+  </div>
+
+  <div class="nav">
+    <span class="tab active" id="tab1">1. Вернуть опору</span>
+    <span class="tab" id="tab2">2. Собрать 5–4–3–2–1</span>
+    <span class="tab" id="tab3">3. Подключить счет</span>
+  </div>
+
+  <div id="step1" class="step">
+    <h2>Что сделать первым?</h2>
+    <div class="hint">Выберите действие, которое возвращает внимание в тело и внешнюю реальность, а не усиливает внутренний диалог.</div>
+    <div id="anchorGrid" class="grid"></div>
+    <div id="feedback1" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep2" disabled>Перейти к чувствам</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step hidden">
+    <h2>Соберите метод 5–4–3–2–1</h2>
+    <div class="hint">Нажмите на карточку, затем на нужный слот. Важно соблюсти и количество, и последовательность.</div>
+    <div id="sensePool"></div>
+    <div class="sequence">
+      <div class="slot" data-slot="0"><strong>5</strong></div>
+      <div class="slot" data-slot="1"><strong>4</strong></div>
+      <div class="slot" data-slot="2"><strong>3</strong></div>
+      <div class="slot" data-slot="3"><strong>2</strong></div>
+      <div class="slot" data-slot="4"><strong>1</strong></div>
+    </div>
+    <div id="feedback2" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="checkSequence">Проверить последовательность</button>
+    </div>
+  </div>
+
+  <div id="step3" class="step hidden">
+    <h2>Счет через 7</h2>
+    <div class="hint">Теперь, когда интенсивность снизилась, можно подключить простую когнитивную задачу. Введите следующее число.</div>
+    <div class="counter">
+      <div class="counter-box">
+        <div class="number" id="currentNumber">100</div>
+        <div class="answer-row">
+          <input id="answerInput" type="number" placeholder="Следующее число">
+          <button class="btn primary" id="checkAnswer">Проверить</button>
+        </div>
+      </div>
+      <div>
+        <h3>Почему счет включается только сейчас?</h3>
+        <p class="hint">Сначала вы вернули телу ощущение опоры и переключили внимание наружу. Только после этого мозг получает достаточно ресурса для простой когнитивной задачи.</p>
+        <div id="feedback3" class="feedback"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="finishBtn" disabled>Получить результат</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const anchors=[
+ {text:"Ощутить обе стопы на полу, слегка надавить ими вниз и назвать три предмета перед собой.",good:true},
+ {text:"Закрыть глаза и попытаться понять, почему вас так накрыло.",good:false},
+ {text:"Задержать дыхание, чтобы быстрее собраться.",good:false},
+ {text:"Начать мысленно доказывать себе, что опасности нет.",good:false}
+];
+
+const senses=[
+ {id:"see",text:"Найти глазами 5 предметов",correct:0},
+ {id:"touch",text:"Потрогать 4 разные поверхности",correct:1},
+ {id:"hear",text:"Назвать 3 разных звука",correct:2},
+ {id:"smell",text:"Различить 2 запаха",correct:3},
+ {id:"taste",text:"Почувствовать 1 вкус",correct:4},
+ {id:"thought",text:"Назвать 5 тревожных мыслей",correct:-1},
+ {id:"eyes",text:"Закрыть глаза на 30 секунд",correct:-1}
+];
+
+let anchorChoice=null,chosenSense=null,placements={},score=0,ground=0,focus=0,storm=6;
+let current=100,correctCount=0,notes=[];
+const $=id=>document.getElementById(id);
+
+function updateMeters(){
+ ground=Math.max(0,Math.min(10,ground));focus=Math.max(0,Math.min(10,focus));storm=Math.max(0,Math.min(10,storm));
+ $("groundNum").textContent=ground;$("focusNum").textContent=focus;$("stormNum").textContent=storm;
+ $("groundBar").style.width=ground*10+"%";$("focusBar").style.width=focus*10+"%";$("stormBar").style.width=storm*10+"%";
+}
+
+function renderAnchors(){
+ const grid=$("anchorGrid");grid.innerHTML="";
+ anchors.forEach((a,i)=>{
+  const b=document.createElement("button");b.className="choice";b.textContent=a.text;
+  b.onclick=()=>{
+   anchorChoice=i;
+   [...grid.children].forEach(x=>x.classList.remove("selected"));
+   b.classList.add("selected");$("toStep2").disabled=false;
+  };
+  grid.appendChild(b);
+ });
+}
+
+$("toStep2").onclick=()=>{
+ const good=anchors[anchorChoice].good;
+ if(good){score+=3;ground+=3;focus+=2;storm-=2}else{score+=0;storm+=1}
+ notes.push({title:"Первичный якорь",ok:good,explain:"Первое действие должно возвращать внимание к стопам и реальным объектам, а не углублять внутренний анализ."});
+ $("step1").classList.add("hidden");$("step2").classList.remove("hidden");
+ $("tab1").classList.remove("active");$("tab2").classList.add("active");
+ updateMeters();renderSenses();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+function renderSenses(){
+ const pool=$("sensePool");pool.innerHTML="<h3>Элементы</h3>";
+ senses.filter(s=>placements[s.id]===undefined).forEach(s=>{
+   const d=document.createElement("div");d.className="item";d.textContent=s.text;
+   if(chosenSense===s.id)d.classList.add("selected");
+   d.onclick=()=>{chosenSense=s.id;renderSenses()};
+   pool.appendChild(d);
+ });
+ document.querySelectorAll(".slot").forEach(slot=>{
+   slot.querySelectorAll(".item").forEach(x=>x.remove());
+   senses.filter(s=>placements[s.id]===Number(slot.dataset.slot)).forEach(s=>{
+     const d=document.createElement("div");d.className="item";d.textContent=s.text;
+     d.onclick=()=>{delete placements[s.id];chosenSense=null;renderSenses()};
+     slot.appendChild(d);
+   });
+ });
+}
+document.querySelectorAll(".slot").forEach(slot=>{
+ slot.onclick=()=>{
+  if(chosenSense){
+   Object.keys(placements).forEach(k=>{if(placements[k]===Number(slot.dataset.slot))delete placements[k]});
+   placements[chosenSense]=Number(slot.dataset.slot);chosenSense=null;renderSenses();
+  }
+ };
+});
+
+$("checkSequence").onclick=()=>{
+ if(Object.keys(placements).length<5){
+  const f=$("feedback2");f.className="feedback show mid";f.textContent="Заполните все пять слотов.";return;
+ }
+ let right=senses.filter(s=>s.correct>=0&&placements[s.id]===s.correct).length;
+ score+=right;ground+=right;focus+=right;storm-=right;
+ notes.push({title:"Метод 5–4–3–2–1",ok:right===5,explain:`Верно выстроено ${right} из 5 этапов. Последовательность: зрение, осязание, слух, запах, вкус.`});
+ const f=$("feedback2");f.className=`feedback show ${right===5?"good":"mid"}`;
+ f.textContent=right===5?"Последовательность собрана верно.":"Проверьте порядок: 5 предметов, 4 поверхности, 3 звука, 2 запаха, 1 вкус.";
+ updateMeters();
+ setTimeout(()=>{
+  $("step2").classList.add("hidden");$("step3").classList.remove("hidden");
+  $("tab2").classList.remove("active");$("tab3").classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+ },900);
+};
+
+$("checkAnswer").onclick=()=>{
+ const value=Number($("answerInput").value);
+ const expected=current-7;
+ const f=$("feedback3");
+ if(value===expected){
+   correctCount++;score++;focus+=1;storm-=1;current=expected;
+   $("currentNumber").textContent=current;$("answerInput").value="";
+   f.className="feedback show good";
+   f.textContent=`Верно. Следующее число: ${current-7}.`;
+   if(correctCount>=4){
+     $("finishBtn").disabled=false;
+     f.textContent="Четыре шага выполнены. Когнитивный контроль возвращен.";
+   }
+ }else{
+   f.className="feedback show bad";
+   f.textContent=`Попробуйте еще раз: ${current} − 7.`;
+ }
+ updateMeters();
+};
+
+$("finishBtn").onclick=()=>{
+ notes.push({title:"Счет через 7",ok:correctCount>=4,explain:"Простая когнитивная задача подключается после телесного и сенсорного заземления, а не вместо него."});
+ showResult();
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=3+5+4,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85&&storm<=2){
+  title="Контроль возвращен через тело";
+  desc="Вы сначала создаете физическую опору, затем расширяете внешний фокус и только после этого подключаете мышление.";
+ }else if(pct>=60){
+  title="Якорь работает, но логика включается рано";
+  desc="Вы понимаете технику, однако иногда пытаетесь анализировать состояние до того, как снизили интенсивность.";
+ }else{
+  title="Внутренняя буря остается главным фокусом";
+  desc="Выбранные действия слишком долго удерживают внимание внутри или усиливают стрессовую реакцию.";
+ }
+ const rows=notes.map(n=>`<div class="review-item"><span class="tag ${n.ok?"good":"mid"}">${n.ok?"Точно":"Частично"}</span><b>${n.title}</b><p>${n.explain}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+  <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+  <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+  <p><b>Опора:</b> ${ground}/10 · <b>Внешний фокус:</b> ${focus}/10 · <b>Ментальная буря:</b> ${storm}/10</p>
+  <p>Главный принцип: сначала тело и чувства, затем когнитивная задача. Закрытые глаза и задержка дыхания в момент сильной эмоции обычно усиливают внутренний фокус.</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${rows}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ anchorChoice=null;chosenSense=null;placements={};score=0;ground=0;focus=0;storm=6;current=100;correctCount=0;notes=[];
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ $("step1").classList.remove("hidden");$("step2").classList.add("hidden");$("step3").classList.add("hidden");
+ ["tab1","tab2","tab3"].forEach((id,i)=>$(id).classList.toggle("active",i===0));
+ $("toStep2").disabled=true;$("finishBtn").disabled=true;
+ $("currentNumber").textContent="100";$("answerInput").value="";
+ $("feedback1").className="feedback";$("feedback2").className="feedback";$("feedback3").className="feedback";
+ updateMeters();renderAnchors();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();renderAnchors();
+</script>
+</body>
+</html>
