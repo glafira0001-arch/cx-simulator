@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Антивирус мыслей</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172238;--muted:#68758c;
+  --blue:#3b67dc;--violet:#7458cf;--green:#2b8a62;--amber:#da9433;--red:#c94f5c;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(30,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(59,103,220,.12),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(116,88,207,.11),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#213663,#4c3978);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:850px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--red);
+  border-radius:18px;background:#fbfcfe;line-height:1.55
+}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;color:var(--muted)}
+.tab.active{background:#eef3ff;color:#294fae;border-color:#bac8ef}
+.step h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{
+  border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff;cursor:pointer;
+  min-height:108px;transition:.18s
+}
+.card:hover{transform:translateY(-2px);border-color:#adb9e8}
+.card.selected{border:2px solid var(--blue);background:#f1f4ff}
+.card strong{display:block;margin-bottom:6px}
+.card small{color:var(--muted);line-height:1.45}
+.sequence{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.slot{
+  border:2px dashed #ccd5e6;border-radius:18px;padding:16px;min-height:160px;background:#fbfcfe
+}
+.slot strong{display:block;margin-bottom:10px}
+.action{
+  border:1px solid var(--line);background:#fff;border-radius:14px;padding:13px;margin-bottom:10px;
+  cursor:pointer;line-height:1.4
+}
+.action.selected{outline:2px solid var(--violet)}
+.feedback{display:none;margin-top:16px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#factBar{background:var(--blue)}#bodyBar{background:var(--green)}#catBar{background:var(--red)}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#22386b,#60438d);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:7px}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:840px){
+  .grid,.sequence,.dashboard,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный тренажер</div>
+  <h1>Антивирус мыслей</h1>
+  <p>Тревожная мысль часто звучит убедительно только потому, что организм уже находится в стрессе. Ваша задача — остановить физиологический разгон, отделить факт от катастрофического вывода и выбрать один реальный следующий шаг.</p>
+  <div class="badges">
+    <span class="badge">4 мысленных паразита</span>
+    <span class="badge">Метод 30–30–30</span>
+    <span class="badge">Перевод паники в факт</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Ситуация</strong><br>
+    Вечером вы смотрите на список задач и думаете: «Я ничего не успеваю. Завтра все поймут, что я не справляюсь. Это катастрофа». Сердце бьется быстрее, плечи напряжены, мысли повторяются по кругу.
+  </div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Фактичность</span><b id="factNum">0</b></div><div class="meter"><span id="factBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Физиологический сброс</span><b id="bodyNum">0</b></div><div class="meter"><span id="bodyBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Катастрофизация</span><b id="catNum">6</b></div><div class="meter"><span id="catBar"></span></div></div>
+  </div>
+
+  <div class="nav">
+    <span class="tab active" id="tab1">1. Поймать паразита</span>
+    <span class="tab" id="tab2">2. Переключить тело</span>
+    <span class="tab" id="tab3">3. Перевести в факт</span>
+    <span class="tab" id="tab4">4. Выбрать шаг</span>
+  </div>
+
+  <div id="step1" class="step">
+    <h2>Какая мысль сильнее всего сжигает ресурс?</h2>
+    <div class="hint">Выберите не самую неприятную, а ту, которая превращает конкретную проблему в глобальную угрозу.</div>
+    <div id="parasiteGrid" class="grid"></div>
+    <div id="feedback1" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep2" disabled>Перейти к телу</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step hidden">
+    <h2>Соберите последовательность 30–30–30</h2>
+    <div class="hint">Нажмите на действие, затем на нужный слот. Важно не только выбрать элементы, но и выстроить их в правильной последовательности.</div>
+    <div id="actionPool"></div>
+    <div class="sequence">
+      <div class="slot" data-slot="0"><strong>Первые 30 секунд</strong></div>
+      <div class="slot" data-slot="1"><strong>Вторые 30 секунд</strong></div>
+      <div class="slot" data-slot="2"><strong>Третьи 30 секунд</strong></div>
+    </div>
+    <div id="feedback2" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="checkSequence">Проверить последовательность</button>
+    </div>
+  </div>
+
+  <div id="step3" class="step hidden">
+    <h2>Переведите катастрофу в сухой факт</h2>
+    <div class="hint">Выберите формулировку, которая не успокаивает искусственно, а возвращает измеримость и возможность действия.</div>
+    <div id="factGrid" class="grid"></div>
+    <div id="feedback3" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep4" disabled>Выбрать следующий шаг</button>
+    </div>
+  </div>
+
+  <div id="step4" class="step hidden">
+    <h2>Какой следующий шаг остановит прокручивание?</h2>
+    <div class="hint">Сильный вариант должен вынести тревогу из головы и превратить ее в один конкретный управляемый объект.</div>
+    <div id="nextGrid" class="grid"></div>
+    <div id="feedback4" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="finishBtn" disabled>Получить результат</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const parasites=[
+ {id:"cat",title:"«Я ничего не успеваю, завтра все поймут, что я не справляюсь»",text:"Обобщение + прогноз чужой оценки + катастрофизация.",good:true},
+ {id:"fact",title:"«У меня осталось 10 задач, а времени хватит примерно на 4»",text:"Неприятный, но измеримый факт.",good:false},
+ {id:"priority",title:"«Нужно определить, какие задачи действительно критичны»",text:"Формулировка уже ведет к действию.",good:false},
+ {id:"delay",title:"«Одну задачу придется перенести»",text:"Конкретное последствие, а не глобальная угроза.",good:false}
+];
+
+const sequenceActions=[
+ {id:"move",text:"30 секунд интенсивного движения",correct:0},
+ {id:"cold",text:"30 секунд холода на лицо или запястья",correct:1},
+ {id:"panorama",text:"30 секунд панорамного взгляда",correct:2},
+ {id:"analysis",text:"30 секунд анализа причин тревоги",correct:-1},
+ {id:"mail",text:"30 секунд проверки почты",correct:-1}
+];
+
+const facts=[
+ {text:"«У меня 10 задач. Сегодня я могу закончить 4, еще 3 перенесу, по остальным уточню приоритеты».",good:true},
+ {text:"«Все будет хорошо, нужно просто верить в себя».",good:false},
+ {text:"«Да, ситуация ужасная, но я постараюсь выдержать».",good:false},
+ {text:"«Я всегда все драматизирую, надо прекратить».",good:false}
+];
+
+const nextSteps=[
+ {text:"Записать все задачи, отметить одну первую и отдельно вынести то, что требует переноса или уточнения.",good:true},
+ {text:"Продолжать прокручивать список в голове, чтобы ничего не забыть.",good:false},
+ {text:"После 21:00 принять решение, что эта работа вам не подходит.",good:false},
+ {text:"Открыть соцсети на 20 минут, чтобы отвлечься.",good:false}
+];
+
+let selectedParasite=null,chosenAction=null,placements={},selectedFact=null,selectedNext=null;
+let score=0,factScore=0,bodyScore=0,cat=6,notes=[];
+const $=id=>document.getElementById(id);
+
+function clamp(v){return Math.max(0,Math.min(10,v))}
+function updateMeters(){
+ factScore=clamp(factScore);bodyScore=clamp(bodyScore);cat=clamp(cat);
+ $("factNum").textContent=factScore;$("bodyNum").textContent=bodyScore;$("catNum").textContent=cat;
+ $("factBar").style.width=factScore*10+"%";$("bodyBar").style.width=bodyScore*10+"%";$("catBar").style.width=cat*10+"%";
+}
+
+function renderParasites(){
+ const grid=$("parasiteGrid");grid.innerHTML="";
+ parasites.forEach(p=>{
+  const d=document.createElement("div");d.className="card";
+  d.innerHTML=`<strong>${p.title}</strong><small>${p.text}</small>`;
+  d.onclick=()=>{
+    selectedParasite=p.id;
+    [...grid.children].forEach(x=>x.classList.remove("selected"));
+    d.classList.add("selected");$("toStep2").disabled=false;
+  };
+  grid.appendChild(d);
+ });
+}
+
+function renderSequence(){
+ const pool=$("actionPool");pool.innerHTML="<h3>Действия</h3>";
+ sequenceActions.filter(a=>placements[a.id]===undefined).forEach(a=>{
+   const d=document.createElement("div");d.className="action";d.textContent=a.text;
+   if(chosenAction===a.id)d.classList.add("selected");
+   d.onclick=()=>{chosenAction=a.id;renderSequence()};
+   pool.appendChild(d);
+ });
+ document.querySelectorAll(".slot").forEach(s=>{
+   s.querySelectorAll(".action").forEach(x=>x.remove());
+   sequenceActions.filter(a=>placements[a.id]===Number(s.dataset.slot)).forEach(a=>{
+     const d=document.createElement("div");d.className="action";d.textContent=a.text;
+     d.onclick=()=>{delete placements[a.id];chosenAction=null;renderSequence()};
+     s.appendChild(d);
+   });
+ });
+}
+document.querySelectorAll(".slot").forEach(s=>{
+ s.onclick=()=>{
+   if(chosenAction){
+     Object.keys(placements).forEach(k=>{if(placements[k]===Number(s.dataset.slot))delete placements[k]});
+     placements[chosenAction]=Number(s.dataset.slot);chosenAction=null;renderSequence();
+   }
+ };
+});
+
+function renderSingle(gridId,data,nextButton){
+ const grid=$(gridId);grid.innerHTML="";
+ data.forEach((o,i)=>{
+   const d=document.createElement("div");d.className="card";d.innerHTML=`<strong>${o.text}</strong>`;
+   d.onclick=()=>{
+     [...grid.children].forEach(x=>x.classList.remove("selected"));
+     d.classList.add("selected");
+     if(gridId==="factGrid")selectedFact=i;else selectedNext=i;
+     $(nextButton).disabled=false;
+   };
+   grid.appendChild(d);
+ });
+}
+
+$("toStep2").onclick=()=>{
+ const good=parasites.find(p=>p.id===selectedParasite).good;
+ if(good){score+=3;factScore+=2;cat-=1}
+ else{score+=1;cat+=1}
+ notes.push({title:"Распознавание паразита",level:good?"good":"mid",
+ text:good?"Вы нашли глобальную катастрофическую формулировку, а не перепутали ее с неприятным фактом.":"Вы выбрали формулировку, которая уже содержит измеримость или действие."});
+ $("step1").classList.add("hidden");$("step2").classList.remove("hidden");
+ $("tab1").classList.remove("active");$("tab2").classList.add("active");
+ updateMeters();renderSequence();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("checkSequence").onclick=()=>{
+ const chosen=Object.keys(placements);
+ if(chosen.length<3){
+   const f=$("feedback2");f.className="feedback show mid";f.textContent="Заполните все три слота.";return;
+ }
+ let right=sequenceActions.filter(a=>a.correct>=0&&placements[a.id]===a.correct).length;
+ score+=right;bodyScore+=right;cat-=right;
+ notes.push({title:"Переключение 30–30–30",level:right===3?"good":right===2?"mid":"bad",
+ text:`Верно выстроено ${right} из 3 этапов. Сначала движение, затем холод, затем панорамный взгляд.`});
+ $("step2").classList.add("hidden");$("step3").classList.remove("hidden");
+ $("tab2").classList.remove("active");$("tab3").classList.add("active");
+ updateMeters();renderSingle("factGrid",facts,"toStep4");window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("toStep4").onclick=()=>{
+ const good=facts[selectedFact].good;
+ if(good){score+=3;factScore+=3;cat-=2}else{score+=0;cat+=1}
+ notes.push({title:"Перевод в факт",level:good?"good":"bad",
+ text:good?"Вы вернули измеримость: количество задач, реальную пропускную способность и варианты переноса.":"Выбранная формулировка либо успокаивает без фактов, либо продолжает самообвинение."});
+ $("step3").classList.add("hidden");$("step4").classList.remove("hidden");
+ $("tab3").classList.remove("active");$("tab4").classList.add("active");
+ updateMeters();renderSingle("nextGrid",nextSteps,"finishBtn");window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("finishBtn").onclick=()=>{
+ const good=nextSteps[selectedNext].good;
+ if(good){score+=3;factScore+=2;cat-=2}else{score+=0;cat+=1}
+ notes.push({title:"Следующий шаг",level:good?"good":"bad",
+ text:good?"Вы выгрузили задачи из головы и превратили тревогу в один управляемый следующий шаг.":"Выбранное действие не закрывает цикл и сохраняет фоновые повторы."});
+ updateMeters();showResult();
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=12,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85&&cat<=2){
+   title="Паника переведена в управление";
+   desc="Вы умеете сначала остановить физиологический разгон, затем отделить факт от вымышленной угрозы и только после этого выбирать действие.";
+ }else if(pct>=60){
+   title="Факты появляются, но паразит еще цепляется";
+   desc="Вы частично возвращаете контроль, однако иногда пытаетесь спорить с тревогой до того, как успокоили тело, или заменяете факт общей поддерживающей фразой.";
+ }else{
+   title="Воображаемая угроза продолжает расходовать топливо";
+   desc="Выбранные решения либо подпитывают катастрофизацию, либо создают временное отвлечение без выгрузки задачи из головы.";
+ }
+ const rows=notes.map(n=>`<div class="review-item"><span class="tag ${n.level}">${n.level==="good"?"Точно":n.level==="mid"?"Частично":"Риск"}</span><b>${n.title}</b><p>${n.text}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+   <p><b>Фактичность:</b> ${factScore}/10 · <b>Физиологический сброс:</b> ${bodyScore}/10 · <b>Катастрофизация:</b> ${cat}/10</p>
+   <p>Главный принцип: не спорить с мысленным паразитом на пике. Сначала переключить тело, затем записать сухой факт и определить один следующий шаг.</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${rows}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ selectedParasite=null;chosenAction=null;placements={};selectedFact=null;selectedNext=null;
+ score=0;factScore=0;bodyScore=0;cat=6;notes=[];
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ $("step1").classList.remove("hidden");$("step2").classList.add("hidden");
+ $("step3").classList.add("hidden");$("step4").classList.add("hidden");
+ ["tab1","tab2","tab3","tab4"].forEach((id,i)=>$(id).classList.toggle("active",i===0));
+ $("toStep2").disabled=true;$("toStep4").disabled=true;$("finishBtn").disabled=true;
+ $("feedback1").className="feedback";$("feedback2").className="feedback";
+ $("feedback3").className="feedback";$("feedback4").className="feedback";
+ updateMeters();renderParasites();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();renderParasites();
+</script>
+</body>
+</html>
