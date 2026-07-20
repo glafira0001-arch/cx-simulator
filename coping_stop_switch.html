@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Стоп-кран привычки</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172238;--muted:#68758c;
+  --blue:#3a67dc;--violet:#7458cf;--green:#2c8a62;--amber:#dc9534;--red:#c94f5c;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(30,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(58,103,220,.11),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(116,88,207,.10),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#223762,#4d3a78);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:860px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--red);
+  border-radius:18px;background:#fbfcfe;line-height:1.55
+}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;color:var(--muted)}
+.tab.active{background:#eef3ff;color:#294fae;border-color:#bac8ef}
+.step h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.scenario{border:1px solid var(--line);border-radius:18px;padding:18px;background:#fbfcfe;margin-bottom:16px}
+.scenario strong{display:block;margin-bottom:7px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:112px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab7e8;box-shadow:0 10px 24px rgba(58,103,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.level{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fbfcfe}
+.level h3{margin:0 0 10px}
+.option{
+  width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;
+  padding:12px;margin-top:9px;cursor:pointer;font:inherit;color:var(--text)
+}
+.option.selected{border:2px solid var(--blue);background:#f0f3ff}
+.formula{
+  margin-top:18px;padding:18px;border-radius:18px;background:#f5f7ff;border:1px solid #ccd6ef;
+  font-size:18px;line-height:1.6
+}
+.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#bodyBar{background:var(--green)}#emotionBar{background:var(--violet)}#actionBar{background:var(--blue)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#22396b,#5e4689);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:7px}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:900px){
+  .grid,.levels,.dashboard,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный тренажер</div>
+  <h1>Стоп-кран привычки</h1>
+  <p>Автоматическая стратегия совладания часто дает краткое облегчение, но не решает проблему. Ваша задача — распознать петлю, заменить ее на три адаптивных шага и собрать собственную формулу «если — то».</p>
+  <div class="badges">
+    <span class="badge">5 трудных ситуаций</span>
+    <span class="badge">Тело · эмоции · действие</span>
+    <span class="badge">Личная формула замены</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Исходная ситуация</strong><br>
+    После напряженного дня вы замечаете, что автоматически открываете соцсети, заедаете тревогу сладким или начинаете работать еще больше. В моменте становится легче, но на следующий день ресурса еще меньше.
+  </div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Тело</span><b id="bodyNum">0</b></div><div class="meter"><span id="bodyBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Эмоции</span><b id="emotionNum">0</b></div><div class="meter"><span id="emotionBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Действия</span><b id="actionNum">0</b></div><div class="meter"><span id="actionBar"></span></div></div>
+  </div>
+
+  <div class="nav">
+    <span class="tab active" id="tab1">1. Распознать петлю</span>
+    <span class="tab" id="tab2">2. Собрать замену</span>
+    <span class="tab" id="tab3">3. Настроить стоп-кран</span>
+  </div>
+
+  <div id="step1" class="step">
+    <h2>Что здесь является неадаптивной стратегией?</h2>
+    <div class="hint">Выберите вариант, который снижает напряжение только на короткое время, но не помогает ни телу, ни эмоциям, ни самой проблеме.</div>
+    <div class="scenario">
+      <strong id="scenarioTitle"></strong>
+      <div id="scenarioText"></div>
+    </div>
+    <div id="choices" class="grid"></div>
+    <div id="feedback1" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="nextScenario" disabled>Следующая ситуация</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step hidden">
+    <h2>Соберите адаптивную замену на трех уровнях</h2>
+    <div class="hint">Выберите по одному действию для тела, эмоций и следующего шага. Сильная замена не должна требовать большого ресурса.</div>
+    <div id="levelsGrid" class="levels"></div>
+    <div class="formula" id="replacementPreview">Сначала выберите по одному действию в каждом блоке.</div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep3" disabled>Собрать стоп-кран</button>
+    </div>
+  </div>
+
+  <div id="step3" class="step hidden">
+    <h2>Выберите формулу «если — то»</h2>
+    <div class="hint">Сильная формула должна быть конкретной, выполнимой и срабатывать до того, как привычная петля успеет развернуться.</div>
+    <div id="formulaGrid" class="grid"></div>
+    <div id="feedback3" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="finishBtn" disabled>Получить результат</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const scenarios=[
+{
+ title:"Тревога перед сном",
+ text:"Вы лежите в кровати, думаете о завтрашней встрече и автоматически открываете соцсети.",
+ correct:"Скроллинг, который временно отвлекает, но усиливает возбуждение и откладывает сон.",
+ options:[
+  "Скроллинг, который временно отвлекает, но усиливает возбуждение и откладывает сон.",
+  "Признать: «Да, я тревожусь перед важной встречей».",
+  "Записать один вопрос, который нужно уточнить утром.",
+  "Сделать несколько медленных выдохов."
+ ],
+ explain:"Соцсети маскируют тревогу, но не регулируют тело и не уменьшают неопределенность."
+},
+{
+ title:"Конфликт на работе",
+ text:"После тяжелого разговора вы садитесь за новые задачи и работаете без остановки до ночи.",
+ correct:"Трудоголизм как способ не чувствовать злость и напряжение.",
+ options:[
+  "Трудоголизм как способ не чувствовать злость и напряжение.",
+  "15 минут быстро пройтись.",
+  "Назвать злость и понять, какая граница была нарушена.",
+  "Записать, какой разговор нужно продолжить позже."
+ ],
+ explain:"Работа может отвлечь от эмоции, но физиологическое напряжение и причина конфликта сохраняются."
+},
+{
+ title:"Усталость после обеда",
+ text:"Вы чувствуете вялость и автоматически берете третью чашку кофе, хотя почти не пили воду.",
+ correct:"Кофеин как замена базовой физической регуляции.",
+ options:[
+  "Кофеин как замена базовой физической регуляции.",
+  "Выпить стакан воды.",
+  "Пройтись несколько минут.",
+  "Проверить, не слишком ли долго вы сидели без движения."
+ ],
+ explain:"Стимулятор маскирует сигнал тела, но не устраняет обезвоживание или застой."
+},
+{
+ title:"Сложная задача висит неделю",
+ text:"Вместо первого шага вы переставляете задачи в списке, отвечаете на мелкие письма и создаете новые таблицы.",
+ correct:"Имитация бурной деятельности вместо действия по главной задаче.",
+ options:[
+  "Имитация бурной деятельности вместо действия по главной задаче.",
+  "Разбить задачу на шаг длиной пять минут.",
+  "Сделать один конкретный элемент.",
+  "Зафиксировать, что именно непонятно."
+ ],
+ explain:"Внешне вы заняты, но цикл не сдвигается. Нужен минимальный реальный шаг."
+},
+{
+ title:"Разочарование после ошибки",
+ text:"Вы думаете: «Я опять все испортил», покупаете сладкое и стараетесь не возвращаться к задаче.",
+ correct:"Самообвинение и еда как краткое обезболивание.",
+ options:[
+  "Самообвинение и еда как краткое обезболивание.",
+  "Назвать разочарование.",
+  "Отделить ошибку от оценки себя.",
+  "Исправить один конкретный фрагмент."
+ ],
+ explain:"Самообвинение увеличивает стресс, а еда лишь ненадолго снижает напряжение."
+}
+];
+
+const levels=[
+{
+ title:"Тело",
+ options:[
+  {text:"Выпить стакан воды и 5 минут активно пройтись",score:3},
+  {text:"Выпить кофе и продолжить",score:0},
+  {text:"Замереть и ждать, пока появятся силы",score:1}
+ ]
+},
+{
+ title:"Эмоции",
+ options:[
+  {text:"Сказать: «Я сейчас чувствую тревогу, и это нормальная реакция»",score:3},
+  {text:"Убедить себя, что чувствовать тревогу стыдно",score:0},
+  {text:"Отвлечься, чтобы ничего не чувствовать",score:1}
+ ]
+},
+{
+ title:"Действие",
+ options:[
+  {text:"Сделать одно дело, которое висит больше недели, за 5 минут",score:3},
+  {text:"Переписать весь список задач",score:1},
+  {text:"Начать сразу три дела, чтобы почувствовать контроль",score:0}
+ ]
+}
+];
+
+const formulas=[
+ {text:"Если я хочу открыть соцсети, чтобы заглушить тревогу, то сначала выпиваю воду, делаю пять медленных выдохов и записываю один следующий шаг.",good:true},
+ {text:"Если мне тревожно, то я запрещаю себе пользоваться телефоном весь вечер.",good:false},
+ {text:"Если я чувствую усталость, то заставляю себя работать еще 30 минут.",good:false},
+ {text:"Если мне плохо, то я сначала жду, пока настроение полностью улучшится.",good:false}
+];
+
+let scenarioIndex=0,score=0,history=[],levelChoices={},formulaChoice=null;
+let body=0,emotion=0,action=0;
+const $=id=>document.getElementById(id);
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
+function updateMeters(){
+ $("bodyNum").textContent=body;$("emotionNum").textContent=emotion;$("actionNum").textContent=action;
+ $("bodyBar").style.width=Math.min(100,body*10)+"%";
+ $("emotionBar").style.width=Math.min(100,emotion*10)+"%";
+ $("actionBar").style.width=Math.min(100,action*10)+"%";
+}
+
+function renderScenario(){
+ const s=scenarios[scenarioIndex];
+ $("scenarioTitle").textContent=s.title;$("scenarioText").textContent=s.text;
+ $("feedback1").className="feedback";$("feedback1").textContent="";
+ $("nextScenario").disabled=true;
+ const box=$("choices");box.innerHTML="";box.dataset.locked="0";
+ shuffle(s.options).forEach(text=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=text;
+   b.onclick=()=>chooseScenario(text,s,b);box.appendChild(b);
+ });
+}
+
+function chooseScenario(text,s,btn){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";[...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const ok=text===s.correct;if(ok)score+=3;else score+=1;
+ history.push({title:s.title,ok,explain:s.explain});
+ const f=$("feedback1");f.className=`feedback show ${ok?"good":"mid"}`;
+ f.textContent=ok?"Точно. Вы нашли стратегию, которая лишь маскирует проблему.":`Более точный вариант: «${s.correct}».`;
+ $("nextScenario").disabled=false;
+}
+
+$("nextScenario").onclick=()=>{
+ scenarioIndex++;
+ if(scenarioIndex<scenarios.length){renderScenario();window.scrollTo({top:0,behavior:"smooth"})}
+ else showLevels();
+};
+
+function showLevels(){
+ $("step1").classList.add("hidden");$("step2").classList.remove("hidden");
+ $("tab1").classList.remove("active");$("tab2").classList.add("active");
+ const grid=$("levelsGrid");grid.innerHTML="";
+ levels.forEach((l,li)=>{
+   const card=document.createElement("div");card.className="level";card.innerHTML=`<h3>${l.title}</h3>`;
+   l.options.forEach((o,oi)=>{
+     const b=document.createElement("button");b.className="option";b.textContent=o.text;
+     b.onclick=()=>{
+       levelChoices[li]=oi;
+       [...card.querySelectorAll(".option")].forEach(x=>x.classList.remove("selected"));
+       b.classList.add("selected");
+       previewReplacement();
+       $("toStep3").disabled=Object.keys(levelChoices).length!==3;
+     };
+     card.appendChild(b);
+   });
+   grid.appendChild(card);
+ });
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function previewReplacement(){
+ if(Object.keys(levelChoices).length!==3){
+   $("replacementPreview").textContent="Сначала выберите по одному действию в каждом блоке.";return;
+ }
+ $("replacementPreview").innerHTML=
+   `<b>Ваша замена:</b><br>1. ${levels[0].options[levelChoices[0]].text}.<br>`+
+   `2. ${levels[1].options[levelChoices[1]].text}.<br>`+
+   `3. ${levels[2].options[levelChoices[2]].text}.`;
+}
+
+$("toStep3").onclick=()=>{
+ let s0=levels[0].options[levelChoices[0]].score;
+ let s1=levels[1].options[levelChoices[1]].score;
+ let s2=levels[2].options[levelChoices[2]].score;
+ score+=s0+s1+s2;body+=s0;emotion+=s1;action+=s2;updateMeters();
+ history.push({title:"Трехуровневая замена",ok:(s0+s1+s2)>=8,explain:"Адаптивная стратегия соединяет телесную разгрузку, легализацию эмоции и один конкретный шаг."});
+ $("step2").classList.add("hidden");$("step3").classList.remove("hidden");
+ $("tab2").classList.remove("active");$("tab3").classList.add("active");
+ renderFormulas();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+function renderFormulas(){
+ const grid=$("formulaGrid");grid.innerHTML="";
+ formulas.forEach((f,i)=>{
+   const d=document.createElement("div");d.className="choice";d.textContent=f.text;
+   d.onclick=()=>{
+     formulaChoice=i;
+     [...grid.children].forEach(x=>x.classList.remove("selected"));
+     d.classList.add("selected");$("finishBtn").disabled=false;
+   };
+   grid.appendChild(d);
+ });
+}
+
+$("finishBtn").onclick=()=>{
+ const good=formulas[formulaChoice].good;
+ if(good){score+=3;body+=1;emotion+=1;action+=1}else score+=0;
+ updateMeters();
+ history.push({title:"Формула «если — то»",ok:good,explain:"Сильная формула конкретна, коротка и запускается до того, как привычная реакция успеет развернуться."});
+ showResult();
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=scenarios.length*3+9+3,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85){
+   title="Петля прервана";
+   desc="Вы умеете отличать краткое обезболивание от реального совладания и заменяете привычку на три согласованных действия.";
+ }else if(pct>=60){
+   title="Замена работает не на всех уровнях";
+   desc="Вы распознаете часть деструктивных стратегий, но иногда компенсируете тело без работы с эмоцией или планируете без физиологической разгрузки.";
+ }else{
+   title="Облегчение вместо восстановления";
+   desc="Выбранные стратегии в основном маскируют напряжение и сохраняют исходную проблему.";
+ }
+ const rows=history.map(h=>`<div class="review-item"><span class="tag ${h.ok?"good":"mid"}">${h.ok?"Точно":"Частично"}</span><b>${h.title}</b><p>${h.explain}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+   <p><b>Тело:</b> ${body}/10 · <b>Эмоции:</b> ${emotion}/10 · <b>Действия:</b> ${action}/10</p>
+   <p>Главный принцип: хорошая стратегия совладания не просто отвлекает. Она помогает телу переработать возбуждение, признает эмоцию и возвращает движение по задаче.</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${rows}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ scenarioIndex=0;score=0;history=[];levelChoices={};formulaChoice=null;
+ body=0;emotion=0;action=0;
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ $("step1").classList.remove("hidden");$("step2").classList.add("hidden");$("step3").classList.add("hidden");
+ ["tab1","tab2","tab3"].forEach((id,i)=>$(id).classList.toggle("active",i===0));
+ $("toStep3").disabled=true;$("finishBtn").disabled=true;
+ $("feedback1").className="feedback";$("feedback3").className="feedback";
+ updateMeters();renderScenario();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();renderScenario();
+</script>
+</body>
+</html>
