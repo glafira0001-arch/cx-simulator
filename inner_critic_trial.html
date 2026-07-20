@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Суд над внутренним критиком</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172238;--muted:#68758c;
+  --blue:#3a67dc;--violet:#7458cf;--green:#2c8a62;--amber:#dc9534;--red:#c94f5c;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(30,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(58,103,220,.11),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(116,88,207,.10),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#24345f,#563b78);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:860px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--violet);
+  border-radius:18px;background:#fbfcfe;line-height:1.55
+}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;color:var(--muted)}
+.tab.active{background:#f2efff;color:#4e38a5;border-color:#c7bdf0}
+.step h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:112px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab7e8;box-shadow:0 10px 24px rgba(58,103,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.trial{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.side{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fbfcfe}
+.side h3{margin:0 0 10px}
+.card{
+  border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff;margin-bottom:10px;
+  cursor:pointer;line-height:1.4
+}
+.card.selected{outline:2px solid var(--violet)}
+.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#factBar{background:var(--blue)}#compBar{background:var(--green)}#criticBar{background:var(--red)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#253b6e,#65458e);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:7px}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:900px){
+  .grid,.trial,.dashboard,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный практикум</div>
+  <h1>Суд над внутренним критиком</h1>
+  <p>Внутренний критик часто говорит голосом факта, хотя на деле выдает тревожный прогноз или глобальное обвинение. Ваша задача — отделить обвинение от доказательств, дать критику имя и собрать короткий ответ без самообмана.</p>
+  <div class="badges">
+    <span class="badge">4 шага распаковки</span>
+    <span class="badge">Техника «Адвокат»</span>
+    <span class="badge">Ответ без токсичного позитива</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Ситуация</strong><br>
+    В воскресенье вы почти ничего не сделали по работе. Вечером появляется мысль: «Ты ленивый. Нормальные люди успевают больше. Ты опять подвел себя».
+  </div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Факты</span><b id="factNum">0</b></div><div class="meter"><span id="factBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Самосострадание</span><b id="compNum">0</b></div><div class="meter"><span id="compBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Громкость критика</span><b id="criticNum">6</b></div><div class="meter"><span id="criticBar"></span></div></div>
+  </div>
+
+  <div class="nav">
+    <span class="tab active" id="tab1">1. Распознать обвинение</span>
+    <span class="tab" id="tab2">2. Собрать защиту</span>
+    <span class="tab" id="tab3">3. Дать имя</span>
+    <span class="tab" id="tab4">4. Ответить себе</span>
+  </div>
+
+  <div id="step1" class="step">
+    <h2>Где в этой мысли критик подменяет факт обвинением?</h2>
+    <div class="hint">Выберите формулировку, которая содержит глобальную оценку личности, а не описание конкретного поведения.</div>
+    <div id="accusationGrid" class="grid"></div>
+    <div id="feedback1" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep2" disabled>Перейти к защите</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step hidden">
+    <h2>Соберите позицию «Адвоката»</h2>
+    <div class="hint">Слева — обвинения критика. Справа — возможные ответы. Выберите по одному наиболее точному факту для каждого обвинения.</div>
+    <div class="trial">
+      <div class="side">
+        <h3>Обвинения</h3>
+        <div class="card">«Ты ничего не сделал»</div>
+        <div class="card">«Ты опять слабый»</div>
+        <div class="card">«Так ты никогда ничего не добьешься»</div>
+      </div>
+      <div class="side">
+        <h3>Факты защиты</h3>
+        <div id="defenseOptions"></div>
+      </div>
+    </div>
+    <div id="feedback2" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep3" disabled>Назвать критика</button>
+    </div>
+  </div>
+
+  <div id="step3" class="step hidden">
+    <h2>Как лучше экстернализировать критика?</h2>
+    <div class="hint">Сильный вариант замечает голос, но не вступает с ним в бесконечный спор.</div>
+    <div id="nameGrid" class="grid"></div>
+    <div id="feedback3" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep4" disabled>Собрать сообщение себе</button>
+    </div>
+  </div>
+
+  <div id="step4" class="step hidden">
+    <h2>Какое сообщение стоит прочитать в момент самобичевания?</h2>
+    <div class="hint">Избегайте и самообвинения, и пустых аффирмаций. Хороший ответ одновременно честный и поддерживающий.</div>
+    <div id="messageGrid" class="grid"></div>
+    <div id="feedback4" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="finishBtn" disabled>Получить результат</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const accusations=[
+ {text:"«Ты ленивый»",good:true},
+ {text:"«Сегодня я не работал»",good:false},
+ {text:"«Я решил восстановиться после напряженной недели»",good:false},
+ {text:"«У меня осталась одна незавершенная задача»",good:false}
+];
+
+const defenses=[
+ {text:"Сегодня я восстановился после напряженной недели, вовремя поел и выспался.",good:true},
+ {text:"Я идеальный и всегда все делаю правильно.",good:false},
+ {text:"Нужно срочно наверстать все ночью.",good:false},
+ {text:"Раз я отдыхал, значит мне вообще не важны цели.",good:false}
+];
+
+const names=[
+ {text:"«О, Душнила снова пришел. Спасибо, я тебя услышал. Сейчас я отдыхаю и вернусь к задачам завтра».",good:true},
+ {text:"«Замолчи. Я запрещаю тебе появляться».",good:false},
+ {text:"«Сейчас я подробно докажу, почему ты неправ».",good:false},
+ {text:"«Ты прав, я действительно недостаточно хорош».",good:false}
+];
+
+const messages=[
+ {text:"«Сегодня я не выполнил рабочие задачи, но восстановление тоже было нужным действием. Завтра я начну с одного конкретного шага».",good:true},
+ {text:"«Я идеален и никогда не ленюсь».",good:false},
+ {text:"«Я опять все испортил, но попробую простить себя».",good:false},
+ {text:"«Нужно срочно стать продуктивнее, иначе я ничего не стою».",good:false}
+];
+
+let accusationChoice=null,defenseChoice=null,nameChoice=null,messageChoice=null;
+let score=0,facts=0,comp=0,critic=6,notes=[];
+const $=id=>document.getElementById(id);
+
+function updateMeters(){
+ facts=Math.max(0,Math.min(10,facts));comp=Math.max(0,Math.min(10,comp));critic=Math.max(0,Math.min(10,critic));
+ $("factNum").textContent=facts;$("compNum").textContent=comp;$("criticNum").textContent=critic;
+ $("factBar").style.width=facts*10+"%";$("compBar").style.width=comp*10+"%";$("criticBar").style.width=critic*10+"%";
+}
+function renderSingle(gridId,data,nextId,type){
+ const grid=$(gridId);grid.innerHTML="";
+ data.forEach((x,i)=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=x.text;
+   b.onclick=()=>{
+     [...grid.children].forEach(el=>el.classList.remove("selected"));
+     b.classList.add("selected");
+     if(type==="acc")accusationChoice=i;
+     if(type==="name")nameChoice=i;
+     if(type==="msg")messageChoice=i;
+     $(nextId).disabled=false;
+   };
+   grid.appendChild(b);
+ });
+}
+function renderDefense(){
+ const box=$("defenseOptions");box.innerHTML="";
+ defenses.forEach((d,i)=>{
+   const c=document.createElement("div");c.className="card";c.textContent=d.text;
+   c.onclick=()=>{
+     [...box.children].forEach(x=>x.classList.remove("selected"));
+     c.classList.add("selected");defenseChoice=i;$("toStep3").disabled=false;
+   };
+   box.appendChild(c);
+ });
+}
+
+$("toStep2").onclick=()=>{
+ const good=accusations[accusationChoice].good;
+ if(good){score+=3;facts+=2;critic-=1}else critic+=1;
+ notes.push({title:"Распознавание обвинения",ok:good,explain:"Критик превращает отдельное действие в глобальную оценку личности."});
+ $("step1").classList.add("hidden");$("step2").classList.remove("hidden");
+ $("tab1").classList.remove("active");$("tab2").classList.add("active");
+ updateMeters();renderDefense();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("toStep3").onclick=()=>{
+ const good=defenses[defenseChoice].good;
+ if(good){score+=3;facts+=3;comp+=1;critic-=2}else critic+=1;
+ notes.push({title:"Техника «Адвокат»",ok:good,explain:"Сильная защита опирается на конкретный факт, а не на аффирмацию или срочную компенсацию."});
+ $("step2").classList.add("hidden");$("step3").classList.remove("hidden");
+ $("tab2").classList.remove("active");$("tab3").classList.add("active");
+ updateMeters();renderSingle("nameGrid",names,"toStep4","name");window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("toStep4").onclick=()=>{
+ const good=names[nameChoice].good;
+ if(good){score+=3;comp+=2;critic-=2}else critic+=1;
+ notes.push({title:"Экстернализация",ok:good,explain:"Полезно заметить голос как отдельный процесс и не превращать контакт с ним в долгий спор."});
+ $("step3").classList.add("hidden");$("step4").classList.remove("hidden");
+ $("tab3").classList.remove("active");$("tab4").classList.add("active");
+ updateMeters();renderSingle("messageGrid",messages,"finishBtn","msg");window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("finishBtn").onclick=()=>{
+ const good=messages[messageChoice].good;
+ if(good){score+=3;facts+=2;comp+=3;critic-=2}else critic+=1;
+ notes.push({title:"Сообщение себе",ok:good,explain:"Самосострадание не отрицает факт, но отделяет ценность человека от его продуктивности."});
+ updateMeters();showResult();
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=12,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85&&critic<=2){
+  title="Критик переведен в фон";
+  desc="Вы умеете замечать обвинение, отвечать фактом и сохранять уважительный тон к себе без самообмана.";
+ }else if(pct>=60){
+  title="Адвокат есть, но спор затягивается";
+  desc="Вы частично защищаете себя, но иногда уходите в оправдания, токсичный позитив или попытку полностью подавить критика.";
+ }else{
+  title="Обвинение звучит как истина";
+  desc="Критик пока получает слишком много власти: отдельные ошибки превращаются в вывод о вашей ценности.";
+ }
+ const rows=notes.map(n=>`<div class="review-item"><span class="tag ${n.ok?"good":"mid"}">${n.ok?"Точно":"Частично"}</span><b>${n.title}</b><p>${n.explain}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+  <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+  <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+  <p><b>Факты:</b> ${facts}/10 · <b>Самосострадание:</b> ${comp}/10 · <b>Громкость критика:</b> ${critic}/10</p>
+  <p>Главный принцип: не спорить с критиком бесконечно и не заменять его пустыми аффирмациями. Достаточно заметить голос, назвать его и ответить одним реальным фактом.</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${rows}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ accusationChoice=null;defenseChoice=null;nameChoice=null;messageChoice=null;
+ score=0;facts=0;comp=0;critic=6;notes=[];
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ $("step1").classList.remove("hidden");$("step2").classList.add("hidden");
+ $("step3").classList.add("hidden");$("step4").classList.add("hidden");
+ ["tab1","tab2","tab3","tab4"].forEach((id,i)=>$(id).classList.toggle("active",i===0));
+ $("toStep2").disabled=true;$("toStep3").disabled=true;$("toStep4").disabled=true;$("finishBtn").disabled=true;
+ updateMeters();renderSingle("accusationGrid",accusations,"toStep2","acc");window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();renderSingle("accusationGrid",accusations,"toStep2","acc");
+</script>
+</body>
+</html>
