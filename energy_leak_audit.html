@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Карта утечек энергии</title>
+<style>
+:root{
+  --bg:#f3f6fb;--card:#fff;--text:#182238;--muted:#68758c;
+  --blue:#3865dc;--violet:#7357cf;--green:#26855e;--amber:#df9335;--red:#c94e5b;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(31,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(56,101,220,.12),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(115,87,207,.11),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#203463,#4f3979);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:850px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--blue);
+  border-radius:18px;background:#fafbfe;line-height:1.55
+}
+.topline{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-top:18px}
+.progress{height:10px;background:#ebeff6;border-radius:99px;overflow:hidden;margin-top:12px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:.35s}
+.dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#clarityBar{background:var(--blue)}#closureBar{background:var(--green)}
+#influenceBar{background:var(--violet)}#drainBar{background:var(--red)}
+.stage{margin-top:24px}
+.stage h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:112px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab7e8;box-shadow:0 10px 24px rgba(56,101,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.audit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.audit-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fbfcfe}
+.audit-card h3{margin:0 0 10px}
+.toggle{
+  width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;
+  padding:12px;margin-top:9px;cursor:pointer;font:inherit;color:var(--text)
+}
+.toggle.selected{border:2px solid var(--blue);background:#f0f3ff}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#21376b,#5f438a);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.stoplist{margin-top:20px;border:1px solid var(--line);border-radius:18px;padding:18px;background:#fbfcfe}
+.stop-item{padding:14px 0;border-top:1px solid var(--line)}
+.stop-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:840px){
+  .choices,.dashboard,.audit-grid,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный аудит</div>
+  <h1>Карта утечек энергии</h1>
+  <p>Вы будете разбирать рабочий день по трем фильтрам: контекст, сопротивление и коммуникация. Цель — найти не самую заметную, а самую системную утечку и превратить ее в конкретное правило на завтра.</p>
+  <div class="badges">
+    <span class="badge">6 рабочих эпизодов</span>
+    <span class="badge">Три фильтра</span>
+    <span class="badge">Персональный стоп-лист 20%</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Исходная ситуация</strong><br>
+    К 10:30 вы уже чувствуете себя выжатым, хотя сложная задача еще не началась. За утро вы отвечали на сообщения, уточняли противоречивые инструкции, переключались между чужими просьбами и вспоминали о незавершенных обещаниях.
+  </div>
+
+  <div class="topline">
+    <strong id="caseLabel">Эпизод 1 из 6</strong>
+    <span id="scoreLabel">Баллы: 0</span>
+  </div>
+  <div class="progress"><span id="progressBar"></span></div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Ясность</span><b id="clarityNum">0</b></div><div class="meter"><span id="clarityBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Закрытые циклы</span><b id="closureNum">0</b></div><div class="meter"><span id="closureBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Рычаги влияния</span><b id="influenceNum">0</b></div><div class="meter"><span id="influenceBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Утечка энергии</span><b id="drainNum">0</b></div><div class="meter"><span id="drainBar"></span></div></div>
+  </div>
+
+  <div class="stage">
+    <h2 id="stageTitle"></h2>
+    <div class="hint" id="stageHint"></div>
+    <div id="choices" class="choices"></div>
+    <div id="feedback" class="feedback"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" onclick="restart()">Начать заново</button>
+    <button class="btn primary" id="nextBtn" disabled>Продолжить</button>
+  </div>
+</section>
+
+<section id="audit" class="panel hidden">
+  <h2>Соберите «Стоп-лист 20%»</h2>
+  <p class="hint">Выберите по одному правилу в каждом фильтре. Задача — не оптимизировать всю жизнь, а убрать одну системную утечку уже завтра.</p>
+  <div class="audit-grid" id="auditGrid"></div>
+  <div class="actions">
+    <button class="btn secondary" onclick="restart()">Начать заново</button>
+    <button class="btn primary" id="finishBtn" disabled>Получить результат</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const cases=[
+{
+ title:"Фильтр контекста: открытый офис",
+ text:"Вы пытаетесь составить сложную модель, но рядом идут два звонка, мигает мессенджер, а на столе лежат документы из трех разных задач.",
+ correct:"Главная утечка — необходимость постоянно фильтровать шум и визуальные помехи. На сложную работу нужен защищенный контекст.",
+ options:[
+  "Главная утечка — необходимость постоянно фильтровать шум и визуальные помехи. На сложную работу нужен защищенный контекст.",
+  "Проблема в недостатке мотивации: нужно сильнее собраться.",
+  "Нужно научиться работать в любых условиях, иначе это слабость.",
+  "Стоит открыть еще один список задач, чтобы ничего не забыть."
+ ],
+ effect:{c:2,cl:0,i:0,d:-2},
+ explain:"Контекст сам по себе потребляет ресурс. Мозг тратит энергию на фильтрацию, даже если вы формально не отвлекаетесь."
+},
+{
+ title:"Фильтр сопротивления: непонятная задача",
+ text:"Вы получили задачу «подготовить стратегические предложения», но не знаете, кто примет решение, какой формат нужен и за что отвечаете именно вы.",
+ correct:"Утечка связана с ролевой неопределенностью. Сначала нужно уточнить результат, границы ответственности и критерии готовности.",
+ options:[
+  "Утечка связана с ролевой неопределенностью. Сначала нужно уточнить результат, границы ответственности и критерии готовности.",
+  "Нужно начать делать хоть что-нибудь, а смысл появится позже.",
+  "Это обычная лень перед сложной задачей.",
+  "Лучше взять на себя весь проект, чтобы точно ничего не упустить."
+ ],
+ effect:{c:3,cl:0,i:2,d:-2},
+ explain:"Когда границы роли неясны, мозг держит слишком широкий контур под контролем. Это быстро истощает."
+},
+{
+ title:"Фильтр коммуникации: после разговора нет ясности",
+ text:"После встречи с коллегой у вас появилось три новых обязательства, но непонятно, какие из них ваши, какие его и что важнее.",
+ correct:"Проблема не в количестве задач, а в размытых договоренностях. Нужно зафиксировать владельцев, приоритеты и сроки.",
+ options:[
+  "Проблема не в количестве задач, а в размытых договоренностях. Нужно зафиксировать владельцев, приоритеты и сроки.",
+  "Нужно просто работать быстрее.",
+  "Стоит принять все задачи, чтобы не выглядеть конфликтным.",
+  "Лучше избегать этого коллегу."
+ ],
+ effect:{c:3,cl:1,i:2,d:-2},
+ explain:"Коммуникация забирает энергию не только эмоционально. Неясные договоренности создают множество открытых циклов."
+},
+{
+ title:"Эффект Зейгарник: пять мелких обещаний",
+ text:"Вы постоянно вспоминаете, что обещали отправить файл, ответить двум людям, заказать доступ и проверить правку.",
+ correct:"Нужно выгрузить все обязательства в один список и для каждого определить следующий шаг или статус.",
+ options:[
+  "Нужно выгрузить все обязательства в один список и для каждого определить следующий шаг или статус.",
+  "Нужно держать все в голове, чтобы не потерять ответственность.",
+  "Стоит начать с самой неприятной задачи, остальные исчезнут сами.",
+  "Нужно периодически прокручивать обещания, чтобы не забыть."
+ ],
+ effect:{c:1,cl:3,i:0,d:-3},
+ explain:"Открытые циклы продолжают занимать оперативную память, пока не вынесены во внешнюю систему."
+},
+{
+ title:"Ответственность без власти",
+ text:"Вы отвечаете за срок проекта, но не можете назначать исполнителей, менять приоритеты и согласовывать бюджет.",
+ correct:"Это системная утечка: ответственность не поддержана рычагами влияния. Нужно пересогласовать полномочия или объем ответственности.",
+ options:[
+  "Это системная утечка: ответственность не поддержана рычагами влияния. Нужно пересогласовать полномочия или объем ответственности.",
+  "Нужно компенсировать отсутствие полномочий личной вовлеченностью.",
+  "Стоит контролировать всех еще чаще.",
+  "Нужно молча принять ситуацию как часть взрослой работы."
+ ],
+ effect:{c:2,cl:0,i:3,d:-3},
+ explain:"Гиперконтроль не заменяет полномочия. Если вы отвечаете за результат без права влиять, истощение становится структурным."
+},
+{
+ title:"Мелкие решения до 10 утра",
+ text:"До начала работы вы уже выбирали одежду, маршрут, завтрак, меню на вечер, отвечали на десятки неважных сообщений и переключались между чатами.",
+ correct:"Часть решений нужно автоматизировать и пакетировать, чтобы сохранить ресурс для сложной работы.",
+ options:[
+  "Часть решений нужно автоматизировать и пакетировать, чтобы сохранить ресурс для сложной работы.",
+  "Нужно просто увеличить силу воли.",
+  "Полезно принимать больше решений с утра, чтобы мозг разогрелся.",
+  "Стоит начать день с самых эмоциональных переписок."
+ ],
+ effect:{c:2,cl:1,i:0,d:-2},
+ explain:"Усталость от решений возникает до сложной работы. Снижение числа мелких выборов сохраняет когнитивный ресурс."
+}
+];
+
+const auditOptions=[
+{
+ title:"Контекст",
+ options:[
+  {text:"До 12:00 не открывать общий чат и провести 90 минут сложной работы в тихом режиме.",score:3},
+  {text:"Постараться меньше отвлекаться, ничего не меняя в окружении.",score:1},
+  {text:"Работать одновременно с почтой и мессенджером, чтобы ничего не пропустить.",score:0}
+ ]
+},
+{
+ title:"Сопротивление",
+ options:[
+  {text:"Не начинать новую задачу, пока не уточнены результат, критерии готовности и моя зона ответственности.",score:3},
+  {text:"Начинать любую задачу сразу, даже если смысл неясен.",score:0},
+  {text:"Запрашивать уточнения только после первой ошибки.",score:1}
+ ]
+},
+{
+ title:"Коммуникация",
+ options:[
+  {text:"После каждой важной встречи фиксировать владельцев, сроки и следующий шаг одним сообщением.",score:3},
+  {text:"Доверять устным договоренностям, чтобы не создавать бюрократию.",score:0},
+  {text:"Записывать только свои задачи, не уточняя обязательства других.",score:1}
+ ]
+}
+];
+
+let index=0,score=0,clarity=0,closure=0,influence=0,drain=6,history=[],auditChoices={};
+const $=id=>document.getElementById(id);
+function clamp(v){return Math.max(0,Math.min(10,v))}
+function updateMeters(){
+ clarity=clamp(clarity);closure=clamp(closure);influence=clamp(influence);drain=clamp(drain);
+ $("clarityNum").textContent=clarity;$("closureNum").textContent=closure;
+ $("influenceNum").textContent=influence;$("drainNum").textContent=drain;
+ $("clarityBar").style.width=clarity*10+"%";$("closureBar").style.width=closure*10+"%";
+ $("influenceBar").style.width=influence*10+"%";$("drainBar").style.width=drain*10+"%";
+}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function render(){
+ const c=cases[index];
+ $("caseLabel").textContent=`Эпизод ${index+1} из ${cases.length}`;
+ $("scoreLabel").textContent=`Баллы: ${score}`;
+ $("progressBar").style.width=(index/cases.length*100)+"%";
+ $("stageTitle").textContent=c.title;
+ $("stageHint").textContent=c.text;
+ $("feedback").className="feedback";$("feedback").textContent="";$("nextBtn").disabled=true;
+ const box=$("choices");box.innerHTML="";box.dataset.locked="0";
+ shuffle(c.options).forEach(text=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=text;
+   b.onclick=()=>choose(text,c,b);box.appendChild(b);
+ });
+}
+function choose(text,c,btn){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";[...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const ok=text===c.correct;
+ if(ok){
+   score+=3;clarity+=c.effect.c;closure+=c.effect.cl;influence+=c.effect.i;drain+=c.effect.d;
+ }else{
+   score+=text.includes("просто")||text.includes("молча")?0:1;drain+=1;
+ }
+ history.push({title:c.title,ok,choice:text,explain:c.explain});
+ updateMeters();$("scoreLabel").textContent=`Баллы: ${score}`;
+ const f=$("feedback");f.className=`feedback show ${ok?"good":"bad"}`;
+ f.textContent=ok?"Точно. Вы нашли системную утечку, а не обвинили себя в недостатке силы воли.":`Более точный разбор: ${c.correct}`;
+ $("nextBtn").disabled=false;
+}
+$("nextBtn").onclick=()=>{
+ index++;
+ if(index<cases.length){render();window.scrollTo({top:0,behavior:"smooth"})}
+ else showAudit();
+};
+
+function showAudit(){
+ $("game").classList.add("hidden");$("audit").classList.remove("hidden");
+ const grid=$("auditGrid");grid.innerHTML="";
+ auditOptions.forEach((a,ai)=>{
+   const card=document.createElement("div");card.className="audit-card";card.innerHTML=`<h3>${a.title}</h3>`;
+   a.options.forEach((o,oi)=>{
+     const b=document.createElement("button");b.className="toggle";b.textContent=o.text;
+     b.onclick=()=>{
+       auditChoices[ai]=oi;
+       [...card.querySelectorAll(".toggle")].forEach(x=>x.classList.remove("selected"));
+       b.classList.add("selected");
+       $("finishBtn").disabled=Object.keys(auditChoices).length!==auditOptions.length;
+     };
+     card.appendChild(b);
+   });
+   grid.appendChild(card);
+ });
+}
+
+$("finishBtn").onclick=()=>{
+ let auditScore=0;
+ auditOptions.forEach((a,i)=>auditScore+=a.options[auditChoices[i]].score);
+ score+=auditScore;
+ showResult(auditScore);
+};
+
+function showResult(auditScore){
+ $("audit").classList.add("hidden");
+ const max=cases.length*3+9,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85&&drain<=3){
+   title="Системный ремонт утечек";
+   desc="Вы отличаете реальную усталость от фонового истощения и умеете менять контекст, договоренности и правила работы, а не только увеличивать усилие.";
+ }else if(pct>=60){
+   title="Дыры найдены не все";
+   desc="Вы замечаете часть утечек, но иногда пытаетесь компенсировать системную проблему дисциплиной или терпением.";
+ }else{
+   title="Напор вместо ремонта";
+   desc="Вы чаще пытаетесь работать сильнее, хотя ресурс продолжает уходить через неясность, открытые циклы и отсутствие рычагов влияния.";
+ }
+ const stopItems=auditOptions.map((a,i)=>`<div class="stop-item"><b>${a.title}</b><p>${a.options[auditChoices[i]].text}</p></div>`).join("");
+ const reviews=history.map(h=>`<div class="stop-item"><span class="tag ${h.ok?"good":"bad"}">${h.ok?"Точно":"Риск"}</span><b>${h.title}</b><p>${h.explain}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+   <p><b>Ясность:</b> ${clarity}/10 · <b>Закрытые циклы:</b> ${closure}/10 · <b>Рычаги влияния:</b> ${influence}/10 · <b>Утечка:</b> ${drain}/10</p>
+   <p>Главный принцип: не пытаться компенсировать системную утечку дополнительным усилием. Сначала нужно изменить контекст, завершить открытые циклы или вернуть себе рычаг влияния.</p></div>
+ </div>
+ <div class="stoplist"><h2>Ваш «Стоп-лист 20%» на завтра</h2>${stopItems}</div>
+ <div class="stoplist"><h2>Разбор эпизодов</h2>${reviews}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ index=0;score=0;clarity=0;closure=0;influence=0;drain=6;history=[];auditChoices={};
+ $("result").classList.add("hidden");$("audit").classList.add("hidden");$("game").classList.remove("hidden");
+ $("finishBtn").disabled=true;updateMeters();render();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();render();
+</script>
+</body>
+</html>
