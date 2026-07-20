@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Эмоциональный детектив</title>
+  <style>
+    :root{
+      --bg:#f4f7fb; --card:#ffffff; --text:#17233b; --muted:#61708a;
+      --accent:#315efb; --accent2:#7b61ff; --ok:#188b55; --bad:#c43d4d;
+      --line:#dfe6f1; --shadow:0 14px 40px rgba(35,55,95,.10);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+      background:linear-gradient(135deg,#eef3ff 0%,#f7f9fc 48%,#f4f0ff 100%);
+      color:var(--text); min-height:100vh;
+    }
+    .app{max-width:1100px;margin:0 auto;padding:28px 18px 56px}
+    .hero{
+      background:linear-gradient(135deg,#172a53,#31206f);
+      color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+    }
+    .hero:after{
+      content:""; position:absolute; width:260px;height:260px;border-radius:50%;
+      right:-80px;top:-110px;background:rgba(255,255,255,.09)
+    }
+    .eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;opacity:.75}
+    h1{font-size:clamp(30px,5vw,54px);line-height:1.04;margin:10px 0 12px}
+    .hero p{max-width:760px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+    .pill{background:rgba(255,255,255,.12);padding:9px 13px;border-radius:999px;font-size:14px}
+    .panel{background:var(--card);margin-top:20px;padding:24px;border-radius:24px;box-shadow:var(--shadow)}
+    .progress-head{display:flex;justify-content:space-between;gap:16px;align-items:center}
+    .progress{height:10px;background:#e9edf5;border-radius:999px;overflow:hidden;margin-top:12px}
+    .progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.35s}
+    .scenario{margin-top:22px}
+    .case-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--muted);font-size:14px}
+    .case-title{font-size:28px;margin:10px 0 14px}
+    .message{
+      background:#f7f9fc;border:1px solid var(--line);border-left:5px solid var(--accent);
+      padding:18px 20px;border-radius:16px;font-size:17px;line-height:1.55
+    }
+    .context{margin-top:12px;color:var(--muted);font-size:15px;line-height:1.5}
+    .step{margin-top:22px}
+    .step h3{font-size:18px;margin:0 0 12px}
+    .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    button.choice{
+      text-align:left;border:1px solid var(--line);background:#fff;padding:15px;border-radius:15px;
+      cursor:pointer;font:inherit;color:var(--text);transition:.18s;min-height:78px
+    }
+    button.choice:hover{transform:translateY(-2px);border-color:#9eb1ff;box-shadow:0 8px 22px rgba(49,94,251,.10)}
+    button.choice.selected{border:2px solid var(--accent);background:#f1f4ff}
+    button.choice.locked{cursor:default;transform:none}
+    button.choice.correct{border-color:var(--ok);background:#edf9f3}
+    button.choice.wrong{border-color:var(--bad);background:#fff0f2}
+    .feedback{display:none;margin-top:16px;padding:16px;border-radius:15px;line-height:1.5}
+    .feedback.show{display:block}
+    .feedback.ok{background:#edf9f3;color:#145d3c}
+    .feedback.bad{background:#fff0f2;color:#7e2530}
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+    .btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;cursor:pointer;font-size:15px}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+    .btn.secondary{background:#eef2f8;color:#273550}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .hidden{display:none!important}
+    .result-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+    .score{
+      background:linear-gradient(135deg,#1e315f,#51358c);color:#fff;border-radius:22px;padding:24px
+    }
+    .score strong{font-size:56px;display:block;margin:8px 0}
+    .insight{border:1px solid var(--line);border-radius:18px;padding:18px;background:#fff}
+    .insight h3{margin-top:0}
+    .review{margin-top:18px}
+    .review-item{border-top:1px solid var(--line);padding:16px 0}
+    .review-item:first-child{border-top:0}
+    .tag{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;margin-right:6px}
+    .tag.ok{background:#e4f6ed;color:#14663f}.tag.bad{background:#fde7ea;color:#8a2834}
+    @media(max-width:760px){
+      .choices,.result-grid{grid-template-columns:1fr}
+      .hero,.panel{padding:20px}
+      .case-title{font-size:23px}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="hero">
+    <div class="eyebrow">Практикум по распознаванию эмоций</div>
+    <h1>Эмоциональный детектив</h1>
+    <p>Перед вами жизненные и рабочие ситуации, в которых внешняя реакция маскирует настоящую эмоцию. Ваша задача — определить эмоциональный сигнал, скрытую ценность и выбрать действие, которое не подавляет эмоцию, а помогает вернуть ситуацию в конструктив.</p>
+    <div class="stats">
+      <span class="pill">6 неоднозначных кейсов</span>
+      <span class="pill">3 решения в каждом кейсе</span>
+      <span class="pill">Без очевидных формулировок</span>
+    </div>
+  </section>
+
+  <section id="game" class="panel">
+    <div class="progress-head">
+      <strong id="progressText">Кейс 1 из 6</strong>
+      <span id="scoreLive">Баллы: 0</span>
+    </div>
+    <div class="progress"><span id="bar"></span></div>
+
+    <div class="scenario">
+      <div class="case-meta"><span id="caseType"></span><span>Сначала анализируйте сигнал, потом действие</span></div>
+      <h2 class="case-title" id="caseTitle"></h2>
+      <div class="message" id="caseMessage"></div>
+      <div class="context" id="caseContext"></div>
+
+      <div class="step" id="step1">
+        <h3>1. Какая эмоция здесь, вероятнее всего, является основной?</h3>
+        <div class="choices" id="emotionChoices"></div>
+      </div>
+
+      <div class="step hidden" id="step2">
+        <h3>2. Какая ценность оказалась под угрозой?</h3>
+        <div class="choices" id="valueChoices"></div>
+      </div>
+
+      <div class="step hidden" id="step3">
+        <h3>3. Какой ответ или действие будет наиболее точным?</h3>
+        <div class="choices" id="actionChoices"></div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn secondary" id="restartBtn">Начать заново</button>
+        <button class="btn primary" id="nextBtn" disabled>Следующий шаг</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const cases = [
+{
+ type:"Команда и ответственность",
+ title:"«Раз решение уже приняли без меня, тогда сами и отвечайте»",
+ message:"На встрече руководитель проекта спокойно произносит эту фразу, закрывает ноутбук и дальше почти не участвует в обсуждении.",
+ context:"За неделю до этого он дважды предупреждал о рисках, но его замечания не попали в итоговый план.",
+ emotion:"Гнев, злость",
+ values:"Справедливость и авторитет",
+ action:"Признать, что его экспертизу обошли, вернуть ему реальную зону влияния и отдельно договориться, за что он отвечает в новом плане.",
+ emotions:["Печаль, грусть","Гнев, злость","Стыд","Отвращение"],
+ valueOptions:["Социальная принадлежность","Безопасность и выживание","Справедливость и авторитет","Целостность и совесть"],
+ actions:[
+   "Напомнить, что саботаж недопустим, и потребовать включиться без дополнительных обсуждений.",
+   "Признать, что его экспертизу обошли, вернуть ему реальную зону влияния и отдельно договориться, за что он отвечает в новом плане.",
+   "Снять с него ответственность, раз он не согласен с решением.",
+   "Предложить не принимать ситуацию близко к сердцу и сосредоточиться на командной цели."
+ ],
+ explain:"Фраза звучит как отказ от ответственности, но ее ядро — нарушение влияния и справедливости. Рабочий ответ не в том, чтобы успокоить человека, а в том, чтобы восстановить понятные границы полномочий."
+},
+{
+ type:"Изменения и неопределенность",
+ title:"«Я просто хочу увидеть еще одну версию расчета»",
+ message:"Финансовый директор четвертый раз возвращает модель на доработку. Формальных ошибок почти нет, но запуск снова откладывается.",
+ context:"Проект новый, данных мало, а итоговое решение будет публично обсуждаться советом директоров.",
+ emotion:"Страх, тревога",
+ values:"Безопасность и выживание",
+ action:"Зафиксировать, какой уровень неопределенности допустим, обозначить критерий достаточности данных и принять решение с заранее согласованным планом контроля рисков.",
+ emotions:["Интерес","Страх, тревога","Вина","Гнев, злость"],
+ valueOptions:["Познание и эволюция","Безопасность и выживание","Достижение и созидание","Справедливость и авторитет"],
+ actions:[
+   "Попросить команду сделать еще одну версию, чтобы снизить напряжение.",
+   "Передать решение генеральному директору, чтобы снять с финансового директора личный риск.",
+   "Зафиксировать, какой уровень неопределенности допустим, обозначить критерий достаточности данных и принять решение с заранее согласованным планом контроля рисков.",
+   "Указать, что перфекционизм тормозит бизнес, и установить жесткий дедлайн без обсуждения."
+ ],
+ explain:"За бесконечными уточнениями часто стоит не интерес к данным, а тревога перед необратимым решением. Сильный ответ уменьшает не эмоцию, а неопределенность процесса принятия решения."
+},
+{
+ type:"Обратная связь",
+ title:"«Все нормально. Я учту»",
+ message:"После жесткой критики сотрудник говорит это ровным голосом, не задает вопросов и в течение недели перестает предлагать идеи.",
+ context:"Замечания были по делу, но прозвучали при коллегах и касались не только результата, но и профессиональной зрелости сотрудника.",
+ emotion:"Стыд",
+ values:"Социальная принадлежность",
+ action:"Обсудить ситуацию лично, отделить оценку результата от оценки личности и дать сотруднику возможность восстановить профессиональный статус через конкретную следующую задачу.",
+ emotions:["Стыд","Вина","Печаль, грусть","Отвращение"],
+ valueOptions:["Целостность и совесть","Социальная принадлежность","Смысл и связь с людьми","Достижение и созидание"],
+ actions:[
+   "Повторить обратную связь мягче, но снова при команде, чтобы всем были понятны стандарты.",
+   "Дать сотруднику время и не возвращаться к теме, пока он сам не заговорит.",
+   "Обсудить ситуацию лично, отделить оценку результата от оценки личности и дать сотруднику возможность восстановить профессиональный статус через конкретную следующую задачу.",
+   "Снизить сложность задач, чтобы сотрудник снова почувствовал уверенность."
+ ],
+ explain:"Стыд редко выражается напрямую. Он часто выглядит как послушание и исчезновение инициативы. Здесь важно не только смягчить тон, но и восстановить принадлежность и профессиональное достоинство."
+},
+{
+ type:"Этика и стандарты",
+ title:"«Мне неприятно, что мы так продали этот продукт»",
+ message:"Менеджер не спорит с финансовым результатом, но отказывается участвовать в следующей кампании и говорит, что ему нужно «переварить происходящее».",
+ context:"Кампания формально законна, но в рекламе намеренно использовали двусмысленные обещания, которые клиент мог понять шире реальных возможностей продукта.",
+ emotion:"Вина",
+ values:"Целостность и совесть",
+ action:"Разобрать, какой внутренний стандарт был нарушен, и вместе определить, какие формулировки и ограничения должны стать обязательными в следующих кампаниях.",
+ emotions:["Отвращение","Вина","Гнев, злость","Печаль, грусть"],
+ valueOptions:["Чистота физическая или моральная","Целостность и совесть","Справедливость и авторитет","Смысл и связь с людьми"],
+ actions:[
+   "Объяснить, что бизнес всегда использует убеждение и не стоит морализировать.",
+   "Предложить менеджеру не участвовать в продажах, если ему некомфортно.",
+   "Разобрать, какой внутренний стандарт был нарушен, и вместе определить, какие формулировки и ограничения должны стать обязательными в следующих кампаниях.",
+   "Похвалить его за чувствительность, но оставить процесс без изменений."
+ ],
+ explain:"Вина связана не просто с отвращением к чужому решению, а с ощущением собственного участия в нарушении личного стандарта. Конструктивный выход — превратить совесть в критерий будущих решений."
+},
+{
+ type:"Потеря роли",
+ title:"«Я понимаю, что компании так выгоднее»",
+ message:"После объединения отделов опытный руководитель поддерживает реорганизацию, но становится заметно тише и все чаще говорит, что коллеги справятся без него.",
+ context:"Он не потерял зарплату, но перестал быть человеком, к которому команда обращалась за окончательным решением.",
+ emotion:"Печаль, грусть",
+ values:"Смысл и связь с людьми",
+ action:"Признать потерю прежней роли и вместе сформировать новую значимую функцию, а не убеждать его, что формально ничего плохого не произошло.",
+ emotions:["Печаль, грусть","Страх, тревога","Стыд","Гнев, злость"],
+ valueOptions:["Смысл и связь с людьми","Безопасность и выживание","Социальная принадлежность","Справедливость и авторитет"],
+ actions:[
+   "Показать, что его доход и статус не снизились, поэтому причин для переживаний нет.",
+   "Признать потерю прежней роли и вместе сформировать новую значимую функцию, а не убеждать его, что формально ничего плохого не произошло.",
+   "Дать ему больше операционных задач, чтобы он меньше думал о переменах.",
+   "Подчеркнуть, что лидер должен быстрее адаптироваться и служить примером."
+ ],
+ explain:"Печаль возникает не только из-за людей или денег. Здесь утрачены роль, смысл и привычная связь с командой. Рациональные аргументы не заменят создание новой значимой опоры."
+},
+{
+ type:"Стратегическая возможность",
+ title:"«Не уверен, что это окупится, но я хочу разобраться»",
+ message:"Руководитель продукта просит неделю на исследование технологии, которая пока не входит в стратегию компании.",
+ context:"Он не настаивает на немедленном запуске и сам предлагает ограничить бюджет эксперимента.",
+ emotion:"Интерес",
+ values:"Познание и эволюция",
+ action:"Дать ограниченный исследовательский мандат: гипотеза, срок, бюджет и критерии, после которых компания либо продолжает, либо закрывает эксперимент.",
+ emotions:["Радость","Интерес","Страх, тревога","Гнев, злость"],
+ valueOptions:["Достижение и созидание","Познание и эволюция","Безопасность и выживание","Справедливость и авторитет"],
+ actions:[
+   "Отказать, потому что инициатива не входит в утвержденную стратегию.",
+   "Сразу включить технологию в дорожную карту, чтобы не потерять возможность.",
+   "Дать ограниченный исследовательский мандат: гипотеза, срок, бюджет и критерии, после которых компания либо продолжает, либо закрывает эксперимент.",
+   "Предложить изучать тему в свободное время без ресурсов компании."
+ ],
+ explain:"Интерес — не сигнал немедленно инвестировать, но и не повод подавлять инициативу. Лучшее решение создает безопасный контейнер для познания и сохраняет управляемость."
+}
+];
+
+let idx=0, step=1, score=0, answers=[];
+
+const $=id=>document.getElementById(id);
+const progressText=$("progressText"), scoreLive=$("scoreLive"), bar=$("bar");
+const nextBtn=$("nextBtn"), feedback=$("feedback");
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+function renderChoices(containerId, items, correct, kind){
+  const c=$(containerId); c.innerHTML="";
+  shuffle(items).forEach(text=>{
+    const b=document.createElement("button");
+    b.className="choice"; b.textContent=text;
+    b.onclick=()=>select(b,text,correct,kind,c);
+    c.appendChild(b);
+  });
+}
+function loadCase(){
+  step=1; nextBtn.textContent="Следующий шаг"; nextBtn.disabled=true;
+  feedback.className="feedback"; feedback.textContent="";
+  $("step1").classList.remove("hidden"); $("step2").classList.add("hidden"); $("step3").classList.add("hidden");
+  const c=cases[idx];
+  progressText.textContent=`Кейс ${idx+1} из ${cases.length}`;
+  scoreLive.textContent=`Баллы: ${score}`;
+  bar.style.width=`${(idx/cases.length)*100}%`;
+  $("caseType").textContent=c.type; $("caseTitle").textContent=c.title;
+  $("caseMessage").textContent=c.message; $("caseContext").textContent=c.context;
+  renderChoices("emotionChoices",c.emotions,c.emotion,"emotion");
+  renderChoices("valueChoices",c.valueOptions,c.values,"value");
+  renderChoices("actionChoices",c.actions,c.action,"action");
+}
+function select(btn,text,correct,kind,container){
+  if(container.dataset.locked==="1") return;
+  container.dataset.locked="1";
+  [...container.children].forEach(x=>{x.classList.add("locked"); if(x.textContent===correct)x.classList.add("correct")});
+  const ok=text===correct;
+  btn.classList.add(ok?"correct":"wrong");
+  if(ok) score++;
+  answers.push({case:idx,kind,chosen:text,correct,ok});
+  feedback.className=`feedback show ${ok?"ok":"bad"}`;
+  feedback.textContent=ok ? "Точно. Вы распознали ключевой сигнал." : `Не совсем. Более точный вариант: «${correct}».`;
+  nextBtn.disabled=false;
+}
+function clearLocks(){
+  ["emotionChoices","valueChoices","actionChoices"].forEach(id=>$(id).dataset.locked="0")
+}
+nextBtn.onclick=()=>{
+  nextBtn.disabled=true; feedback.className="feedback";
+  if(step===1){step=2;$("step2").classList.remove("hidden");$("step2").scrollIntoView({behavior:"smooth",block:"center"});}
+  else if(step===2){step=3;$("step3").classList.remove("hidden");$("step3").scrollIntoView({behavior:"smooth",block:"center"});}
+  else{
+    idx++;
+    if(idx<cases.length){clearLocks();loadCase();window.scrollTo({top:0,behavior:"smooth"});}
+    else showResult();
+  }
+};
+$("restartBtn").onclick=restart;
+
+function restart(){
+  idx=0;step=1;score=0;answers=[];clearLocks();
+  $("result").classList.add("hidden");$("game").classList.remove("hidden");loadCase();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function showResult(){
+  $("game").classList.add("hidden");
+  const result=$("result"); result.classList.remove("hidden");
+  bar.style.width="100%";
+  const max=cases.length*3, pct=Math.round(score/max*100);
+  let profile="";
+  if(pct>=85) profile="Вы хорошо различаете внешний стиль реакции и ее внутренний сигнал. Ваш риск — слишком быстро считать свою интерпретацию единственно возможной.";
+  else if(pct>=60) profile="Вы уверенно распознаете часть эмоций, но иногда переходите к действию раньше, чем определяете ценность, которая оказалась под угрозой.";
+  else profile="Вы чаще реагируете на внешнее поведение, чем на скрытый эмоциональный сигнал. Из-за этого решение может выглядеть логичным, но не учитывать настоящую причину реакции.";
+  const reviews=cases.map((c,i)=>{
+    const a=answers.filter(x=>x.case===i), n=a.filter(x=>x.ok).length;
+    return `<div class="review-item"><span class="tag ${n===3?"ok":"bad"}">${n}/3</span><strong>${c.title}</strong><p>${c.explain}</p></div>`
+  }).join("");
+  result.innerHTML=`
+    <div class="result-grid">
+      <div class="score"><div class="eyebrow">Ваш результат</div><strong>${score}/${max}</strong><div>${pct}% точных решений</div></div>
+      <div class="insight"><h3>Что показывает результат</h3><p>${profile}</p><p><strong>Главный принцип:</strong> эмоция — не помеха управлению, а диагностический сигнал о ценности, которая оказалась под угрозой.</p></div>
+    </div>
+    <div class="review"><h2>Разбор кейсов</h2>${reviews}</div>
+    <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+  result.scrollIntoView({behavior:"smooth"});
+}
+clearLocks();loadCase();
+</script>
+</body>
+</html>
