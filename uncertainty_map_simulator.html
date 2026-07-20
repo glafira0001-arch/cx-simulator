@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Карта неопределенности</title>
+<style>
+:root{
+  --bg:#f3f6fb;--card:#fff;--text:#17233b;--muted:#68758c;
+  --blue:#3765e3;--violet:#7258d9;--green:#24845b;--orange:#e8912f;--red:#c94f5c;
+  --line:#dfe6f1;--shadow:0 16px 42px rgba(31,48,84,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+  radial-gradient(circle at 8% 8%,rgba(55,101,227,.12),transparent 27%),
+  radial-gradient(circle at 95% 12%,rgba(114,88,217,.13),transparent 24%),
+  var(--bg)
+}
+.app{max-width:1100px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#182b5c,#49327d);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-85px;top:-105px;width:280px;height:280px;border-radius:50%;
+  background:rgba(255,255,255,.08)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.74}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:800px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.topline{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.progress{height:10px;background:#ebeff6;border-radius:99px;overflow:hidden;margin-top:12px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:.35s}
+.case{
+  margin-top:20px;padding:20px;border-radius:18px;background:#f8faff;border:1px solid var(--line);
+  border-left:5px solid var(--blue);line-height:1.55
+}
+.dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#clarityBar{background:var(--blue)}#resourceBar{background:var(--green)}
+#avoidBar{background:var(--red)}#energyBar{background:var(--orange)}
+.stage{margin-top:24px}
+.stage h2{font-size:26px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:108px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#a6b5ea;box-shadow:0 10px 24px rgba(55,101,227,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155e40}
+.feedback.mid{background:#fff5e8;color:#805019}.feedback.bad{background:#fff0f2;color:#7d2934}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f7;color:#26344f}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#1d336a,#5e3d94);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{padding:15px 0;border-top:1px solid var(--line)}
+.review-item:first-child{border-top:0}
+.review-item b{display:block;margin:5px 0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:800px){
+  .choices,.dashboard,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный практикум</div>
+  <h1>Карта неопределенности</h1>
+  <p>Тревога часто требует не успокоения, а точности. Ваша задача — понять, какой именно информации не хватает, не перепутать подготовку с избеганием и превратить телесное напряжение в действие.</p>
+  <div class="badges">
+    <span class="badge">4 этапа решения</span>
+    <span class="badge">Правдоподобные ловушки</span>
+    <span class="badge">Итоговый профиль стратегии</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="topline">
+    <strong id="stepLabel">Этап 1 из 4</strong>
+    <span id="scoreLabel">Баллы: 0</span>
+  </div>
+  <div class="progress"><span id="progressBar"></span></div>
+
+  <div class="case">
+    <strong>Кейс «Синдром нового проекта»</strong><br>
+    Вам поручили возглавить проект в новой для вас области. Вы просыпаетесь с комком в горле, постоянно проверяете почту, боитесь критики и откладываете старт, потому что не понимаете, с чего начать.
+  </div>
+
+  <div class="dashboard">
+    <div class="metric"><div class="metric-head"><span>Ясность</span><b id="clarityNum">0</b></div><div class="meter"><span id="clarityBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Ресурсы</span><b id="resourceNum">0</b></div><div class="meter"><span id="resourceBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Избегание</span><b id="avoidNum">0</b></div><div class="meter"><span id="avoidBar"></span></div></div>
+    <div class="metric"><div class="metric-head"><span>Энергия действия</span><b id="energyNum">0</b></div><div class="meter"><span id="energyBar"></span></div></div>
+  </div>
+
+  <div class="stage">
+    <h2 id="stageTitle"></h2>
+    <div class="hint" id="stageHint"></div>
+    <div id="choices" class="choices"></div>
+    <div id="feedback" class="feedback"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" onclick="restart()">Начать заново</button>
+    <button class="btn primary" id="nextBtn" disabled>Продолжить</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const stages=[
+{
+ title:"Этап 1. Что именно сообщает тревога?",
+ hint:"Не выбирайте самую успокаивающую мысль. Ищите формулировку, которая превращает тревогу в диагностический сигнал.",
+ options:[
+  {text:"«Я не готов к этой роли. Скорее всего, руководство ошиблось, выбрав меня».",score:0,c:-2,r:-1,a:3,e:-2,level:"bad",fb:"Это не анализ риска, а глобальный вывод о собственной несостоятельности. Он повышает избегание и не дает понять, чего именно не хватает."},
+  {text:"«Проект важен, а у меня пока недостаточно информации о критериях успеха, рисках и ожиданиях».",score:3,c:3,r:1,a:-1,e:1,level:"good",fb:"Вы легализуете тревогу и переводите ее из оценки личности в перечень недостающих данных."},
+  {text:"«Нужно перестать нервничать и просто начать работать».",score:1,c:0,r:0,a:0,e:1,level:"mid",fb:"Импульс к действию полезен, но причина тревоги остается неясной. Есть риск быстро начать не с того."},
+  {text:"«Раз мне страшно, значит проект действительно опасный».",score:0,c:-1,r:0,a:2,e:-1,level:"bad",fb:"Телесное напряжение принимается за доказательство внешней угрозы. Это усиливает катастрофизацию."}
+ ]
+},
+{
+ title:"Этап 2. Какой вопрос задать первым?",
+ hint:"Хороший вопрос должен уменьшать неопределенность и приводить к конкретному действию.",
+ options:[
+  {text:"«Что будет, если я провалю проект и испорчу репутацию?»",score:0,c:-2,r:0,a:3,e:-2,level:"bad",fb:"Вопрос не собирает информацию, а репетирует катастрофу. Он усиливает тревогу, но не приближает к первому шагу."},
+  {text:"«Как доказать руководству, что мне дали слишком сложную задачу?»",score:1,c:0,r:-1,a:2,e:-1,level:"mid",fb:"Вы ищете защиту от ответственности раньше, чем выяснили реальные требования и доступные ресурсы."},
+  {text:"«Какой информации мне не хватает прямо сейчас, чтобы принять первое рабочее решение?»",score:3,c:3,r:2,a:-2,e:2,level:"good",fb:"Фокус смещается с оценки себя на конкретный дефицит информации. Такой вопрос уменьшает масштаб угрозы."},
+  {text:"«Сколько еще материалов мне нужно изучить, чтобы перестать волноваться?»",score:1,c:1,r:1,a:2,e:0,level:"mid",fb:"Подготовка может стать бесконечной. Критерием достаточности должно быть решение, а не исчезновение тревоги."}
+ ]
+},
+{
+ title:"Этап 3. Какой первый шаг действительно снижает неопределенность?",
+ hint:"Некоторые действия создают ощущение занятости, но не добавляют ясности.",
+ options:[
+  {text:"Собрать короткую встречу с руководителем и двумя экспертами: уточнить результат, ограничения, риски и критерии успеха.",score:3,c:3,r:3,a:-2,e:2,level:"good",fb:"Вы быстро получаете опорную информацию из источников, которые реально влияют на проект."},
+  {text:"Скачать как можно больше материалов по теме и посвятить неделю самостоятельному изучению.",score:1,c:1,r:2,a:2,e:0,level:"mid",fb:"Знаний станет больше, но без критериев проекта вы можете изучать не то. Это подготовка с риском превратиться в избегание."},
+  {text:"Сразу составить подробный план на три месяца, чтобы почувствовать контроль.",score:1,c:1,r:0,a:1,e:1,level:"mid",fb:"План без проясненных ожиданий создает иллюзию контроля и может закрепить ошибочные предположения."},
+  {text:"Ждать первого письма от руководства: тогда станет ясно, что от вас хотят.",score:0,c:-2,r:-2,a:3,e:-2,level:"bad",fb:"Вы отдаете инициативу тревоге и внешним обстоятельствам. Неопределенность сохраняется."}
+ ]
+},
+{
+ title:"Этап 4. Как интерпретировать телесное напряжение перед первой встречей?",
+ hint:"Не нужно убеждать себя, что вы спокойны. Выберите интерпретацию, которая сохраняет энергию и направляет ее в действие.",
+ options:[
+  {text:"«Я в предвкушении. Организм мобилизует меня, потому что встреча важна».",score:3,c:1,r:1,a:-1,e:3,level:"good",fb:"Вы не спорите с телесными сигналами, а меняете их значение: с угрозы на готовность к действию."},
+  {text:"«Нужно срочно успокоиться, иначе все заметят мою тревогу».",score:0,c:-1,r:0,a:2,e:-1,level:"bad",fb:"Попытка любой ценой убрать возбуждение делает само состояние новой угрозой."},
+  {text:"«Мне страшно, но я постараюсь скрыть это и вести себя уверенно».",score:1,c:0,r:0,a:1,e:1,level:"mid",fb:"Вы сохраняете функциональность, но фокусируетесь на маскировке, а не на использовании энергии."},
+  {text:"«Раз я волнуюсь, нужно перенести встречу и подготовиться лучше».",score:0,c:0,r:1,a:3,e:-2,level:"bad",fb:"Перенос закрепляет связь между тревогой и избеганием. В следующий раз порог входа станет еще выше."}
+ ]
+}
+];
+
+let current=0,total=0,clarity=0,resources=0,avoid=0,energy=0,history=[];
+const $=id=>document.getElementById(id);
+function clamp(v){return Math.max(0,Math.min(10,v))}
+function updateMeters(){
+ clarity=clamp(clarity);resources=clamp(resources);avoid=clamp(avoid);energy=clamp(energy);
+ $("clarityNum").textContent=clarity;$("resourceNum").textContent=resources;
+ $("avoidNum").textContent=avoid;$("energyNum").textContent=energy;
+ $("clarityBar").style.width=clarity*10+"%";$("resourceBar").style.width=resources*10+"%";
+ $("avoidBar").style.width=avoid*10+"%";$("energyBar").style.width=energy*10+"%";
+}
+function render(){
+ const s=stages[current];
+ $("stepLabel").textContent=`Этап ${current+1} из ${stages.length}`;
+ $("scoreLabel").textContent=`Баллы: ${total}`;
+ $("progressBar").style.width=(current/stages.length*100)+"%";
+ $("stageTitle").textContent=s.title;$("stageHint").textContent=s.hint;
+ $("feedback").className="feedback";$("feedback").textContent="";
+ $("nextBtn").disabled=true;
+ const box=$("choices");box.innerHTML="";box.dataset.locked="0";
+ s.options.forEach((o,i)=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=o.text;
+   b.onclick=()=>choose(i,b);box.appendChild(b);
+ });
+}
+function choose(i,btn){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";[...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const o=stages[current].options[i];
+ total+=o.score;clarity+=o.c;resources+=o.r;avoid+=o.a;energy+=o.e;
+ history.push({stage:stages[current].title,choice:o.text,score:o.score,level:o.level,fb:o.fb});
+ updateMeters();
+ $("scoreLabel").textContent=`Баллы: ${total}`;
+ const f=$("feedback");f.className=`feedback show ${o.level}`;f.textContent=o.fb;
+ $("nextBtn").disabled=false;
+}
+$("nextBtn").onclick=()=>{
+ current++;
+ if(current<stages.length){render();$("stageTitle").scrollIntoView({behavior:"smooth",block:"center"});}
+ else showResult();
+};
+function showResult(){
+ $("game").classList.add("hidden");
+ const result=$("result");result.classList.remove("hidden");
+ const pct=Math.round(total/(stages.length*3)*100);
+ let title,desc;
+ if(pct>=85 && avoid<=3){
+   title="Исследователь неопределенности";
+   desc="Вы используете тревогу как источник данных: уточняете дефицит информации, собираете ресурсы и переходите к действию без требования сначала полностью успокоиться.";
+ } else if(pct>=55){
+   title="Подготовка на грани избегания";
+   desc="Вы ищете ясность, но часть решений может превратить подготовку в отсрочку. Вам полезно заранее определять, какая информация действительно нужна для следующего решения.";
+ } else {
+   title="Катастрофический сценарист";
+   desc="Тревога быстро превращается в прогноз провала или желание отложить действие. Главная зона роста — отделять телесный сигнал от вывода о собственной несостоятельности.";
+ }
+ const reviews=history.map(h=>`<div class="review-item"><span class="tag ${h.level}">${h.score}/3</span><b>${h.stage}</b><div>${h.choice}</div><p>${h.fb}</p></div>`).join("");
+ result.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает маршрут</h3><p>${desc}</p>
+   <p><b>Ясность:</b> ${clarity}/10 · <b>Ресурсы:</b> ${resources}/10 · <b>Избегание:</b> ${avoid}/10 · <b>Энергия:</b> ${energy}/10</p>
+   <p>Конструктивная работа со страхом начинается не с вопроса «как перестать бояться», а с вопроса «какой информации или ресурса мне не хватает для следующего шага».</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${reviews}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ result.scrollIntoView({behavior:"smooth"});
+}
+function restart(){
+ current=0;total=0;clarity=0;resources=0;avoid=0;energy=0;history=[];
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ updateMeters();render();window.scrollTo({top:0,behavior:"smooth"});
+}
+updateMeters();render();
+</script>
+</body>
+</html>
