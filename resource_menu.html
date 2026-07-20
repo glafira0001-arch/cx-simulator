@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ресурсное меню</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172238;--muted:#68758c;
+  --blue:#3a67dc;--violet:#7458cf;--green:#2c8a62;--amber:#dc9534;--red:#c94f5c;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(30,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 7%,rgba(58,103,220,.11),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(116,88,207,.10),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#213761,#4c3d75);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:860px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--blue);
+  border-radius:18px;background:#fbfcfe;line-height:1.55
+}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;color:var(--muted)}
+.tab.active{background:#eef3ff;color:#294fae;border-color:#bac8ef}
+.step h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.scenario{
+  border:1px solid var(--line);border-radius:18px;padding:18px;background:#fbfcfe;margin-bottom:16px
+}
+.scenario strong{display:block;margin-bottom:7px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{
+  border:1px solid var(--line);background:#fff;padding:16px;border-radius:16px;text-align:left;
+  cursor:pointer;font:inherit;color:var(--text);line-height:1.45;min-height:112px;transition:.18s
+}
+.choice:hover{transform:translateY(-2px);border-color:#aab7e8;box-shadow:0 10px 24px rgba(58,103,220,.09)}
+.choice.selected{border:2px solid var(--blue);background:#f1f4ff}
+.choice.dim{opacity:.58}
+.feedback{display:none;margin-top:15px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.menu-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fbfcfe}
+.menu-card h3{margin:0 0 10px}
+.option{
+  width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;
+  padding:12px;margin-top:9px;cursor:pointer;font:inherit;color:var(--text)
+}
+.option.selected{border:2px solid var(--blue);background:#f0f3ff}
+.sequence{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.slot{
+  min-height:155px;border:2px dashed #ccd5e6;border-radius:18px;padding:16px;background:#fbfcfe
+}
+.slot strong{display:block;margin-bottom:10px}
+.item{
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:10px;
+  cursor:pointer;line-height:1.4
+}
+.item.selected{outline:2px solid var(--violet)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#22396b,#5e4689);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:7px}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:900px){
+  .grid,.menu-grid,.sequence,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный практикум</div>
+  <h1>Ресурсное меню</h1>
+  <p>Короткая пауза работает только тогда, когда соответствует типу перегрузки. Ваша задача — отличить физическое, сенсорное и когнитивное истощение, выбрать точный микроперерыв и собрать ритуал переключения между ролями.</p>
+  <div class="badges">
+    <span class="badge">5 рабочих ситуаций</span>
+    <span class="badge">Ресурсные микропаузи</span>
+    <span class="badge">Личный ритуал завершения</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Исходная ситуация</strong><br>
+    К середине дня вы уже не соображаете, хотя формально не делали ничего критически сложного. Вы несколько часов сидели без движения, переключались между встречами и пытались «отдохнуть» в новостной ленте.
+  </div>
+
+  <div class="nav">
+    <span class="tab active" id="tab1">1. Подобрать паузу</span>
+    <span class="tab" id="tab2">2. Собрать меню</span>
+    <span class="tab" id="tab3">3. Создать ритуал</span>
+  </div>
+
+  <div id="step1" class="step">
+    <h2>Какая пауза нужна именно сейчас?</h2>
+    <div class="hint">Не выбирайте самый приятный вариант. Сначала определите тип перегрузки, затем инструмент.</div>
+    <div class="scenario">
+      <strong id="scenarioTitle"></strong>
+      <div id="scenarioText"></div>
+    </div>
+    <div id="choices" class="grid"></div>
+    <div id="feedback1" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="nextScenario" disabled>Следующая ситуация</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step hidden">
+    <h2>Соберите личное ресурсное меню</h2>
+    <div class="hint">Выберите по одному готовому действию для четырех контекстов. Оно должно быть коротким и не требовать дополнительных решений в момент усталости.</div>
+    <div id="menuGrid" class="menu-grid"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep3" disabled>Перейти к ритуалу</button>
+    </div>
+  </div>
+
+  <div id="step3" class="step hidden">
+    <h2>Соберите ритуал завершения рабочего дня</h2>
+    <div class="hint">Нажмите на действие, затем на нужный слот. Последовательность должна помочь телу и мозгу заметить, что рабочая роль закончилась.</div>
+    <div id="ritualPool"></div>
+    <div class="sequence">
+      <div class="slot" data-slot="0"><strong>Шаг 1</strong></div>
+      <div class="slot" data-slot="1"><strong>Шаг 2</strong></div>
+      <div class="slot" data-slot="2"><strong>Шаг 3</strong></div>
+    </div>
+    <div id="feedback3" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="finishBtn">Получить результат</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const scenarios=[
+{
+ title:"Затекла спина, взгляд «залип» в экран",
+ text:"Вы сидите без движения уже два часа. Мышцы напряжены, глаза устали, но мысль все еще ясная.",
+ correct:"Пройтись по лестнице и сделать упражнение для глаз «близко-далеко».",
+ options:[
+  "Пройтись по лестнице и сделать упражнение для глаз «близко-далеко».",
+  "Открыть новости на пять минут.",
+  "Закрыть глаза и начать анализировать рабочую ошибку.",
+  "Подождать обеденного перерыва."
+ ],
+ explain:"Это прежде всего физическая перегрузка. Нужны движение и смена фокусировки, а не новый поток информации."
+},
+{
+ title:"После трех встреч все раздражает",
+ text:"Вокруг шумно, люди разговаривают, уведомления продолжают мигать. Даже простой звук кажется слишком громким.",
+ correct:"Закрыть глаза разогретыми ладонями на 30 секунд и убрать визуальные стимулы.",
+ options:[
+  "Закрыть глаза разогретыми ладонями на 30 секунд и убрать визуальные стимулы.",
+  "Посмотреть короткое видео для отвлечения.",
+  "Провести еще одну встречу, пока вы уже в рабочем режиме.",
+  "Начать составлять список будущих задач."
+ ],
+ explain:"Здесь перегружен сенсорный канал. Дополнительный контент только усилит нагрузку."
+},
+{
+ title:"Мозг «закипел» после сложного анализа",
+ text:"Вы перечитываете один абзац и перестали замечать очевидные ошибки. Тело не устало, но мысль больше не держится.",
+ correct:"Пять минут рисовать каракули или спокойно сортировать предметы на столе.",
+ options:[
+  "Пять минут рисовать каракули или спокойно сортировать предметы на столе.",
+  "Проверить соцсети.",
+  "Продолжать до победы, чтобы не терять концентрацию.",
+  "Срочно начать другую сложную задачу."
+ ],
+ explain:"Когнитивному ресурсу нужна простая деятельность без нового смыслового потока."
+},
+{
+ title:"Весь день почти не пили",
+ text:"Появились вялость и легкая головная боль. Вы уже решили, что полностью истощены.",
+ correct:"Выпить стакан воды и через несколько минут повторно оценить состояние.",
+ options:[
+  "Выпить стакан воды и через несколько минут повторно оценить состояние.",
+  "Выпить еще кофе.",
+  "Считать день потерянным и отменить все дела.",
+  "Открыть новости, чтобы взбодриться."
+ ],
+ explain:"Часть усталости может быть связана с обезвоживанием. Сначала стоит проверить базовую физическую потребность."
+},
+{
+ title:"Работа закончилась, но голова все еще в переписке",
+ text:"Вы уже дома, но продолжаете мысленно отвечать коллегам и проверяете рабочий чат.",
+ correct:"Физически закрыть ноутбук, сделать выдох и проговорить: «Рабочий день окончен».",
+ options:[
+  "Физически закрыть ноутбук, сделать выдох и проговорить: «Рабочий день окончен».",
+  "Быстро проверить чат еще один раз.",
+  "Переключиться на новости.",
+  "Сразу начать обсуждать рабочий день с близкими."
+ ],
+ explain:"Нужен ритуал завершения, который обозначает смену роли и помогает не переносить рабочее возбуждение домой."
+}
+];
+
+const menu=[
+{
+ title:"Офис",
+ options:[
+  {text:"Три спокойных вдоха у открытого окна",score:3},
+  {text:"Пять минут новостной ленты",score:0},
+  {text:"Еще одна чашка кофе",score:1}
+ ]
+},
+{
+ title:"Машина",
+ options:[
+  {text:"Выключить радио и минуту посидеть в тишине перед входом домой",score:3},
+  {text:"Ответить на последние сообщения",score:0},
+  {text:"Включить громкие новости",score:1}
+ ]
+},
+{
+ title:"Дом",
+ options:[
+  {text:"Сменить рабочую одежду, сделать чай и убрать телефон",score:3},
+  {text:"Сразу открыть рабочую почту",score:0},
+  {text:"Лечь с телефоном и листать ленту",score:1}
+ ]
+},
+{
+ title:"Везде",
+ options:[
+  {text:"Записать три пункта, за что вы благодарны себе сегодня",score:3},
+  {text:"Прокрутить все ошибки дня",score:0},
+  {text:"Составить еще один длинный список задач",score:1}
+ ]
+}
+];
+
+const ritual=[
+ {id:"close",text:"Физически закрыть ноутбук",correct:0},
+ {id:"breathe",text:"Сделать медленный выдох и потянуться",correct:1},
+ {id:"phrase",text:"Сказать: «Рабочий день окончен»",correct:2},
+ {id:"chat",text:"Напоследок проверить рабочий чат",correct:-1},
+ {id:"news",text:"Сразу открыть новости",correct:-1}
+];
+
+let scenarioIndex=0,score=0,history=[],menuChoices={},chosenRitual=null,placements={};
+const $=id=>document.getElementById(id);
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
+function renderScenario(){
+ const s=scenarios[scenarioIndex];
+ $("scenarioTitle").textContent=s.title;$("scenarioText").textContent=s.text;
+ $("feedback1").className="feedback";$("feedback1").textContent="";
+ $("nextScenario").disabled=true;
+ const box=$("choices");box.innerHTML="";box.dataset.locked="0";
+ shuffle(s.options).forEach(text=>{
+   const b=document.createElement("button");b.className="choice";b.textContent=text;
+   b.onclick=()=>chooseScenario(text,s,b);box.appendChild(b);
+ });
+}
+
+function chooseScenario(text,s,btn){
+ const box=$("choices");if(box.dataset.locked==="1")return;
+ box.dataset.locked="1";[...box.children].forEach(x=>x.classList.add("dim"));
+ btn.classList.remove("dim");btn.classList.add("selected");
+ const ok=text===s.correct;if(ok)score+=3;else score+=text.includes("кофе")?1:0;
+ history.push({title:s.title,ok,explain:s.explain});
+ const f=$("feedback1");f.className=`feedback show ${ok?"good":"bad"}`;
+ f.textContent=ok?"Точно. Пауза соответствует типу перегрузки.":`Более подходящий вариант: «${s.correct}».`;
+ $("nextScenario").disabled=false;
+}
+
+$("nextScenario").onclick=()=>{
+ scenarioIndex++;
+ if(scenarioIndex<scenarios.length){renderScenario();window.scrollTo({top:0,behavior:"smooth"})}
+ else showMenu();
+};
+
+function showMenu(){
+ $("step1").classList.add("hidden");$("step2").classList.remove("hidden");
+ $("tab1").classList.remove("active");$("tab2").classList.add("active");
+ const grid=$("menuGrid");grid.innerHTML="";
+ menu.forEach((m,mi)=>{
+   const card=document.createElement("div");card.className="menu-card";card.innerHTML=`<h3>${m.title}</h3>`;
+   m.options.forEach((o,oi)=>{
+     const b=document.createElement("button");b.className="option";b.textContent=o.text;
+     b.onclick=()=>{
+       menuChoices[mi]=oi;
+       [...card.querySelectorAll(".option")].forEach(x=>x.classList.remove("selected"));
+       b.classList.add("selected");
+       $("toStep3").disabled=Object.keys(menuChoices).length!==menu.length;
+     };
+     card.appendChild(b);
+   });
+   grid.appendChild(card);
+ });
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("toStep3").onclick=()=>{
+ let ms=0;menu.forEach((m,i)=>ms+=m.options[menuChoices[i]].score);score+=ms;
+ history.push({title:"Ресурсное меню",ok:ms>=10,explain:"Готовое меню снижает стоимость решений в момент усталости: не нужно придумывать паузу, достаточно выбрать заранее подготовленный вариант."});
+ $("step2").classList.add("hidden");$("step3").classList.remove("hidden");
+ $("tab2").classList.remove("active");$("tab3").classList.add("active");
+ renderRitual();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+function renderRitual(){
+ const pool=$("ritualPool");pool.innerHTML="<h3>Действия</h3>";
+ ritual.filter(r=>placements[r.id]===undefined).forEach(r=>{
+   const d=document.createElement("div");d.className="item";d.textContent=r.text;
+   if(chosenRitual===r.id)d.classList.add("selected");
+   d.onclick=()=>{chosenRitual=r.id;renderRitual()};
+   pool.appendChild(d);
+ });
+ document.querySelectorAll(".slot").forEach(s=>{
+   s.querySelectorAll(".item").forEach(x=>x.remove());
+   ritual.filter(r=>placements[r.id]===Number(s.dataset.slot)).forEach(r=>{
+     const d=document.createElement("div");d.className="item";d.textContent=r.text;
+     d.onclick=()=>{delete placements[r.id];chosenRitual=null;renderRitual()};
+     s.appendChild(d);
+   });
+ });
+}
+document.querySelectorAll(".slot").forEach(s=>{
+ s.onclick=()=>{
+  if(chosenRitual){
+   Object.keys(placements).forEach(k=>{if(placements[k]===Number(s.dataset.slot))delete placements[k]});
+   placements[chosenRitual]=Number(s.dataset.slot);chosenRitual=null;renderRitual();
+  }
+ };
+});
+
+$("finishBtn").onclick=()=>{
+ if(Object.keys(placements).length<3){
+   const f=$("feedback3");f.className="feedback show mid";f.textContent="Заполните все три шага ритуала.";return;
+ }
+ let right=ritual.filter(r=>r.correct>=0&&placements[r.id]===r.correct).length;
+ score+=right;
+ history.push({title:"Ритуал завершения",ok:right===3,explain:`Верно выстроено ${right} из 3 шагов. Сначала физическое завершение действия, затем телесный сигнал, затем словесное обозначение смены роли.`});
+ showResult();
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=scenarios.length*3+12+3,pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85){
+   title="Точная дозировка ресурса";
+   desc="Вы умеете отличать физическую, сенсорную и когнитивную перегрузку, не подменяете паузу дополнительным контентом и используете ритуалы переключения.";
+ }else if(pct>=60){
+   title="Паузы есть, но не всегда по адресу";
+   desc="Вы понимаете ценность микровосстановления, но иногда выбираете приятное отвлечение вместо инструмента под конкретный тип усталости.";
+ }else{
+   title="Псевдоотдых продолжает перегружать";
+   desc="Часть выбранных действий добавляет новые стимулы вместо восстановления. Главная зона роста — сначала определить, какой ресурс просел.";
+ }
+ const rows=history.map(h=>`<div class="review-item"><span class="tag ${h.ok?"good":"mid"}">${h.ok?"Точно":"Частично"}</span><b>${h.title}</b><p>${h.explain}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+   <p>Главный принцип: короткий перерыв эффективен, когда он снижает именно тот тип нагрузки, который накопился. Новости и соцсети редко подходят, потому что добавляют новый поток смыслов и образов.</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${rows}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ scenarioIndex=0;score=0;history=[];menuChoices={};chosenRitual=null;placements={};
+ $("result").classList.add("hidden");$("game").classList.remove("hidden");
+ $("step1").classList.remove("hidden");$("step2").classList.add("hidden");$("step3").classList.add("hidden");
+ ["tab1","tab2","tab3"].forEach((id,i)=>$(id).classList.toggle("active",i===0));
+ $("toStep3").disabled=true;$("feedback1").className="feedback";$("feedback3").className="feedback";
+ renderScenario();window.scrollTo({top:0,behavior:"smooth"});
+}
+renderScenario();
+</script>
+</body>
+</html>
