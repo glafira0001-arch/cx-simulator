@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Матрица ресурсов</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172238;--muted:#68758c;
+  --green:#2b8a62;--yellow:#d89b32;--red:#c94f5c;--blue:#3b67dc;--violet:#7358cf;
+  --line:#dfe6f0;--shadow:0 16px 42px rgba(30,46,82,.10)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 8% 8%,rgba(43,138,98,.10),transparent 27%),
+    radial-gradient(circle at 92% 8%,rgba(59,103,220,.10),transparent 24%),
+    var(--bg)
+}
+.app{max-width:1160px;margin:auto;padding:26px 16px 56px}
+.hero{
+  background:linear-gradient(135deg,#22395f,#3f5f74);
+  color:#fff;border-radius:28px;padding:30px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-90px;top:-100px;width:290px;height:290px;border-radius:50%;
+  background:rgba(255,255,255,.07)
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;opacity:.75}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;margin:10px 0 14px}
+.hero p{max-width:850px;font-size:18px;line-height:1.55;margin:0;opacity:.9}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px}
+.panel{margin-top:20px;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.case{
+  padding:20px;border:1px solid var(--line);border-left:5px solid var(--green);
+  border-radius:18px;background:#fbfcfe;line-height:1.55
+}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;color:var(--muted)}
+.tab.active{background:#eef5ff;color:#294fae;border-color:#b9c7ee}
+.step h2{font-size:27px;margin:0 0 8px}
+.hint{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.sort-wrap{display:grid;grid-template-columns:1fr 1.25fr;gap:18px}
+.pool,.zones{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fbfcfe}
+.pool h3,.zones h3{margin-top:0}
+.item{
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:10px;
+  cursor:pointer;line-height:1.4;transition:.15s
+}
+.item:hover{border-color:#abb8e5}.item.chosen{outline:2px solid var(--blue)}
+.zone{
+  min-height:118px;border:2px dashed #cfd7e7;border-radius:15px;padding:12px;margin-bottom:12px;background:#fff
+}
+.zone strong{display:block;margin-bottom:7px}
+.zone p{margin:0;color:var(--muted);font-size:13px}
+.zone .item{margin-top:9px;margin-bottom:0}
+.zone[data-zone="green"]{background:#f1fbf6}
+.zone[data-zone="yellow"]{background:#fff9ed}
+.zone[data-zone="red"]{background:#fff3f4}
+.feedback{display:none;margin-top:16px;padding:16px;border-radius:15px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#edf8f3;color:#155d41}
+.feedback.mid{background:#fff5e8;color:#815019}.feedback.bad{background:#fff0f2;color:#7d2a35}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.phase{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fbfcfe}
+.phase h3{margin:0 0 10px}
+.option{
+  width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;
+  padding:12px;margin-top:9px;cursor:pointer;font:inherit;color:var(--text)
+}
+.option.selected{border:2px solid var(--blue);background:#f0f3ff}
+.balance{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px
+}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfe}
+.metric-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.meter{height:8px;background:#e9edf4;border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;transition:.35s}
+#greenBar{background:var(--green)}#yellowBar{background:var(--yellow)}#redBar{background:var(--red)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff}
+.btn.secondary{background:#edf1f6;color:#26334d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.result-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}
+.scorebox{background:linear-gradient(135deg,#29425d,#486f72);color:#fff;border-radius:21px;padding:22px}
+.scorebox strong{display:block;font-size:54px;margin:8px 0}
+.summary{border:1px solid var(--line);border-radius:20px;padding:20px}
+.summary h3{margin-top:0}
+.review{margin-top:20px}
+.review-item{border-top:1px solid var(--line);padding:15px 0}
+.review-item:first-child{border-top:0}
+.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-right:7px}
+.tag.good{background:#e4f5ec;color:#176142}.tag.mid{background:#fff0da;color:#825018}
+.tag.bad{background:#fde5e8;color:#872d38}
+@media(max-width:840px){
+  .sort-wrap,.plan-grid,.balance,.result-grid{grid-template-columns:1fr}
+  .hero,.panel{padding:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="eyebrow">Интерактивный аудит</div>
+  <h1>Матрица ресурсов</h1>
+  <p>Не все, что похоже на отдых, действительно восстанавливает. Ваша задача — классифицировать занятия по реальному эффекту, распознать псевдоотдых и собрать работающий баланс на день.</p>
+  <div class="badges">
+    <span class="badge">Сортировка 12 активностей</span>
+    <span class="badge">Проверка псевдоотдыха</span>
+    <span class="badge">Компенсационный план</span>
+  </div>
+</section>
+
+<section id="game" class="panel">
+  <div class="case">
+    <strong>Ситуация</strong><br>
+    В конце дня вы говорите себе: «Я же отдыхал: листал соцсети, смотрел видео, ехал домой и ничего не делал». Но сил стало еще меньше. Нужно понять, какие занятия действительно дали ресурс, какие были нейтральными, а какие замаскировались под отдых.
+  </div>
+
+  <div class="nav">
+    <span class="tab active" id="tab1">1. Классифицировать</span>
+    <span class="tab" id="tab2">2. Проверить маскировку</span>
+    <span class="tab" id="tab3">3. Собрать баланс</span>
+  </div>
+
+  <div id="step1" class="step">
+    <h2>Распределите занятия по реальному эффекту</h2>
+    <div class="hint">Нажмите на карточку слева, затем на одну из трех зон справа. Оценивайте не общественную «полезность», а то, что происходит с ресурсом после занятия.</div>
+    <div class="sort-wrap">
+      <div class="pool">
+        <h3>Активности</h3>
+        <div id="pool"></div>
+      </div>
+      <div class="zones">
+        <h3>Матрица</h3>
+        <div class="zone" data-zone="green"><strong>🔋 Дающие ресурс</strong><p>После занятия появляется энергия, ясность или ощущение опоры.</p></div>
+        <div class="zone" data-zone="yellow"><strong>📦 Нейтральные</strong><p>Состояние почти не меняется. Их можно оптимизировать или сделать приятнее.</p></div>
+        <div class="zone" data-zone="red"><strong>📉 Забирающие ресурс</strong><p>После занятия хочется лечь, отключиться или восстановиться.</p></div>
+      </div>
+    </div>
+    <div id="feedback1" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="checkSort">Проверить матрицу</button>
+    </div>
+  </div>
+
+  <div id="step2" class="step hidden">
+    <h2>Найдите псевдоотдых</h2>
+    <div class="hint">Выберите три занятия, которые чаще всего выглядят как восстановление, но в описанной ситуации продолжают истощать систему.</div>
+    <div id="maskGrid" class="plan-grid"></div>
+    <div id="feedback2" class="feedback"></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="toStep3" disabled>Перейти к балансу</button>
+    </div>
+  </div>
+
+  <div id="step3" class="step hidden">
+    <h2>Соберите компенсационный баланс</h2>
+    <div class="hint">В каждом блоке выберите один вариант. Цель — не создать идеальный день, а связать неизбежную красную активность с коротким зеленым восстановлением.</div>
+    <div id="balanceGrid" class="plan-grid"></div>
+
+    <div class="balance">
+      <div class="metric"><div class="metric-head"><span>Зеленые слоты</span><b id="greenNum">0</b></div><div class="meter"><span id="greenBar"></span></div></div>
+      <div class="metric"><div class="metric-head"><span>Нейтральные слоты</span><b id="yellowNum">0</b></div><div class="meter"><span id="yellowBar"></span></div></div>
+      <div class="metric"><div class="metric-head"><span>Красная нагрузка</span><b id="redNum">0</b></div><div class="meter"><span id="redBar"></span></div></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="restart()">Начать заново</button>
+      <button class="btn primary" id="finishBtn" disabled>Получить результат</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="panel hidden"></section>
+</div>
+
+<script>
+const activities=[
+ {id:"walk",text:"30 минут прогулки без телефона после сложной встречи",correct:"green"},
+ {id:"friend",text:"Спокойный разговор с человеком, рядом с которым не нужно держать оборону",correct:"green"},
+ {id:"hobby",text:"40 минут занятия любимым хобби без оценки результата",correct:"green"},
+ {id:"learning",text:"Короткое обучение по теме, которая действительно интересна",correct:"green"},
+ {id:"cleaning",text:"Рутинная уборка в спокойном темпе",correct:"yellow"},
+ {id:"commute",text:"Спокойная дорога домой без конфликтов и срочных сообщений",correct:"yellow"},
+ {id:"report",text:"Привычный отчет по готовому шаблону",correct:"yellow"},
+ {id:"cooking",text:"Приготовление знакомого блюда без спешки",correct:"yellow"},
+ {id:"scroll",text:"45 минут бесконечного скроллинга после тяжелого дня",correct:"red"},
+ {id:"call",text:"Созвон без повестки, где вы почти не участвуете",correct:"red"},
+ {id:"toxic",text:"Короткий разговор с человеком, после которого вы долго прокручиваете сказанное",correct:"red"},
+ {id:"gaming",text:"Два часа игры до ночи, после которых трудно остановиться и лечь спать",correct:"red"}
+];
+
+const masks=[
+ {id:"scroll",title:"Соцсети после перегрузки",text:"Вы листаете ленту автоматически и после этого чувствуете рассеянность.",good:true},
+ {id:"gaming",title:"Игра до глубокой ночи",text:"Во время игры напряжение падает, но сон сокращается и утром сил меньше.",good:true},
+ {id:"rumination",title:"«Ничего не делать» в дороге",text:"Вы едете молча, но все время мысленно спорите с коллегой.",good:true},
+ {id:"walk",title:"Прогулка без телефона",text:"Через полчаса появляется ясность и легче дышать.",good:false},
+ {id:"music",title:"Музыка во время уборки",text:"Рутина проходит спокойно, настроение не падает.",good:false},
+ {id:"friend",title:"Разговор с близким человеком",text:"После беседы появляется ощущение поддержки.",good:false}
+];
+
+const balancePlan=[
+{
+ title:"Красная активность",
+ options:[
+  {text:"Обязательный часовой созвон без четкой цели",g:0,y:0,r:3,score:1},
+  {text:"Сложный проектный блок с понятной задачей",g:0,y:1,r:1,score:3},
+  {text:"Токсичный чат, который можно не открывать до вечера",g:0,y:0,r:3,score:0}
+ ]
+},
+{
+ title:"Оптимизация нейтрального",
+ options:[
+  {text:"Во время дороги слушать музыку или аудиокнигу вместо прокручивания тревог",g:1,y:2,r:-1,score:3},
+  {text:"Оставить дорогу как есть и использовать ее для мысленного списка дел",g:0,y:1,r:1,score:1},
+  {text:"Заполнить дорогу рабочими звонками",g:0,y:0,r:2,score:0}
+ ]
+},
+{
+ title:"Зеленая компенсация",
+ options:[
+  {text:"После красной активности запланировать 10 минут прогулки без телефона",g:3,y:0,r:-2,score:3},
+  {text:"После нагрузки открыть соцсети на 20 минут",g:0,y:0,r:2,score:0},
+  {text:"Подождать, пока появится большой свободный вечер для полноценного отдыха",g:1,y:0,r:1,score:1}
+ ]
+}
+];
+
+let chosenItem=null,placements={},selectedMasks=new Set(),balanceChoices={},score=0,notes=[];
+let green=0,yellow=0,red=0;
+const $=id=>document.getElementById(id);
+
+function renderPool(){
+ const pool=$("pool");pool.innerHTML="";
+ activities.filter(a=>!placements[a.id]).forEach(a=>{
+   const d=document.createElement("div");d.className="item";d.textContent=a.text;
+   if(chosenItem===a.id)d.classList.add("chosen");
+   d.onclick=()=>{chosenItem=a.id;renderPool()};
+   pool.appendChild(d);
+ });
+ document.querySelectorAll(".zone").forEach(z=>{
+   z.querySelectorAll(".item").forEach(x=>x.remove());
+   activities.filter(a=>placements[a.id]===z.dataset.zone).forEach(a=>{
+     const d=document.createElement("div");d.className="item";d.textContent=a.text;
+     d.onclick=()=>{delete placements[a.id];chosenItem=null;renderPool()};
+     z.appendChild(d);
+   });
+ });
+}
+document.querySelectorAll(".zone").forEach(z=>{
+ z.onclick=()=>{if(chosenItem){placements[chosenItem]=z.dataset.zone;chosenItem=null;renderPool()}};
+});
+
+function renderMasks(){
+ const grid=$("maskGrid");grid.innerHTML="";
+ masks.forEach(m=>{
+   const box=document.createElement("div");box.className="phase";
+   box.innerHTML=`<h3>${m.title}</h3><p>${m.text}</p>`;
+   box.onclick=()=>{
+     if(selectedMasks.has(m.id)){selectedMasks.delete(m.id);box.classList.remove("selected")}
+     else if(selectedMasks.size<3){selectedMasks.add(m.id);box.classList.add("selected")}
+     $("toStep3").disabled=selectedMasks.size!==3;
+   };
+   grid.appendChild(box);
+ });
+}
+
+function renderBalance(){
+ const grid=$("balanceGrid");grid.innerHTML="";
+ balancePlan.forEach((p,pi)=>{
+   const box=document.createElement("div");box.className="phase";box.innerHTML=`<h3>${p.title}</h3>`;
+   p.options.forEach((o,oi)=>{
+     const b=document.createElement("button");b.className="option";b.textContent=o.text;
+     b.onclick=()=>{
+       balanceChoices[pi]=oi;
+       [...box.querySelectorAll(".option")].forEach(x=>x.classList.remove("selected"));
+       b.classList.add("selected");
+       recalcBalance();
+       $("finishBtn").disabled=Object.keys(balanceChoices).length!==3;
+     };
+     box.appendChild(b);
+   });
+   grid.appendChild(box);
+ });
+}
+
+function recalcBalance(){
+ green=0;yellow=0;red=0;
+ Object.entries(balanceChoices).forEach(([pi,oi])=>{
+   const o=balancePlan[pi].options[oi];
+   green+=o.g;yellow+=o.y;red+=o.r;
+ });
+ green=Math.max(0,Math.min(10,green));yellow=Math.max(0,Math.min(10,yellow));red=Math.max(0,Math.min(10,red));
+ $("greenNum").textContent=green;$("yellowNum").textContent=yellow;$("redNum").textContent=red;
+ $("greenBar").style.width=green*10+"%";$("yellowBar").style.width=yellow*10+"%";$("redBar").style.width=red*10+"%";
+}
+
+$("checkSort").onclick=()=>{
+ if(Object.keys(placements).length!==activities.length){
+   const f=$("feedback1");f.className="feedback show mid";f.textContent="Сначала распределите все активности.";return;
+ }
+ let right=activities.filter(a=>placements[a.id]===a.correct).length;
+ score+=right;
+ notes.push({title:"Матрица ресурсов",level:right>=11?"good":right>=8?"mid":"bad",
+ text:`Точно распределено ${right} из ${activities.length} активностей.`});
+ $("step1").classList.add("hidden");$("step2").classList.remove("hidden");
+ $("tab1").classList.remove("active");$("tab2").classList.add("active");
+ renderMasks();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("toStep3").onclick=()=>{
+ let good=[...selectedMasks].filter(id=>masks.find(m=>m.id===id).good).length;
+ score+=good*2;
+ notes.push({title:"Псевдоотдых",level:good===3?"good":good===2?"mid":"bad",
+ text:good===3?"Вы нашли все три формы псевдоотдыха: автоматический скроллинг, игра с потерей сна и руминацию в дороге.":"Часть выбранных занятий действительно восстанавливает, а не маскирует истощение."});
+ $("step2").classList.add("hidden");$("step3").classList.remove("hidden");
+ $("tab2").classList.remove("active");$("tab3").classList.add("active");
+ renderBalance();recalcBalance();window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("finishBtn").onclick=()=>{
+ let ps=0;
+ balancePlan.forEach((p,i)=>ps+=p.options[balanceChoices[i]].score);
+ score+=ps;
+ notes.push({title:"Компенсационный баланс",level:ps>=8?"good":ps>=5?"mid":"bad",
+ text:"Сильный баланс не отменяет всю нагрузку, а связывает неизбежную красную активность с коротким зеленым восстановлением и оптимизирует нейтральные слоты."});
+ showResult();
+};
+
+function showResult(){
+ $("game").classList.add("hidden");
+ const max=activities.length+6+9;
+ const pct=Math.round(score/max*100);
+ let title,desc;
+ if(pct>=85&&red<=3){
+   title="Ресурсный архитектор";
+   desc="Вы отличаете восстановление от дешевого дофамина, замечаете микроутечки и умеете проектировать день так, чтобы нагрузка компенсировалась короткими зелеными слотами.";
+ }else if(pct>=60){
+   title="Баланс есть, но часть отдыха маскирует усталость";
+   desc="Вы понимаете логику матрицы, но отдельные активности все еще оцениваете по форме, а не по реальному послевкусию.";
+ }else{
+   title="Псевдоотдых управляет балансом";
+   desc="Часть занятий кажется отдыхом только в моменте, но не возвращает ресурс. Главная зона роста — оценивать состояние через 20–30 минут после активности.";
+ }
+ const rows=notes.map(n=>`<div class="review-item"><span class="tag ${n.level}">${n.level==="good"?"Точно":n.level==="mid"?"Частично":"Риск"}</span><b>${n.title}</b><p>${n.text}</p></div>`).join("");
+ const r=$("result");r.classList.remove("hidden");
+ r.innerHTML=`<div class="result-grid">
+   <div class="scorebox"><div class="eyebrow">Ваш профиль</div><strong>${pct}%</strong><div>${title}</div></div>
+   <div class="summary"><h3>Что показывает результат</h3><p>${desc}</p>
+   <p><b>Зеленые слоты:</b> ${green}/10 · <b>Нейтральные:</b> ${yellow}/10 · <b>Красная нагрузка:</b> ${red}/10</p>
+   <p>Главный принцип: ресурс определяется не названием активности, а состоянием после нее. Даже нейтральную рутину можно сделать поддерживающей, если занять внимание музыкой, аудиокнигой или активным созерцанием.</p></div>
+ </div>
+ <div class="review"><h2>Разбор решений</h2>${rows}</div>
+ <button class="btn primary" onclick="restart()">Пройти еще раз</button>`;
+ r.scrollIntoView({behavior:"smooth"});
+}
+
+function restart(){
+ chosenItem=null;placements={};selectedMasks=new Set();balanceChoices={};score=0;notes=[];
+ green=0;yellow=0;red=0;
+ $("result").classList.add("hidden");$("step1").classList.remove("hidden");
+ $("step2").classList.add("hidden");$("step3").classList.add("hidden");
+ ["tab1","tab2","tab3"].forEach((id,i)=>$(id).classList.toggle("active",i===0));
+ $("toStep3").disabled=true;$("finishBtn").disabled=true;
+ $("feedback1").className="feedback";$("feedback2").className="feedback";
+ renderPool();recalcBalance();window.scrollTo({top:0,behavior:"smooth"});
+}
+renderPool();
+</script>
+</body>
+</html>
