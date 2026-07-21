@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Решение по итогам пилота</title><style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --muted:#6f7782; --line:#d7d2cb; --yellow:#ffc83d; --red:#cc4747;
+  --green:#1f8a5b; --bad:#b63e3e; --shadow:0 10px 26px rgba(24,36,54,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+.wrap{width:min(980px,calc(100% - 24px));margin:14px auto 28px}
+.hero,.panel{background:var(--card);border-radius:22px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}
+.hero{position:relative;overflow:hidden;padding:28px 28px 24px;margin-bottom:18px}
+.hero:after{content:"";position:absolute;width:310px;height:310px;right:-70px;top:-92px;border:28px solid rgba(8,42,87,.06);border-radius:50%}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:13px;letter-spacing:.035em;text-transform:uppercase}
+.eyebrow:before{content:"";width:8px;height:8px;background:var(--red);border-radius:50%}
+h1{margin:14px 0 8px;max-width:740px;font-size:clamp(28px,4.2vw,44px);line-height:.98;letter-spacing:-.035em;color:#071d3c}
+.hero p{margin:12px 0 0;max-width:820px;font-size:17px}
+.panel{padding:24px;margin-top:18px}
+.section-title{margin:0 0 6px;color:var(--navy);font-size:25px;line-height:1.1}
+.section-sub{margin:0 0 18px;color:#4f5f70}
+.scenario{background:#f0ede8;border-radius:18px;padding:18px;margin:16px 0;border-left:6px solid var(--yellow)}
+.grid{display:grid;gap:14px}
+.card{background:#fff;border:1px solid #e0ddd7;border-radius:18px;padding:18px}
+.card h3{margin:0 0 8px;color:#0d2e58;font-size:18px}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+select{width:100%;padding:12px 13px;border:1px solid #d9d4cc;border-radius:12px;background:#faf8f4;color:#173250;font:inherit}
+label{font-size:13px;font-weight:800;color:#506070}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 18px;font:inherit;font-weight:800;cursor:pointer}
+.primary{background:var(--navy);color:#fff}.secondary{background:var(--yellow);color:#3d2d00}.ghost{background:#ece8e1;color:#394a5d}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.feedback{margin-top:12px;padding:12px 14px;border-radius:12px;display:none;font-size:14px}
+.feedback.show{display:block}.good{background:#eaf7f0;color:#155d3d}.bad{background:#fff0ef;color:#8f2c2c}
+.hidden{display:none!important}
+.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.metric{background:#fff;border-radius:16px;padding:16px;border:1px solid #e0dcd5}
+.metric span{display:block;color:#6b7480;font-size:13px}.metric strong{display:block;margin-top:5px;font-size:24px;color:var(--navy)}
+.badge{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--yellow);font-weight:900;color:#493500;margin-right:8px}
+.option-list{display:grid;gap:10px;margin-top:14px}
+.option{border:1px solid #d9d4cc;border-radius:14px;padding:13px 14px;background:#faf8f4;color:#173250;font:inherit;text-align:left;cursor:pointer}
+.option:hover{background:#fff}.option.selected{border-color:var(--navy);box-shadow:0 0 0 2px rgba(8,42,87,.12)}
+.option.correct{border-color:var(--green);background:#edf9f3}.option.wrong{border-color:var(--bad);background:#fff0f0}
+.progress{height:8px;background:#e5e0d9;border-radius:999px;overflow:hidden;margin:16px 0 20px}.progress>div{height:100%;background:var(--yellow);width:0;transition:.25s}
+@media(max-width:700px){.hero,.panel{padding:20px}.row,.metric-grid{grid-template-columns:1fr}.actions{justify-content:stretch}.btn{width:100%}}
+</style></head>
+<body><div class="wrap">
+<section class="hero">
+  <div class="eyebrow">Практика · решение после пилота</div>
+  <h1>Пилотный комитет</h1>
+  <p>Оцените результаты 2–4-недельных пилотов и решите, что делать дальше: закрепить изменение, доработать пилот или остановить решение.</p>
+</section>
+<section class="panel">
+  <h2 class="section-title">Не всякое улучшение нужно масштабировать</h2>
+  <p class="section-sub">Смотрите не только на рост показателя, но и на устойчивость эффекта, побочные последствия и связь с поведением клиента.</p>
+  <div class="progress"><div id="progress"></div></div>
+  <div class="grid" id="pilots"></div>
+  <div class="actions"><button class="btn primary" id="check" disabled>Принять решения</button></div>
+  <div id="summary" class="hidden">
+    <div class="metric-grid">
+      <div class="metric"><span>Верных решений</span><strong id="score">0/4</strong></div>
+      <div class="metric"><span>Главный принцип</span><strong style="font-size:18px">Эффект важнее активности</strong></div>
+      <div class="metric"><span>Горизонт проверки</span><strong style="font-size:18px">2–4 недели</strong></div>
+    </div>
+    <div class="scenario"><b>После успешного пилота:</b> закрепите владельца, показатель, частоту контроля, правило эскалации и изменение в регламенте, мотивации, скрипте, продукте или инструкции.</div>
+    <div class="actions"><button class="btn secondary" id="restart">Пройти еще раз</button></div>
+  </div>
+</section></div>
+<script>
+const pilots=[
+ {
+  title:"Пилот 1. Адаптация после покупки",
+  facts:"Сервис назначал первое действие в течение 24 часов. Доля клиентов, начавших использование за 7 дней, выросла с 48% до 76%. Нагрузка выросла умеренно, жалобы не увеличились.",
+  correct:0,
+  options:["Закрепить изменение","Доработать пилот","Остановить решение"],
+  explain:"Показатель поведения клиента заметно вырос, побочных эффектов нет, а процесс остается управляемым. Решение можно закреплять."
+ },
+ {
+  title:"Пилот 2. Единый чат для передачи клиента",
+  facts:"Повторные объяснения сократились на 8%, но среднее время запуска выросло на два дня: сотрудники ждут ответов всех участников чата.",
+  correct:1,
+  options:["Закрепить изменение","Доработать пилот","Остановить решение"],
+  explain:"Пилот дал частичный эффект, но создал новый пробел. Нужно изменить механику передачи, а не масштабировать чат в текущем виде."
+ },
+ {
+  title:"Пилот 3. Скидка для клиентов перед продлением",
+  facts:"Доля продлений не изменилась. Средний чек снизился на 12%, а большинство воспользовавшихся скидкой и раньше собирались продлевать.",
+  correct:2,
+  options:["Закрепить изменение","Доработать пилот","Остановить решение"],
+  explain:"Инициатива не изменила поведение, но ухудшила экономику. Ее нужно остановить, а причину непродления искать в ценности и результате."
+ },
+ {
+  title:"Пилот 4. Новый одностраничный отчет для B2B-клиентов",
+  facts:"Время обсуждения отчета сократилось, но часть линейных специалистов перестала получать нужную детализацию. ЛПР довольны, рабочие команды — нет.",
+  correct:1,
+  options:["Закрепить изменение","Доработать пилот","Остановить решение"],
+  explain:"Решение улучшило один сегмент опыта и ухудшило другой. Нужно сохранить краткий формат для ЛПР и добавить отдельный слой деталей для исполнителей."
+ }
+];
+let chosen=Array(pilots.length).fill(null);
+function render(){
+ const root=document.getElementById('pilots'); root.innerHTML='';
+ pilots.forEach((p,i)=>{
+   const card=document.createElement('div'); card.className='card';
+   card.innerHTML=`<h3><span class="badge">${i+1}</span>${p.title}</h3><p>${p.facts}</p><div class="option-list"></div><div class="feedback"></div>`;
+   const list=card.querySelector('.option-list');
+   p.options.forEach((o,oi)=>{
+     const b=document.createElement('button'); b.className='option'; b.textContent=o;
+     b.onclick=()=>{
+       if(document.getElementById('check').dataset.checked==='1') return;
+       list.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));
+       b.classList.add('selected'); chosen[i]=oi; updateReady();
+     };
+     list.appendChild(b);
+   });
+   root.appendChild(card);
+ });
+}
+function updateReady(){
+ document.getElementById('check').disabled=chosen.some(x=>x===null);
+ let done=chosen.filter(x=>x!==null).length;
+ document.getElementById('progress').style.width=(done/pilots.length*100)+'%';
+}
+document.getElementById('check').onclick=()=>{
+ document.getElementById('check').dataset.checked='1';
+ let score=0;
+ document.querySelectorAll('.card').forEach((card,i)=>{
+   const buttons=[...card.querySelectorAll('.option')];
+   buttons.forEach((b,oi)=>{b.disabled=true;if(oi===pilots[i].correct)b.classList.add('correct');if(oi===chosen[i]&&oi!==pilots[i].correct)b.classList.add('wrong');});
+   const ok=chosen[i]===pilots[i].correct; if(ok)score++;
+   const fb=card.querySelector('.feedback'); fb.className='feedback show '+(ok?'good':'bad'); fb.textContent=(ok?'Верно. ':'Не совсем. ')+pilots[i].explain;
+ });
+ document.getElementById('score').textContent=score+'/4';
+ document.getElementById('summary').classList.remove('hidden');
+ document.getElementById('check').disabled=true;
+};
+document.getElementById('restart').onclick=()=>{chosen=Array(pilots.length).fill(null);document.getElementById('check').dataset.checked='0';document.getElementById('check').disabled=true;document.getElementById('summary').classList.add('hidden');document.getElementById('progress').style.width='0%';render();};
+render();
+</script></body></html>
