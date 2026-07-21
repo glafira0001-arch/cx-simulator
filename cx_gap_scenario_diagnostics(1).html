@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Диагностика пробелов в клиентском пути</title>
+<style>
+  :root{
+    --bg:#d9d4d1;
+    --card:#fffaf1;
+    --card-2:#f7f2ea;
+    --navy:#082a57;
+    --text:#10233f;
+    --muted:#6f7782;
+    --line:#d7d2cb;
+    --yellow:#ffc83d;
+    --red:#cc4747;
+    --green:#1f8a5b;
+    --bad:#b63e3e;
+    --shadow:0 10px 26px rgba(24,36,54,.10);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.45;
+  }
+
+  .wrap{
+    width:min(980px, calc(100% - 24px));
+    margin:14px auto 28px;
+  }
+
+  .hero, .panel{
+    background:var(--card);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,.7);
+  }
+
+  .hero{
+    position:relative;
+    overflow:hidden;
+    padding:28px 28px 24px;
+    margin-bottom:18px;
+  }
+
+  .hero:after{
+    content:"";
+    position:absolute;
+    width:310px;
+    height:310px;
+    right:-70px;
+    top:-92px;
+    border:28px solid rgba(8,42,87,.06);
+    border-radius:50%;
+    pointer-events:none;
+  }
+
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 12px;
+    border-radius:999px;
+    background:#eef2f7;
+    color:var(--navy);
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.035em;
+    text-transform:uppercase;
+  }
+
+  .eyebrow:before{
+    content:"";
+    width:8px;
+    height:8px;
+    background:var(--red);
+    border-radius:50%;
+  }
+
+  h1{
+    margin:14px 0 8px;
+    max-width:700px;
+    font-size:clamp(28px, 4.2vw, 44px);
+    line-height:.98;
+    letter-spacing:-.035em;
+    color:#071d3c;
+  }
+
+  .hero p{
+    margin:12px 0 0;
+    max-width:780px;
+    font-size:17px;
+  }
+
+  .panel{
+    padding:24px;
+    margin-top:18px;
+  }
+
+  .stepbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+
+  .step{
+    width:34px;height:34px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    font-weight:800;
+    background:#ebe7df;
+    color:#7a7f87;
+    border:2px solid transparent;
+  }
+
+  .step.active{
+    background:var(--yellow);
+    color:#3c2d00;
+  }
+
+  .step.done{
+    background:var(--navy);
+    color:white;
+  }
+
+  .progress{
+    flex:1 1 200px;
+    height:8px;
+    background:#e5e0d9;
+    border-radius:999px;
+    overflow:hidden;
+  }
+
+  .progress > div{
+    height:100%;
+    width:0;
+    background:var(--yellow);
+    transition:width .25s ease;
+  }
+
+  .section-title{
+    margin:0 0 6px;
+    color:var(--navy);
+    font-size:25px;
+    line-height:1.1;
+  }
+
+  .section-sub{
+    margin:0 0 18px;
+    color:#4f5f70;
+  }
+
+  .scenario{
+    background:#f0ede8;
+    border-radius:18px;
+    padding:18px;
+    margin:16px 0;
+    border-left:6px solid var(--yellow);
+  }
+
+  .scenario b{
+    color:var(--navy);
+  }
+
+  .timeline{
+    display:grid;
+    gap:14px;
+  }
+
+  .event{
+    background:#fff;
+    border:1px solid #e0ddd7;
+    border-radius:18px;
+    padding:18px;
+    transition:.2s ease;
+  }
+
+  .event.correct{
+    border-color:#7bc7a6;
+    box-shadow:0 0 0 3px rgba(31,138,91,.10);
+  }
+
+  .event.wrong{
+    border-color:#e5a0a0;
+    box-shadow:0 0 0 3px rgba(182,62,62,.08);
+  }
+
+  .event-head{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+
+  .badge{
+    width:34px;height:34px;
+    flex:0 0 34px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:var(--yellow);
+    color:#4b3700;
+    font-weight:900;
+  }
+
+  .event h3{
+    margin:0 0 5px;
+    font-size:18px;
+    color:#0d2e58;
+  }
+
+  .event p{
+    margin:0;
+  }
+
+  .choices{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-top:15px;
+  }
+
+  button.choice{
+    border:1px solid #d9d4cc;
+    border-radius:14px;
+    padding:12px 14px;
+    background:#faf8f4;
+    color:#173250;
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+    transition:.16s ease;
+    min-height:54px;
+  }
+
+  button.choice:hover{
+    transform:translateY(-1px);
+    border-color:#9ba8b7;
+    background:white;
+  }
+
+  button.choice.selected{
+    border-color:var(--navy);
+    box-shadow:0 0 0 2px rgba(8,42,87,.12);
+    background:#f3f7fb;
+  }
+
+  button.choice.is-correct{
+    border-color:var(--green);
+    background:#edf9f3;
+  }
+
+  button.choice.is-wrong{
+    border-color:var(--bad);
+    background:#fff0f0;
+  }
+
+  .feedback{
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:12px;
+    display:none;
+    font-size:14px;
+  }
+
+  .feedback.show{display:block}
+  .feedback.good{background:#eaf7f0;color:#155d3d}
+  .feedback.bad{background:#fff0ef;color:#8f2c2c}
+
+  .actions{
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    margin-top:20px;
+    flex-wrap:wrap;
+  }
+
+  .btn{
+    border:0;
+    border-radius:14px;
+    padding:13px 18px;
+    font:inherit;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .btn.primary{
+    background:var(--navy);
+    color:white;
+  }
+
+  .btn.secondary{
+    background:var(--yellow);
+    color:#3d2d00;
+  }
+
+  .btn.ghost{
+    background:#ece8e1;
+    color:#394a5d;
+  }
+
+  .btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+
+  .hidden{display:none!important}
+
+  .result-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin:18px 0;
+  }
+
+  .metric{
+    background:white;
+    border-radius:16px;
+    padding:16px;
+    border:1px solid #e0dcd5;
+  }
+
+  .metric span{
+    display:block;
+    color:#6b7480;
+    font-size:13px;
+  }
+
+  .metric strong{
+    display:block;
+    margin-top:5px;
+    font-size:26px;
+    color:var(--navy);
+  }
+
+  .diagnosis{
+    background:#0d315e;
+    color:white;
+    border-radius:18px;
+    padding:20px;
+    margin-top:16px;
+  }
+
+  .diagnosis h3{margin:0 0 8px;font-size:21px}
+  .diagnosis p{margin:0}
+
+  .final-options{
+    display:grid;
+    gap:10px;
+    margin-top:16px;
+  }
+
+  .final-options button{
+    background:#fff;
+  }
+
+  .mini-note{
+    margin-top:12px;
+    color:#606d7b;
+    font-size:14px;
+  }
+
+  @media(max-width:700px){
+    .hero,.panel{padding:20px}
+    .choices,.result-grid{grid-template-columns:1fr}
+    .actions{justify-content:stretch}
+    .btn{width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">Практика · диагностика пробела</div>
+    <h1>Рентген клиентского пути</h1>
+    <p>Разберите один сценарий по этапам. На каждом шаге определите, какой маркер указывает на системный пробел, а затем соберите управленческий диагноз.</p>
+  </section>
+
+  <section class="panel" id="taskPanel">
+    <div class="stepbar">
+      <div class="step active" id="s1">1</div>
+      <div class="step" id="s2">2</div>
+      <div class="step" id="s3">3</div>
+      <div class="progress"><div id="progressFill"></div></div>
+    </div>
+
+    <div id="stage1">
+      <h2 class="section-title">Сценарий: запуск B2B-проекта после оплаты</h2>
+      <p class="section-sub">Клиент купил годовое сопровождение. Команда обещала начать работу в течение трех рабочих дней.</p>
+
+      <div class="scenario">
+        <b>Ваша задача:</b> для каждого эпизода выбрать главный маркер пробела. В некоторых эпизодах заметны сразу несколько проблем, но выбирайте ту, которая точнее объясняет источник напряжения.
+      </div>
+
+      <div class="timeline" id="events"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" disabled>Проверить диагностику</button>
+      </div>
+    </div>
+
+    <div id="stage2" class="hidden">
+      <h2 class="section-title">Соберите управленческий диагноз</h2>
+      <p class="section-sub">Вы увидели отдельные маркеры. Теперь определите, какая формулировка описывает системную причину, а не обвиняет сотрудника.</p>
+
+      <div class="final-options" id="diagnosisOptions"></div>
+      <div id="diagnosisFeedback" class="feedback"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="toResultBtn" disabled>Показать итог</button>
+      </div>
+    </div>
+
+    <div id="stage3" class="hidden">
+      <h2 class="section-title">Результат диагностики</h2>
+      <p class="section-sub">Вы прошли путь от симптомов к управленческой причине.</p>
+
+      <div class="result-grid">
+        <div class="metric">
+          <span>Точность по этапам</span>
+          <strong id="scoreText">0/5</strong>
+        </div>
+        <div class="metric">
+          <span>Главный пробел</span>
+          <strong style="font-size:18px">Передача и владелец</strong>
+        </div>
+        <div class="metric">
+          <span>Риск для бизнеса</span>
+          <strong style="font-size:18px">Срыв первого результата</strong>
+        </div>
+      </div>
+
+      <div class="diagnosis">
+        <h3>Управленческая формулировка</h3>
+        <p>После оплаты клиент не получает единого владельца запуска и понятного статуса. Контекст теряется между продажами, аккаунтингом и исполнением, поэтому клиент сам контролирует старт проекта, а обещанный срок перестает вызывать доверие.</p>
+      </div>
+
+      <div class="scenario" style="margin-top:16px">
+        <b>Что менять:</b> назначить одного владельца запуска, передавать ему контекст сделки, фиксировать следующий шаг и дату первого результата, а повторяющиеся сбои разбирать на уровне процесса.
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" id="restartBtn">Пройти еще раз</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const markerLabels = {
+  wait: "Ожидание без ясности",
+  repeat: "Повторное объяснение",
+  owner: "Потеря владельца",
+  promise: "Разрыв обещания и реальности",
+  feedback: "Незамкнутая обратная связь"
+};
+
+const eventData = [
+  {
+    title:"День 1. После оплаты",
+    text:"Менеджер поздравляет клиента с началом работы, но не сообщает, кто теперь ведет проект и когда будет следующий контакт.",
+    correct:"owner",
+    explanation:"Главный сигнал — у этапа запуска нет заметного для клиента владельца. Ожидание уже возникает, но его причина — отсутствие ответственного за переход после продажи."
+  },
+  {
+    title:"День 3. Повторный бриф",
+    text:"Аккаунт-менеджер просит заново описать цели проекта, хотя клиент подробно обсуждал их с продажами и заполнял бриф.",
+    correct:"repeat",
+    explanation:"Клиент повторяет уже переданную информацию. Это показывает, что контекст сделки не перешел к следующей функции."
+  },
+  {
+    title:"День 4. Старт не состоялся",
+    text:"Клиент напоминает, что команда обещала начать работу за три дня. Ему отвечают, что внутреннее согласование обычно занимает неделю.",
+    correct:"promise",
+    explanation:"Фактический процесс не способен выполнить обещание, данное до оплаты. Это уже не просто задержка, а разрыв между обещанием и реальностью."
+  },
+  {
+    title:"День 6. Клиент собирает процесс",
+    text:"Клиент сам пишет продавцу, аккаунту и аналитику, чтобы выяснить, кто должен назначить установочную встречу.",
+    correct:"owner",
+    explanation:"Клиент фактически становится координатором компании. Это характерный признак потери владельца, даже если все сотрудники отвечают вежливо."
+  },
+  {
+    title:"Через месяц. Сбой повторяется",
+    text:"На ретро команда признает, что такая же ситуация была еще у трех клиентов, но каждый случай раньше закрывали вручную.",
+    correct:"feedback",
+    explanation:"Сигналы уже повторяются, но не доходят до изменения процесса. Значит, цикл обратной связи не замкнут."
+  }
+];
+
+const markerOrder = ["wait","repeat","owner","promise","feedback"];
+let answers = {};
+let checked = false;
+let diagnosisChosen = false;
+
+function renderEvents(){
+  const root = document.getElementById("events");
+  root.innerHTML = "";
+  eventData.forEach((ev, index)=>{
+    const card = document.createElement("div");
+    card.className = "event";
+    card.dataset.index = index;
+    card.innerHTML = `
+      <div class="event-head">
+        <div class="badge">${index+1}</div>
+        <div>
+          <h3>${ev.title}</h3>
+          <p>${ev.text}</p>
+        </div>
+      </div>
+      <div class="choices">
+        ${markerOrder.map(key=>`<button class="choice" data-key="${key}">${markerLabels[key]}</button>`).join("")}
+      </div>
+      <div class="feedback"></div>
+    `;
+    root.appendChild(card);
+
+    card.querySelectorAll(".choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        if(checked) return;
+        card.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+        btn.classList.add("selected");
+        answers[index]=btn.dataset.key;
+        document.getElementById("checkBtn").disabled = Object.keys(answers).length !== eventData.length;
+      });
+    });
+  });
+}
+
+function checkStage1(){
+  checked = true;
+  let score = 0;
+  document.querySelectorAll(".event").forEach((card,index)=>{
+    const ev = eventData[index];
+    const chosen = answers[index];
+    const feedback = card.querySelector(".feedback");
+    card.querySelectorAll(".choice").forEach(btn=>{
+      if(btn.dataset.key===ev.correct) btn.classList.add("is-correct");
+      if(btn.dataset.key===chosen && chosen!==ev.correct) btn.classList.add("is-wrong");
+      btn.disabled = true;
+    });
+    if(chosen===ev.correct){
+      score++;
+      card.classList.add("correct");
+      feedback.className="feedback show good";
+      feedback.textContent="Верно. "+ev.explanation;
+    }else{
+      card.classList.add("wrong");
+      feedback.className="feedback show bad";
+      feedback.textContent="Не совсем. "+ev.explanation;
+    }
+  });
+  document.getElementById("scoreText").textContent = `${score}/${eventData.length}`;
+  document.getElementById("checkBtn").textContent = `Результат: ${score} из ${eventData.length}`;
+  setTimeout(()=>goStage(2),900);
+}
+
+const diagnosisOptions = [
+  {
+    text:"Аккаунт-менеджер недостаточно внимательно ведет новых клиентов после оплаты.",
+    correct:false,
+    feedback:"Формулировка обвиняет одного сотрудника и не объясняет, почему сбой повторяется между функциями."
+  },
+  {
+    text:"После оплаты не настроена передача контекста и не назначен единый владелец запуска.",
+    correct:true,
+    feedback:"Верно. Формулировка называет этап, системную причину и управленческий объект изменения."
+  },
+  {
+    text:"Клиенты слишком рано начинают контролировать проект и мешают команде запуститься.",
+    correct:false,
+    feedback:"Это перенос ответственности на клиента. Самостоятельный контроль — следствие слабого процесса."
+  },
+  {
+    text:"Компании нужно ускорить внутреннее согласование и повысить дисциплину сотрудников.",
+    correct:false,
+    feedback:"Ускорение может помочь, но не закрывает потерю контекста, владельца и правила следующего действия."
+  }
+];
+
+function renderDiagnosis(){
+  const root=document.getElementById("diagnosisOptions");
+  root.innerHTML="";
+  diagnosisOptions.forEach((opt)=>{
+    const btn=document.createElement("button");
+    btn.className="choice";
+    btn.textContent=opt.text;
+    btn.addEventListener("click",()=>{
+      if(diagnosisChosen) return;
+      diagnosisChosen=true;
+      root.querySelectorAll("button").forEach(b=>b.disabled=true);
+      const fb=document.getElementById("diagnosisFeedback");
+      if(opt.correct){
+        btn.classList.add("is-correct");
+        fb.className="feedback show good";
+      }else{
+        btn.classList.add("is-wrong");
+        const correctBtn=[...root.querySelectorAll("button")].find(b=>b.textContent===diagnosisOptions.find(x=>x.correct).text);
+        correctBtn.classList.add("is-correct");
+        fb.className="feedback show bad";
+      }
+      fb.textContent=opt.feedback;
+      document.getElementById("toResultBtn").disabled=false;
+    });
+    root.appendChild(btn);
+  });
+}
+
+function goStage(n){
+  ["stage1","stage2","stage3"].forEach((id,i)=>{
+    document.getElementById(id).classList.toggle("hidden", i!==n-1);
+  });
+  ["s1","s2","s3"].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove("active","done");
+    if(i<n-1) el.classList.add("done");
+    if(i===n-1) el.classList.add("active");
+  });
+  document.getElementById("progressFill").style.width = n===1 ? "0%" : n===2 ? "50%" : "100%";
+  window.scrollTo({top:document.getElementById("taskPanel").offsetTop-10,behavior:"smooth"});
+}
+
+function restart(){
+  answers={};
+  checked=false;
+  diagnosisChosen=false;
+  document.getElementById("checkBtn").disabled=true;
+  document.getElementById("checkBtn").textContent="Проверить диагностику";
+  document.getElementById("toResultBtn").disabled=true;
+  document.getElementById("diagnosisFeedback").className="feedback";
+  renderEvents();
+  renderDiagnosis();
+  goStage(1);
+}
+
+document.getElementById("checkBtn").addEventListener("click",checkStage1);
+document.getElementById("toResultBtn").addEventListener("click",()=>goStage(3));
+document.getElementById("restartBtn").addEventListener("click",restart);
+
+renderEvents();
+renderDiagnosis();
+</script>
+</body>
+</html>
