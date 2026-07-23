@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing AI Simulator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb}
+.widget{width:520px;max-width:calc(100vw - 20px);margin:15px auto}
+.box{background:white;border-radius:16px;padding:12px;margin-bottom:10px}
+.intro{font-size:13px}
+.functions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.func{border:1px solid #ddd;border-radius:12px;padding:9px;font-size:12px}
+.buttons{display:flex;gap:5px;margin-top:7px}
+button{border:0;border-radius:8px;padding:6px;font-size:11px;cursor:pointer}
+.ai,.human{background:#f3f4f6}
+.ai.selected{background:#dcfce7;border:2px solid #22c55e}
+.human.selected{background:#ffe4e6;border:2px solid #ef4444}
+.choice{display:none}
+.feedback{display:none;background:#111827;color:white;border-radius:14px;padding:12px;font-size:12px}
+.actions{display:flex;gap:8px}
+.mainbtn{flex:1;background:#2563eb;color:white;padding:11px}
+.reset{background:#e5e7eb;padding:11px}
+.result{display:none;font-size:13px}
+</style>
+</head>
+<body>
+<div class="widget">
+
+<div class="box intro">
+🎯 <b>Вы хотите сократить расходы на маркетинг, но сохранить объем и качество работы.</b><br>
+Пересоберите модель команды после внедрения ИИ.
+</div>
+
+<div class="box">
+<b>Было:</b><br>
+👥 3 маркетолога-универсала<br>
+💰 600 000 ₽ / месяц<br><br>
+Функции: тексты, макеты, анализ, маркетинговые решения
+</div>
+
+<div class="box">
+<b>Какие функции изменятся?</b>
+<div class="functions">
+
+<div class="func" data-answer="ai">🔍 Анализ конкурентов
+<div class="buttons"><button class="ai" onclick="choose(this,'ai')">🤖 ИИ</button><button class="human" onclick="choose(this,'human')">👤 Человек</button></div><div class="choice"></div></div>
+
+<div class="func" data-answer="ai">📊 Анализ рынка
+<div class="buttons"><button class="ai" onclick="choose(this,'ai')">🤖 ИИ</button><button class="human" onclick="choose(this,'human')">👤 Человек</button></div><div class="choice"></div></div>
+
+<div class="func" data-answer="ai">✍️ Создание текстов
+<div class="buttons"><button class="ai" onclick="choose(this,'ai')">🤖 ИИ</button><button class="human" onclick="choose(this,'human')">👤 Человек</button></div><div class="choice"></div></div>
+
+<div class="func" data-answer="ai">🎨 Создание макетов
+<div class="buttons"><button class="ai" onclick="choose(this,'ai')">🤖 ИИ</button><button class="human" onclick="choose(this,'human')">👤 Человек</button></div><div class="choice"></div></div>
+
+<div class="func" data-answer="human">🧭 Выбор приоритетов маркетинга
+<div class="buttons"><button class="ai" onclick="choose(this,'ai')">🤖 ИИ</button><button class="human" onclick="choose(this,'human')">👤 Человек</button></div><div class="choice"></div></div>
+
+<div class="func" data-answer="human">✅ Контроль качества
+<div class="buttons"><button class="ai" onclick="choose(this,'ai')">🤖 ИИ</button><button class="human" onclick="choose(this,'human')">👤 Человек</button></div><div class="choice"></div></div>
+
+</div>
+</div>
+
+<div class="feedback" id="feedback"></div>
+
+<div class="actions">
+<button class="mainbtn" onclick="finish()">📊 Посмотреть новую модель</button>
+<button class="reset" onclick="resetGame()">↻</button>
+</div>
+
+<div class="box result" id="result"></div>
+
+</div>
+
+<script>
+let answers={};
+function choose(btn,type){
+let card=btn.closest('.func');
+card.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+btn.classList.add('selected');
+card.querySelector('.choice').innerHTML='';
+answers[card.innerText]=type;
+document.getElementById('feedback').style.display='block';
+document.getElementById('feedback').innerHTML=type===card.dataset.answer?
+'✅ Хороший выбор. Функция соответствует новой модели работы.':
+'💡 Подумайте, можно ли эту функцию ускорить с помощью ИИ.';
+}
+function finish(){
+let score=0;
+document.querySelectorAll('.func').forEach(c=>{if(answers[c.innerText]===c.dataset.answer)score++});
+let r=document.getElementById('result');
+r.style.display='block';
+r.innerHTML=`<b>🚀 Новая модель маркетинга:</b><br><br>
+👤 1 маркетолог + 🤖 AI-инструменты<br>
+💰 210–230 тыс. ₽ / месяц<br>
+📉 Экономия: до 390 тыс. ₽ / месяц<br><br>
+Правильных решений: <b>${score}/6</b>`
+}
+function resetGame(){
+answers={};
+document.querySelectorAll('.func').forEach(c=>{
+c.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+c.querySelector('.choice').innerHTML='';
+});
+document.getElementById('feedback').style.display='none';
+document.getElementById('result').style.display='none';
+}
+</script>
+</body>
+</html>
