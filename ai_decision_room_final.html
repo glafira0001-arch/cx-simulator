@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Decision Room</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb}
+.widget{width:520px;max-width:calc(100vw - 20px);margin:15px auto}
+.instruction,.box,.result{background:white;border-radius:16px;padding:12px;margin-bottom:10px}
+.instruction{font-size:13px}
+.tasks{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:8px;font-size:12px;min-height:38px;display:flex;align-items:center;cursor:grab}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.zone{background:white;border-radius:14px;padding:10px;min-height:85px}
+.zone h4{margin:0 0 4px;font-size:14px}
+.zone small{color:#777;font-size:11px}
+.ai{border:2px solid #4ade80}.mix{border:2px solid #facc15}.human{border:2px solid #fb7185;width:250px;margin:8px auto}
+.zone .card{font-size:11px;padding:6px;min-height:30px}
+.answer{display:none;background:#111827;color:white;border-radius:14px;padding:12px;font-size:12px;margin-top:10px}
+.actions{display:flex;gap:8px}
+button{border:0;border-radius:12px;padding:10px;cursor:pointer}
+.check{flex:1;background:#2563eb;color:white}
+.check:disabled{background:#cbd5e1}.reset{background:#e5e7eb}
+</style>
+</head>
+<body>
+<div class="widget">
+<div class="instruction">
+🎯 <b>Вы хотите сократить рутину и повысить продуктивность команды.</b><br>
+Распределите функции между ИИ и сотрудниками.
+</div>
+
+<div class="box">
+<b>📋 Функции компании</b>
+<div class="tasks" id="pool">
+<div class="card" draggable="true" data-type="ai">📄 Типовой договор</div>
+<div class="card" draggable="true" data-type="human">🤝 Сложный клиент</div>
+<div class="card" draggable="true" data-type="ai">📊 Отчет</div>
+<div class="card" draggable="true" data-type="mix">⚖️ Юр. спор</div>
+<div class="card" draggable="true" data-type="ai">🎨 Дизайн</div>
+<div class="card" draggable="true" data-type="human">🎯 Стратегия</div>
+</div>
+</div>
+
+<div class="zones">
+<div class="zone ai" data-zone="ai"><h4>🤖 ИИ</h4><small>Рутинные функции</small></div>
+<div class="zone mix" data-zone="mix"><h4>🤝 Вместе</h4><small>ИИ + эксперт</small></div>
+</div>
+
+<div class="zone human" data-zone="human"><h4>👤 Человек</h4><small>Стратегия и решения</small></div>
+
+<div class="answer" id="answer"></div>
+
+<div class="actions">
+<button class="check" id="check" disabled>✅ Проверить модель</button>
+<button class="reset" onclick="resetGame()">↻</button>
+</div>
+
+<div class="result" id="result"></div>
+</div>
+
+<script>
+let dragged=null;
+document.querySelectorAll('.card').forEach(c=>c.addEventListener('dragstart',()=>dragged=c));
+document.querySelectorAll('.zone,#pool').forEach(a=>{
+a.addEventListener('dragover',e=>e.preventDefault());
+a.addEventListener('drop',()=>{a.appendChild(dragged);showAI(dragged);checkReady();});
+});
+function showAI(c){
+let a=document.getElementById('answer');a.style.display='block';
+a.innerHTML=c.dataset.type==='ai'?'🤖 ИИ: эту функцию можно автоматизировать — она повторяемая и хорошо структурируется.':
+c.dataset.type==='mix'?'🤝 ИИ помогает подготовить решение, но эксперт контролирует результат.':
+'👤 Человек нужен там, где важны переговоры, стратегия и ответственность.';
+}
+function checkReady(){document.getElementById('check').disabled=document.querySelectorAll('.zone .card').length!==6}
+document.getElementById('check').onclick=()=>{
+let s=0;
+document.querySelectorAll('.zone').forEach(z=>z.querySelectorAll('.card').forEach(c=>{if(c.dataset.type===z.dataset.zone)s++}));
+let r=document.getElementById('result');r.style.display='block';r.innerHTML=`📊 Результат: <b>${s}/6</b><br><br>Главный вывод: ИИ не заменяет людей — он забирает рутинные функции.`;
+}
+function resetGame(){let p=document.getElementById('pool');document.querySelectorAll('.zone .card').forEach(c=>p.appendChild(c));document.getElementById('answer').style.display='none';document.getElementById('result').style.display='none';document.getElementById('check').disabled=true}
+</script>
+</body>
+</html>
