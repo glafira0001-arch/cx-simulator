@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>AI Decision Room</title>
+
+<style>
+
+* {
+    box-sizing:border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background:#f3f6fb;
+    padding:30px;
+    color:#1f2937;
+}
+
+
+h1 {
+    text-align:center;
+}
+
+
+.subtitle {
+    max-width:850px;
+    margin:0 auto 25px;
+    text-align:center;
+    color:#555;
+}
+
+
+.instruction {
+    max-width:850px;
+    margin:0 auto 25px;
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 5px 20px rgba(0,0,0,.06);
+}
+
+
+.main {
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:25px;
+    max-width:1300px;
+    margin:auto;
+}
+
+
+.panel {
+    background:white;
+    padding:20px;
+    border-radius:20px;
+}
+
+
+.card {
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:12px;
+    cursor:grab;
+}
+
+
+.card:hover {
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+
+
+.zones {
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+
+}
+
+
+
+.zone {
+
+    background:white;
+    min-height:350px;
+    border-radius:20px;
+    padding:20px;
+
+}
+
+
+
+.zone.ai {
+    border-top:6px solid #4ade80;
+}
+
+
+.zone.mix {
+    border-top:6px solid #facc15;
+}
+
+
+.zone.human {
+    border-top:6px solid #f87171;
+}
+
+
+
+.feedback {
+
+    margin-top:25px;
+    background:#111827;
+    color:white;
+    padding:20px;
+    border-radius:18px;
+    display:none;
+
+}
+
+
+
+.buttons {
+
+    text-align:center;
+    margin:30px;
+
+}
+
+
+
+button {
+
+    padding:14px 25px;
+    border-radius:30px;
+    border:none;
+    font-size:16px;
+    cursor:pointer;
+
+}
+
+
+
+.check {
+
+    background:#2563eb;
+    color:white;
+
+}
+
+
+
+.check:disabled {
+
+    background:#cbd5e1;
+    cursor:not-allowed;
+
+}
+
+
+
+.reset {
+
+    background:#e5e7eb;
+
+}
+
+
+
+.result {
+
+    display:none;
+    max-width:850px;
+    margin:20px auto;
+    background:white;
+    padding:25px;
+    border-radius:20px;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>🤖 AI Decision Room</h1>
+
+
+<div class="subtitle">
+
+Вы — генеральный директор.
+Пересоберите процессы компании и решите,
+что должен делать ИИ, а где нужен человек.
+
+</div>
+
+
+
+<div class="instruction">
+
+<h3>🎯 Как выполнить задание:</h3>
+
+<p>
+1. Перетащите карточки задач в одну из трёх зон.
+</p>
+
+<p>
+2. Если изменили решение — переместите карточку снова.
+</p>
+
+<p>
+3. Когда все задачи распределены — нажмите
+<strong>«Проверить AI-модель»</strong>.
+</p>
+
+</div>
+
+
+
+<div class="main">
+
+
+<div class="panel">
+
+
+<h3>📋 Задачи</h3>
+
+
+<div class="card" draggable="true"
+data-type="ai"
+data-ai="Типовые документы хорошо подходят для автоматизации. ИИ ищет ошибки быстрее человека, а специалист контролирует результат.">
+
+📄 Проверить типовой договор поставщика
+
+</div>
+
+
+
+<div class="card" draggable="true"
+data-type="human"
+data-ai="Переговоры требуют доверия, эмоций и нестандартных решений. Здесь нужен человек.">
+
+🤝 Провести переговоры с конфликтным клиентом
+
+</div>
+
+
+
+<div class="card" draggable="true"
+data-type="ai"
+data-ai="Сбор данных и отчёты можно автоматизировать.">
+
+📊 Подготовить ежемесячный отчёт
+
+</div>
+
+
+
+<div class="card" draggable="true"
+data-type="mix"
+data-ai="ИИ может подготовить анализ, но решение требует опыта специалиста.">
+
+⚖️ Разработать стратегию юридического спора
+
+</div>
+
+
+
+<div class="card" draggable="true"
+data-type="ai"
+data-ai="ИИ отлично подходит для генерации первых вариантов дизайна и текста.">
+
+🎨 Создать рекламные материалы
+
+</div>
+
+
+
+<div class="card" draggable="true"
+data-type="human"
+data-ai="Стратегические решения остаются зоной ответственности руководителя.">
+
+🎯 Выбрать направление роста компании
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<div>
+
+
+<div class="zones">
+
+
+<div class="zone ai" data-zone="ai">
+
+<h3>🤖 ИИ выполняет</h3>
+<p>Рутинные задачи</p>
+
+</div>
+
+
+<div class="zone mix" data-zone="mix">
+
+<h3>🤝 ИИ + человек</h3>
+<p>Совместная работа</p>
+
+</div>
+
+
+<div class="zone human" data-zone="human">
+
+<h3>👤 Человек</h3>
+<p>Стратегия и ответственность</p>
+
+</div>
+
+
+</div>
+
+
+<div class="feedback" id="feedback"></div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="buttons">
+
+<button class="check" id="check" disabled>
+✅ Проверить AI-модель
+</button>
+
+
+<button class="reset" onclick="resetGame()">
+🔄 Начать заново
+</button>
+
+
+</div>
+
+
+
+
+<div class="result" id="result"></div>
+
+
+
+
+<script>
+
+
+let dragged=null;
+
+
+let totalCards=
+document.querySelectorAll(".card").length;
+
+
+
+document.querySelectorAll(".card").forEach(card=>{
+
+
+card.addEventListener("dragstart",()=>{
+
+dragged=card;
+
+});
+
+
+});
+
+
+
+document.querySelectorAll(".zone, .panel").forEach(area=>{
+
+
+area.addEventListener("dragover",e=>{
+
+e.preventDefault();
+
+});
+
+
+
+area.addEventListener("drop",()=>{
+
+
+area.appendChild(dragged);
+
+
+showAI(dragged);
+
+
+checkReady();
+
+
+});
+
+
+});
+
+
+
+
+function showAI(card){
+
+
+let feedback=document.getElementById("feedback");
+
+
+feedback.style.display="block";
+
+
+feedback.innerHTML=
+`
+🤖 <strong>AI Assistant:</strong><br><br>
+${card.dataset.ai}
+`;
+
+}
+
+
+
+
+function checkReady(){
+
+
+let placed=
+document.querySelectorAll(".zone .card").length;
+
+
+let button=document.getElementById("check");
+
+
+if(placed===totalCards){
+
+button.disabled=false;
+
+}
+else{
+
+button.disabled=true;
+
+}
+
+
+}
+
+
+
+
+
+document.getElementById("check")
+.onclick=function(){
+
+
+let score=0;
+
+
+document.querySelectorAll(".zone").forEach(zone=>{
+
+
+zone.querySelectorAll(".card")
+.forEach(card=>{
+
+
+if(card.dataset.type===zone.dataset.zone){
+
+score++;
+
+}
+
+
+});
+
+
+});
+
+
+
+document.getElementById("result").style.display="block";
+
+
+document.getElementById("result").innerHTML=
+`
+
+<h2>📊 Результат</h2>
+
+<p>
+Вы правильно распределили:
+<strong>${score} из ${totalCards}</strong> задач.
+</p>
+
+<p>
+${
+score>=5
+?
+"🏆 Отлично! Вы построили эффективную AI-first модель."
+:
+"💡 Хорошее начало. Попробуйте пересмотреть функции, которые можно автоматизировать."
+}
+
+</p>
+
+<hr>
+
+<p>
+Главный вывод урока:
+<strong>
+Оптимизировать нужно не людей, а функции.
+</strong>
+</p>
+
+`;
+
+};
+
+
+
+
+
+function resetGame(){
+
+
+let panel=document.querySelector(".panel");
+
+
+document.querySelectorAll(".zone .card")
+.forEach(card=>{
+
+panel.appendChild(card);
+
+});
+
+
+document.getElementById("feedback").style.display="none";
+
+document.getElementById("result").style.display="none";
+
+document.getElementById("check").disabled=true;
+
+
+}
+
+
+</script>
+
+
+</body>
+</html>
