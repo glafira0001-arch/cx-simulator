@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif}
+.widget{width:520px;max-width:calc(100vw-20px);margin:15px auto}
+.box{background:#fff;border-radius:16px;padding:12px;margin-bottom:10px}
+.text{font-size:13px;line-height:1.4}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.zone{min-height:150px;border-radius:14px;padding:10px;font-size:12px}
+.ai{background:#eff6ff;border:2px dashed #2563eb}
+.human{background:#fff7ed;border:2px dashed #f97316}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.card{background:white;border:1px solid #ddd;border-radius:10px;padding:8px;font-size:11px;cursor:grab}
+.card.dragging{opacity:.5}
+button{width:100%;border:0;border-radius:10px;padding:9px;background:#2563eb;color:white;font-size:12px}
+.result{display:none;font-size:12px}
+</style>
+</head>
+<body>
+<div class="widget">
+
+<div class="box text">
+🎯 <b>Вы внедряете ИИ в компанию.</b><br>
+Перетащите задачи в нужную зону: где ИИ уже может помочь, а где решение остается за человеком.
+</div>
+
+<div class="zones">
+<div class="zone ai" id="aiZone"><b>🤖 ИИ может помочь</b></div>
+<div class="zone human" id="humanZone"><b>👤 Решение человека</b></div>
+</div>
+
+<div class="box">
+<div class="cards" id="cards">
+<div class="card" draggable="true" data-zone="ai">📊 Анализировать отзывы клиентов</div>
+<div class="card" draggable="true" data-zone="human">🎯 Выбрать стратегию развития</div>
+<div class="card" draggable="true" data-zone="ai">✍️ Создать первый вариант предложения</div>
+<div class="card" draggable="true" data-zone="human">🤝 Провести сложные переговоры</div>
+<div class="card" draggable="true" data-zone="ai">📄 Проверить типовой документ</div>
+<div class="card" draggable="true" data-zone="human">⚖️ Принять решение в спорной ситуации</div>
+<div class="card" draggable="true" data-zone="ai">📈 Подготовить отчет из данных</div>
+<div class="card" draggable="true" data-zone="human">🚀 Решить, выходить ли на новый рынок</div>
+</div>
+</div>
+
+<div style="display:flex;gap:6px">
+<button onclick="check()" style="flex:1">Проверить</button>
+<button onclick="resetGame()" style="width:42px;background:#e5e7eb;color:#111">↻</button>
+</div>
+<div class="box result" id="result"></div>
+
+</div>
+
+<script>
+let dragged=null;
+
+document.querySelectorAll('.card').forEach(card=>{
+card.addEventListener('dragstart',()=>{
+dragged=card;
+card.classList.add('dragging');
+});
+card.addEventListener('dragend',()=>{
+card.classList.remove('dragging');
+});
+});
+
+document.querySelectorAll('.zone,.cards').forEach(zone=>{
+zone.addEventListener('dragover',e=>e.preventDefault());
+zone.addEventListener('drop',()=>{
+if(dragged) zone.appendChild(dragged);
+});
+});
+
+function check(){
+let correct=0;
+document.querySelectorAll('.zone .card').forEach(c=>{
+let actual=c.parentElement.id==='aiZone'?'ai':'human';
+if(actual===c.dataset.zone) correct++;
+});
+let r=document.getElementById('result');
+r.style.display='block';
+r.innerHTML=correct===8?
+'✅ Отлично! ИИ берет анализ, создание и рутину. Человек остается в стратегии, решениях и сложных коммуникациях.':
+'⚠️ Некоторые задачи распределены неверно. Попробуйте изменить распределение.';
+}
+
+function resetGame(){
+let cards=document.querySelectorAll('.card');
+let container=document.getElementById('cards');
+cards.forEach(c=>container.appendChild(c));
+document.getElementById('result').style.display='none';
+}
+</script>
+</body>
+</html>
