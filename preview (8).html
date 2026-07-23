@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Marketing Context</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb}
+.widget{width:520px;max-width:calc(100vw - 20px);margin:15px auto}
+.box{background:white;border-radius:16px;padding:12px;margin-bottom:10px}
+.intro{font-size:13px}
+.ai{background:#111827;color:white;border-radius:16px;padding:12px;font-size:12px;margin-bottom:10px}
+.ai.good{background:#166534}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:white;border:1px solid #ddd;border-radius:12px;padding:9px;font-size:11.5px;cursor:pointer}
+.card.active{border:2px solid #2563eb;background:#eff6ff}
+.feedback{display:none;background:#ecfdf5;border-radius:12px;padding:10px;font-size:12px;margin-bottom:10px}
+.actions{display:flex;justify-content:center;gap:6px;margin-top:6px}
+button{border:0;border-radius:10px;padding:7px 12px;cursor:pointer;font-size:11px}
+.main{background:#2563eb;color:white}
+.reset{width:34px;padding:7px;background:#e5e7eb}
+.result{display:none;font-size:12px}
+</style>
+</head>
+<body>
+<div class="widget">
+
+<div class="box intro">
+🎯 <b>Вы внедрили AI-маркетолога.</b><br>
+Первый результат слишком общий. Выберите данные, которые улучшат следующий результат ИИ.
+</div>
+
+<div class="ai" id="ai">
+🤖 Первый результат ИИ:<br><br>
+«Мы помогаем компаниям повышать эффективность процессов с помощью инновационных технологий».
+</div>
+
+<div class="box">
+<b>Какие данные добавить?</b>
+<div class="cards">
+<div class="card" data-ok="1">📄 Реальные кейсы компании</div>
+<div class="card" data-ok="0">📊 Только данные о количестве подписчиков</div>
+
+<div class="card" data-ok="0">💬 Отзывы без контекста и деталей</div>
+<div class="card" data-ok="1">👥 Профиль клиентов и их задачи</div>
+
+<div class="card" data-ok="1">📚 Термины и язык отрасли</div>
+<div class="card" data-ok="0">🏆 Награды компании без описания проектов</div>
+
+<div class="card" data-ok="0">📰 Общие новости рынка без связи с продуктом</div>
+<div class="card" data-ok="1">🧩 Примеры точных формулировок о продукте</div>
+</div></div>
+</div></div>
+</div>
+</div>
+
+<div class="actions">
+<button class="main" onclick="improve()">🤖 Улучшить ответ</button>
+<button class="reset" onclick="resetGame()">↻</button>
+</div>
+
+<div class="feedback" id="feedback"></div>
+<div class="box result" id="result"></div>
+
+</div>
+
+<script>
+let selected=[];
+document.querySelectorAll('.card').forEach(c=>{
+c.onclick=()=>{
+if(c.classList.contains('active')){
+c.classList.remove('active');
+selected=selected.filter(x=>x!==c);
+}else{
+c.classList.add('active');
+selected.push(c);
+}
+}
+});
+
+function improve(){
+let selectedCards=document.querySelectorAll('.card.active');
+let correct=[...selectedCards].filter(c=>c.dataset.ok==="1").length;
+let wrong=[...selectedCards].filter(c=>c.dataset.ok==="0").length;
+
+let ai=document.getElementById('ai');
+let f=document.getElementById('feedback');
+
+if(correct===4 && wrong===0){
+ai.classList.add('good');
+ai.innerHTML='✨ Улучшенный результат ИИ:<br><br>«Мы создаём решения для компаний, учитывая отраслевую экспертизу, задачи клиентов и реальные кейсы проектов».';
+f.style.display='block';
+f.innerHTML='✅ Отлично. ИИ получил полный контекст бизнеса.';
+}
+else if(wrong>0){
+f.style.display='block';
+f.innerHTML='⚠️ В набор попали лишние данные. Они не помогают ИИ понять экспертизу компании.';
+}
+else{
+f.style.display='block';
+f.innerHTML='💡 Не хватает контекста. Добавьте все ключевые данные о компании.';
+}
+}
+
+function resetGame(){
+selected=[];
+document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+document.getElementById('ai').className='ai';
+document.getElementById('ai').innerHTML='🤖 Первый результат ИИ:<br><br>«Мы помогаем компаниям повышать эффективность процессов с помощью инновационных технологий».';
+document.getElementById('feedback').style.display='none';
+}
+</script>
+</body>
+</html>
