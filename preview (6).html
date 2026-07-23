@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Decision Room</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+background:#f4f6fb;
+font-family:Arial,sans-serif;
+}
+
+
+.widget{
+
+width:520px;
+max-width:calc(100vw - 20px);
+
+margin:20px auto;
+
+background:#f4f6fb;
+
+}
+
+
+h1{
+
+font-size:23px;
+text-align:center;
+margin:0;
+
+}
+
+
+.subtitle{
+
+text-align:center;
+font-size:13px;
+color:#666;
+margin:8px 0 15px;
+
+}
+
+
+
+.box{
+
+background:white;
+border-radius:18px;
+padding:14px;
+margin-bottom:12px;
+
+}
+
+
+
+.tasks-grid{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+
+}
+
+
+
+.card{
+
+background:white;
+border:1px solid #ddd;
+
+border-radius:12px;
+
+padding:10px;
+
+font-size:13px;
+
+cursor:grab;
+
+min-height:42px;
+
+display:flex;
+align-items:center;
+
+}
+
+
+
+.card:hover{
+
+border-color:#2563eb;
+
+}
+
+
+
+.zones-top{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+
+}
+
+
+
+.zone{
+
+background:white;
+
+border-radius:16px;
+
+padding:12px;
+
+min-height:100px;
+
+}
+
+
+
+.zone h3{
+
+font-size:15px;
+margin:0 0 4px;
+
+}
+
+
+.zone small{
+
+color:#666;
+
+}
+
+
+
+.ai{
+
+border:2px solid #4ade80;
+
+}
+
+
+.mix{
+
+border:2px solid #facc15;
+
+}
+
+
+.human{
+
+border:2px solid #fb7185;
+
+margin:10px auto;
+
+width:260px;
+
+}
+
+
+
+
+.zone .card{
+
+font-size:12px;
+
+padding:8px;
+
+min-height:35px;
+
+}
+
+
+
+.answer{
+
+display:none;
+
+background:#111827;
+
+color:white;
+
+padding:12px;
+
+border-radius:14px;
+
+font-size:13px;
+
+margin-top:12px;
+
+}
+
+
+
+button{
+
+width:100%;
+
+padding:12px;
+
+border-radius:14px;
+
+border:none;
+
+margin-top:8px;
+
+cursor:pointer;
+
+font-size:14px;
+
+}
+
+
+.check{
+
+background:#2563eb;
+
+color:white;
+
+}
+
+
+
+.check:disabled{
+
+background:#cbd5e1;
+
+}
+
+
+.reset{
+
+background:#e5e7eb;
+
+}
+
+
+
+.result{
+
+display:none;
+
+background:white;
+
+padding:15px;
+
+border-radius:16px;
+
+font-size:14px;
+
+margin-top:12px;
+
+}
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<div class="widget">
+
+
+<h1>🤖 AI Decision Room</h1>
+
+
+<div class="subtitle">
+
+Вы — генеральный директор.
+Распределите задачи между ИИ и людьми.
+
+</div>
+
+
+
+<div class="box">
+
+
+<strong>📋 Задачи</strong>
+
+
+<div class="tasks-grid" id="pool">
+
+
+
+<div class="card" draggable="true" data-type="ai">
+
+📄 Типовой договор
+
+</div>
+
+
+<div class="card" draggable="true" data-type="human">
+
+🤝 Сложный клиент
+
+</div>
+
+
+<div class="card" draggable="true" data-type="ai">
+
+📊 Отчет
+
+</div>
+
+
+<div class="card" draggable="true" data-type="mix">
+
+⚖️ Юр. спор
+
+</div>
+
+
+<div class="card" draggable="true" data-type="ai">
+
+🎨 Дизайн
+
+</div>
+
+
+<div class="card" draggable="true" data-type="human">
+
+🎯 Стратегия
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="zones-top">
+
+
+<div class="zone ai" data-zone="ai">
+
+<h3>🤖 ИИ</h3>
+
+<small>
+Рутина
+</small>
+
+
+</div>
+
+
+
+<div class="zone mix" data-zone="mix">
+
+<h3>🤝 Вместе</h3>
+
+<small>
+ИИ + эксперт
+</small>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="zone human" data-zone="human">
+
+
+<h3>👤 Человек</h3>
+
+<small>
+Стратегия
+</small>
+
+
+</div>
+
+
+
+
+
+<div class="answer" id="answer"></div>
+
+
+
+
+<button class="check" id="check" disabled>
+
+✅ Проверить модель
+
+</button>
+
+
+
+<button class="reset" onclick="resetGame()">
+
+🔄 Начать заново
+
+</button>
+
+
+
+
+<div class="result" id="result"></div>
+
+
+
+</div>
+
+
+
+
+
+
+<script>
+
+
+let dragged=null;
+
+
+document.querySelectorAll(".card")
+.forEach(card=>{
+
+
+card.addEventListener("dragstart",()=>{
+
+dragged=card;
+
+});
+
+
+});
+
+
+
+document.querySelectorAll(".zone,#pool")
+.forEach(area=>{
+
+
+area.addEventListener("dragover",e=>{
+
+e.preventDefault();
+
+});
+
+
+area.addEventListener("drop",()=>{
+
+
+area.appendChild(dragged);
+
+
+showAnswer(dragged);
+
+
+checkReady();
+
+
+});
+
+
+});
+
+
+
+
+
+function showAnswer(card){
+
+
+let answer=document.getElementById("answer");
+
+
+answer.style.display="block";
+
+
+if(card.dataset.type==="ai"){
+
+answer.innerHTML=
+"🤖 ИИ: эту задачу можно автоматизировать — она повторяемая и хорошо описывается правилами.";
+
+}
+
+
+if(card.dataset.type==="mix"){
+
+answer.innerHTML=
+"🤝 ИИ помогает подготовить решение, но эксперт контролирует результат.";
+
+}
+
+
+if(card.dataset.type==="human"){
+
+answer.innerHTML=
+"👤 Человек: здесь важны переговоры, ответственность и стратегическое мышление.";
+
+}
+
+
+}
+
+
+
+
+function checkReady(){
+
+
+let placed=document.querySelectorAll(".zone .card").length;
+
+
+document.getElementById("check").disabled =
+placed !== 6;
+
+
+}
+
+
+
+
+
+document.getElementById("check")
+.onclick=function(){
+
+
+let score=0;
+
+
+document.querySelectorAll(".zone")
+.forEach(zone=>{
+
+
+zone.querySelectorAll(".card")
+.forEach(card=>{
+
+
+if(card.dataset.type===zone.dataset.zone){
+
+score++;
+
+}
+
+
+});
+
+
+});
+
+
+
+let result=document.getElementById("result");
+
+
+result.style.display="block";
+
+
+result.innerHTML=
+
+`
+<h3>📊 Результат</h3>
+
+Правильных решений:
+<b>${score}/6</b>
+
+<br><br>
+
+${
+score>=5
+?
+"🏆 Вы построили эффективную AI-first модель."
+:
+"💡 Попробуйте пересмотреть, какие функции действительно требуют человека."
+}
+
+<br><br>
+
+Главный вывод:
+<strong>
+Оптимизируем функции, а не людей.
+</strong>
+
+`;
+
+};
+
+
+
+
+
+function resetGame(){
+
+
+let pool=document.getElementById("pool");
+
+
+document.querySelectorAll(".zone .card")
+.forEach(card=>{
+
+pool.appendChild(card);
+
+});
+
+
+document.getElementById("answer").style.display="none";
+
+document.getElementById("result").style.display="none";
+
+document.getElementById("check").disabled=true;
+
+
+}
+
+
+</script>
+
+
+</body>
+</html>
