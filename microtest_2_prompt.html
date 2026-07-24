@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif}
+.widget{width:520px;max-width:calc(100vw - 20px);margin:12px auto}
+.card{background:#fff;border-radius:16px;padding:14px}
+.lead{font-size:12px;line-height:1.4;color:#4b5563;margin-bottom:10px}
+.q{font-size:14px;font-weight:700;line-height:1.35;margin-bottom:10px}
+.options{display:grid;gap:7px}
+.option{border:1px solid #d1d5db;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.3;cursor:pointer;background:#fff}
+.option.selected{border:2px solid #2563eb;background:#eff6ff}
+.option.correct{border:2px solid #16a34a;background:#ecfdf5}
+.option.wrong{border:2px solid #dc2626;background:#fef2f2}
+.actions{display:flex;gap:6px;margin-top:10px}
+.check{flex:1;border:0;border-radius:10px;padding:8px;background:#2563eb;color:#fff;font-size:12px;cursor:pointer}
+.reset{width:38px;border:0;border-radius:10px;background:#e5e7eb;font-size:15px;cursor:pointer}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px;background:#111827;color:#fff;font-size:11.5px;line-height:1.35}
+</style></head>
+<body><div class="widget"><div class="card">
+<div class="lead">Качество результата зависит от того, насколько точно человек поставил задачу.</div>
+<div class="q">Какой запрос к ИИ сформулирован лучше?</div>
+<div class="options"><div class="option" data-ok="0">Подготовь отчет о продажах.</div>
+<div class="option" data-ok="0">Посмотри таблицу и сделай выводы.</div>
+<div class="option" data-ok="1">Сравни продажи за два квартала, выдели причины изменения выручки и подготовь три вывода для совещания.</div>
+<div class="option" data-ok="0">Сделай что-нибудь полезное по этим данным.</div></div>
+<div class="actions"><button class="check" onclick="checkAnswer()">Проверить</button><button class="reset" onclick="resetTest()">↻</button></div>
+<div class="feedback" id="feedback"></div>
+</div></div>
+<script>
+let selected=null;
+document.querySelectorAll('.option').forEach(o=>o.onclick=()=>{
+ document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected','correct','wrong'));
+ o.classList.add('selected'); selected=o;
+ document.getElementById('feedback').style.display='none';
+});
+function checkAnswer(){
+ const f=document.getElementById('feedback'); f.style.display='block';
+ if(!selected){f.textContent='Сначала выберите вариант ответа.';return;}
+ selected.classList.add(selected.dataset.ok==='1'?'correct':'wrong');
+ f.textContent=selected.dataset.ok==='1'?'Верно. В запросе указаны данные, действие, критерии и формат результата.':'Не совсем. Хороший запрос должен содержать цель, контекст и ожидаемый результат.';
+}
+function resetTest(){
+ selected=null;
+ document.querySelectorAll('.option').forEach(o=>o.className='option');
+ document.getElementById('feedback').style.display='none';
+}
+</script></body></html>
