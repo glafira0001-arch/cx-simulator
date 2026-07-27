@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Журнал состояний</title>
+<style>
+:root{
+  --ink:#18212f; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa;
+  --card:#ffffff; --accent:#3157d5; --accent-soft:#eef2ff;
+  --ok:#147a55; --ok-soft:#e9f8f1; --bad:#b42318; --bad-soft:#fff0ee;
+  --warn:#9a6700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#f8faff,#eef2ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card + .card{margin-top:10px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;color:var(--muted);line-height:1.4}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.task-card,.action{width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+  border-radius:11px;padding:10px 11px;cursor:pointer;color:var(--ink);transition:.15s}
+.choice:hover,.chip:hover,.task-card:hover,.action:hover{border-color:#9cadf3}
+.choice.selected,.chip.selected,.task-card.selected,.action.selected{
+  border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.choice.good,.chip.good,.task-card.good,.action.good{border-color:var(--ok);background:var(--ok-soft)}
+.choice.bad,.chip.bad,.task-card.bad,.action.bad{border-color:var(--bad);background:var(--bad-soft)}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:white;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft);color:#0c5b3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.feedback.bad{background:var(--bad-soft);color:#8e1b13}
+.progress{height:5px;background:#e7ebf2}
+.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#eef1f6;color:#475467}
+.hidden{display:none!important}
+.metric{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.metric strong{font-size:18px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}.task{border-radius:14px}.head,.body{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="progress"><div id="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Журнал состояний</div>
+    <h2>Система раннего предупреждения</h2>
+    <p class="lead">Пройдите три контрольные точки дня и примите решение по уровню состояния, а не по силе воли.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <div class="metric"><span class="badge" id="time"></span><strong id="level"></strong></div>
+      <p id="symptom" style="margin:8px 0 0"></p>
+    </div>
+    <div class="small" style="margin:10px 0 6px">Что вы делаете сейчас?</div>
+    <div class="grid2" id="options"></div>
+    <div id="finalBlock" class="hidden">
+      <div class="small" style="margin:12px 0 6px">Три замера подряд — 7 и выше. Выберите две задачи, которые снимете с дня.</div>
+      <div class="grid2" id="cuts"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="next" disabled>Подтвердить</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const points=[
+ {time:'11:00',level:7,sym:'Плечи подняты, тянет проверить чаты, письмо перечитано дважды.',
+  opts:[['15 минут пройтись без экрана',1],['Открыть еще почту, чтобы быстро все закрыть',0],['Выпить кофе и продолжить',0],['Принять решение по бюджету',0]]},
+ {time:'13:00',level:8,sym:'После созвона злитесь, путаете цифры и начинаете говорить быстрее.',
+  opts:[['Перенести необязательный созвон и пообедать',1],['Сразу провести еще одну встречу',0],['Ответить всем, пока есть энергия',0],['Ругать себя за несобранность',0]]},
+ {time:'16:00',level:7,sym:'Снова перечитываете отчет, дергаете ногой, отвлекаетесь на телефон.',
+  opts:[['Остановить работу на 15 минут и сменить модальность',1],['Дожать отчет без перерыва',0],['Добавить музыку и три параллельные задачи',0],['Отложить все решения на поздний вечер',0]]}
+];
+const cuts=[
+ ['Внутренний созвон без решения',1],
+ ['Просмотр отраслевых новостей',1],
+ ['Отправка договора клиенту сегодня',0],
+ ['Исправление критической ошибки',0]
+];
+let i=0,selected=null,chosen=[],cutSel=new Set(),phase='point';
+const $=s=>document.querySelector(s);
+function render(){
+ const p=points[i];selected=null;phase='point';
+ $('#time').textContent=p.time;$('#level').textContent=`${p.level} / 10`;$('#symptom').textContent=p.sym;
+ $('#options').innerHTML=p.opts.map((o,n)=>`<button class="choice" data-i="${n}">${o[0]}</button>`).join('');
+ $('#options').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+  $('#options').querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selected=+b.dataset.i;$('#next').disabled=false;
+ });
+ $('#bar').style.width=`${i/points.length*100}%`;$('#next').textContent='Подтвердить';$('#next').disabled=true;$('#fb').className='feedback';
+}
+function showCuts(){
+ phase='cuts';$('#bar').style.width='100%';$('#options').classList.add('hidden');$('#finalBlock').classList.remove('hidden');
+ $('#time').textContent='Итог дня';$('#level').textContent='3 × зона риска';$('#symptom').textContent='Теперь правило журнала требует снять две задачи, а не продолжать в аварийном режиме.';
+ $('#cuts').innerHTML=cuts.map((c,n)=>`<button class="task-card" data-i="${n}">${c[0]}</button>`).join('');
+ $('#cuts').querySelectorAll('.task-card').forEach(b=>b.onclick=()=>{
+  const n=+b.dataset.i;b.classList.toggle('selected');b.classList.contains('selected')?cutSel.add(n):cutSel.delete(n);
+  if(cutSel.size>2){b.classList.remove('selected');cutSel.delete(n);}
+  $('#next').disabled=cutSel.size!==2;
+ });
+ $('#next').textContent='Показать результат';$('#next').disabled=true;
+}
+$('#next').onclick=()=>{
+ if(phase==='point'){
+  chosen.push(points[i].opts[selected][1]);
+  if(i<points.length-1){i++;render();}else showCuts();
+ }else{
+  const cutsOk=[...cutSel].every(n=>cuts[n][1]===1);
+  const good=chosen.reduce((a,b)=>a+b,0);
+  $('#cuts').querySelectorAll('.task-card').forEach((b,n)=>b.classList.add(cuts[n][1]===1?'good':(cutSel.has(n)?'bad':'')));
+  const fb=$('#fb');fb.className=`feedback show ${good===3&&cutsOk?'ok':'warn'}`;
+  fb.innerHTML=good===3&&cutsOk
+   ?'<strong>Вы использовали журнал как систему управления.</strong><br>На каждом уровне 7–8 вы снижали нагрузку, а после третьего сигнала сняли две некритичные задачи.'
+   :`<strong>Правильных решений: ${good} из 3.</strong><br>Уровень 7–8 требует внеплановой паузы. Три таких замера подряд — основание убрать две некритичные задачи, но не обязательства с прямым риском.`;
+  $('#next').disabled=true;$('#next').textContent='Готово';
+ }
+};
+$('#reset').onclick=()=>{
+ i=0;selected=null;chosen=[];cutSel=new Set();phase='point';$('#options').classList.remove('hidden');$('#finalBlock').classList.add('hidden');render();
+};
+render();
+</script>
+</body>
+</html>
