@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Фильтр входящих</title>
+<style>
+:root{
+  --ink:#18212f; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa;
+  --card:#ffffff; --accent:#3157d5; --accent-soft:#eef2ff;
+  --ok:#147a55; --ok-soft:#e9f8f1; --bad:#b42318; --bad-soft:#fff0ee;
+  --warn:#9a6700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#f8faff,#eef2ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card + .card{margin-top:10px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;color:var(--muted);line-height:1.4}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.task-card,.action{width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+  border-radius:11px;padding:10px 11px;cursor:pointer;color:var(--ink);transition:.15s}
+.choice:hover,.chip:hover,.task-card:hover,.action:hover{border-color:#9cadf3}
+.choice.selected,.chip.selected,.task-card.selected,.action.selected{
+  border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.choice.good,.chip.good,.task-card.good,.action.good{border-color:var(--ok);background:var(--ok-soft)}
+.choice.bad,.chip.bad,.task-card.bad,.action.bad{border-color:var(--bad);background:var(--bad-soft)}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:white;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft);color:#0c5b3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.feedback.bad{background:var(--bad-soft);color:#8e1b13}
+.progress{height:5px;background:#e7ebf2}
+.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#eef1f6;color:#475467}
+.hidden{display:none!important}
+.metric{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.metric strong{font-size:18px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}.task{border-radius:14px}.head,.body{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+
+<div class="task" data-stress-trigger-widget>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Диагностика триггеров</div>
+    <h2>Фильтр входящих</h2>
+    <p class="lead">За 90 секунд отделите задачу от шума и выберите действие, которое не усиливает стресс.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <span class="badge" id="stepBadge">Ситуация 1 из 4</span>
+      <p id="caseText" style="margin:10px 0 0"></p>
+    </div>
+    <div id="q1" style="margin-top:10px">
+      <div class="small" style="margin-bottom:6px">Что это прежде всего?</div>
+      <div class="grid2">
+        <button type="button" class="choice" data-type="task">Задача</button>
+        <button type="button" class="choice" data-type="noise">Информационный шум</button>
+      </div>
+    </div>
+    <div id="q2" class="hidden" style="margin-top:10px">
+      <div class="small" style="margin-bottom:6px">Ваше первое действие</div>
+      <div id="actionsList" class="grid2"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" id="reset">Начать заново</button>
+      <button type="button" class="primary" id="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const script = document.currentScript;
+  const root = script && script.previousElementSibling;
+  if (!root || !root.matches('[data-stress-trigger-widget]')) return;
+
+  const cases = [
+    {
+      text: 'В 08:15 клиент пишет в личный мессенджер: «Срочно проверьте договор до 11:00».',
+      type: 'task',
+      actions: [
+        ['Ответить немедленно прямо из кровати', 'bad'],
+        ['Перенести запрос в рабочий канал и поставить проверку в план', 'good'],
+        ['Отключить телефон до вечера', 'bad'],
+        ['Обсудить с коллегами, почему клиент так пишет', 'bad']
+      ],
+      note: 'На содержание запроса можно повлиять, значит это задача. Но границы канала тоже важны: зафиксируйте запрос в рабочем контуре и запланируйте действие.'
+    },
+    {
+      text: 'В ленте эксперт пишет: «Осенью рынок точно рухнет, готовьтесь к худшему». Для вашей работы нет новых данных или решений.',
+      type: 'noise',
+      actions: [
+        ['Прочитать комментарии, чтобы оценить настроение', 'bad'],
+        ['Переслать пост команде с пометкой «важно»', 'bad'],
+        ['Закрыть публикацию и вернуться к текущей задаче', 'good'],
+        ['Срочно переписать квартальный план', 'bad']
+      ],
+      note: 'Прогноз вызывает эмоцию, но не дает управляемого действия. Пока нет фактов, влияющих на ваш план, это шум.'
+    },
+    {
+      text: 'Система мониторинга показывает: нагрузка на сервер 92%, а через два часа начинается запуск, за который отвечаете вы.',
+      type: 'task',
+      actions: [
+        ['Добавить проверку мощности и ответственного в план запуска', 'good'],
+        ['Почитать новости о сбоях у конкурентов', 'bad'],
+        ['Подождать: возможно, показатель снизится сам', 'bad'],
+        ['Открыть еще пять дашбордов без конкретного вопроса', 'bad']
+      ],
+      note: 'Есть конкретный риск, зона ответственности и возможность вмешаться. Это задача, которую нужно превратить в следующее действие.'
+    },
+    {
+      text: 'В общем чате двадцать сообщений спорят о резкой фразе известного предпринимателя. К вашим проектам обсуждение не относится.',
+      type: 'noise',
+      actions: [
+        ['Написать развернутый ответ, чтобы восстановить справедливость', 'bad'],
+        ['Сохранить обсуждение на вечер', 'bad'],
+        ['Отключить уведомления чата на рабочий блок', 'good'],
+        ['Попросить коллег прислать краткий пересказ', 'bad']
+      ],
+      note: 'Это эмоционально заряженный, но неуправляемый поток. Лучшее действие — убрать раздражитель, а не анализировать его глубже.'
+    }
+  ];
+
+  const q = (selector) => root.querySelector(selector);
+  const qa = (selector) => Array.from(root.querySelectorAll(selector));
+
+  const caseText = q('#caseText');
+  const stepBadge = q('#stepBadge');
+  const bar = q('#bar');
+  const q1 = q('#q1');
+  const q2 = q('#q2');
+  const actionsList = q('#actionsList');
+  const nextButton = q('#next');
+  const resetButton = q('#reset');
+  const feedback = q('#fb');
+  const typeButtons = qa('[data-type]');
+
+  let caseIndex = 0;
+  let selectedType = null;
+  let selectedAction = null;
+  let score = 0;
+  let checked = false;
+
+  function setInteractive(enabled) {
+    typeButtons.forEach((button) => { button.disabled = !enabled; });
+    qa('.action').forEach((button) => { button.disabled = !enabled; });
+  }
+
+  function renderActions() {
+    const current = cases[caseIndex];
+    actionsList.innerHTML = '';
+
+    current.actions.forEach((action, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'action';
+      button.dataset.index = String(index);
+      button.textContent = action[0];
+
+      button.addEventListener('click', () => {
+        if (checked) return;
+        qa('.action').forEach((item) => item.classList.remove('selected'));
+        button.classList.add('selected');
+        selectedAction = index;
+        nextButton.disabled = false;
+      });
+
+      actionsList.appendChild(button);
+    });
+  }
+
+  function renderCase() {
+    const current = cases[caseIndex];
+    selectedType = null;
+    selectedAction = null;
+    checked = false;
+
+    q1.classList.remove('hidden');
+    q2.classList.add('hidden');
+    caseText.textContent = current.text;
+    stepBadge.textContent = `Ситуация ${caseIndex + 1} из ${cases.length}`;
+    bar.style.width = `${(caseIndex / cases.length) * 100}%`;
+
+    typeButtons.forEach((button) => {
+      button.disabled = false;
+      button.className = 'choice';
+    });
+
+    actionsList.innerHTML = '';
+    nextButton.textContent = 'Проверить';
+    nextButton.disabled = true;
+    feedback.className = 'feedback';
+    feedback.textContent = '';
+  }
+
+  typeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (checked) return;
+
+      typeButtons.forEach((item) => item.classList.remove('selected'));
+      button.classList.add('selected');
+      selectedType = button.dataset.type;
+      selectedAction = null;
+
+      renderActions();
+      q2.classList.remove('hidden');
+      nextButton.disabled = true;
+    });
+  });
+
+  nextButton.addEventListener('click', () => {
+    if (!checked) {
+      if (selectedType === null || selectedAction === null) return;
+
+      const current = cases[caseIndex];
+      const typeIsCorrect = selectedType === current.type;
+      const actionIsCorrect = current.actions[selectedAction][1] === 'good';
+
+      if (typeIsCorrect && actionIsCorrect) score += 1;
+
+      typeButtons.forEach((button) => {
+        if (button.dataset.type === current.type) button.classList.add('good');
+        else if (button.classList.contains('selected')) button.classList.add('bad');
+      });
+
+      qa('.action').forEach((button, index) => {
+        if (current.actions[index][1] === 'good') button.classList.add('good');
+        else if (index === selectedAction) button.classList.add('bad');
+      });
+
+      feedback.className = `feedback show ${typeIsCorrect && actionIsCorrect ? 'ok' : 'warn'}`;
+      feedback.innerHTML = `<strong>${typeIsCorrect && actionIsCorrect ? 'Точно.' : 'Есть риск усилить стресс.'}</strong><br>${current.note}`;
+
+      checked = true;
+      setInteractive(false);
+      nextButton.disabled = false;
+      nextButton.textContent = caseIndex === cases.length - 1 ? 'Показать результат' : 'Следующая ситуация';
+      return;
+    }
+
+    if (caseIndex < cases.length - 1) {
+      caseIndex += 1;
+      renderCase();
+      return;
+    }
+
+    bar.style.width = '100%';
+    q1.classList.add('hidden');
+    q2.classList.add('hidden');
+    caseText.innerHTML = `Вы выбрали устойчивый протокол в <strong>${score} из ${cases.length}</strong> ситуаций.`;
+    stepBadge.textContent = 'Результат';
+    feedback.className = `feedback show ${score >= 3 ? 'ok' : 'warn'}`;
+    feedback.textContent = score >= 3
+      ? 'Вы отделяете управляемое от эмоционально заметного. В работе сохраняйте паузу между сигналом и действием.'
+      : 'Вы чаще реагируете на срочность или эмоциональный заряд. Возвращайтесь к вопросу: «Какое конкретное действие сейчас зависит от меня?»';
+    nextButton.disabled = true;
+    nextButton.textContent = 'Готово';
+  });
+
+  resetButton.addEventListener('click', () => {
+    caseIndex = 0;
+    score = 0;
+    renderCase();
+  });
+
+  renderCase();
+})();
+</script>
+</body>
+</html>
