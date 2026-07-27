@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Когнитивная разгрузка</title>
+<style>
+:root{
+  --ink:#18212f; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa;
+  --card:#ffffff; --accent:#3157d5; --accent-soft:#eef2ff;
+  --ok:#147a55; --ok-soft:#e9f8f1; --bad:#b42318; --bad-soft:#fff0ee;
+  --warn:#9a6700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#f8faff,#eef2ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card + .card{margin-top:10px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;color:var(--muted);line-height:1.4}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.task-card,.action{width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+  border-radius:11px;padding:10px 11px;cursor:pointer;color:var(--ink);transition:.15s}
+.choice:hover,.chip:hover,.task-card:hover,.action:hover{border-color:#9cadf3}
+.choice.selected,.chip.selected,.task-card.selected,.action.selected{
+  border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.choice.good,.chip.good,.task-card.good,.action.good{border-color:var(--ok);background:var(--ok-soft)}
+.choice.bad,.chip.bad,.task-card.bad,.action.bad{border-color:var(--bad);background:var(--bad-soft)}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:white;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft);color:#0c5b3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.feedback.bad{background:var(--bad-soft);color:#8e1b13}
+.progress{height:5px;background:#e7ebf2}
+.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#eef1f6;color:#475467}
+.hidden{display:none!important}
+.metric{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.metric strong{font-size:18px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}.task{border-radius:14px}.head,.body{padding-left:14px;padding-right:14px}}
+
+button[type="button"]{appearance:none}
+.answer-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pattern-card{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fff}
+.pattern-text{font-size:13px;line-height:1.4;margin-bottom:8px}
+.pattern-card .choice{text-align:center;padding:8px 5px;font-size:12px}
+.locked{pointer-events:none}
+@media(max-width:420px){
+  .answer-grid-3{grid-template-columns:1fr}
+  .pattern-card .choice{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="task" id="cognitiveOverloadTask">
+  <div class="head">
+    <div class="kicker">Когнитивная разгрузка</div>
+    <h2>Перезапустить «зависший» мозг</h2>
+    <p class="lead">Выберите три действия, которые возвращают ясность, а не маскируют перегрузку.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <strong>17:20. До встречи 40 минут.</strong>
+      <p style="margin:6px 0 0">Вы третий раз перечитываете письмо, забываете цифры и одновременно держите в голове семь мелких поручений. Нужно подготовить позицию по срокам проекта.</p>
+    </div>
+    <div class="small" style="margin:10px 0 6px">Соберите протокол из трех действий</div>
+    <div class="grid2" data-role="choices">
+      <button type="button" class="chip" data-correct="1">Вслух назвать текущую задачу</button>
+      <button type="button" class="chip" data-correct="0">Открыть чат и параллельно отвечать</button>
+      <button type="button" class="chip" data-correct="1">Выписать отвлекающие поручения во внешний список</button>
+      <button type="button" class="chip" data-correct="0">Выпить кофе и ускориться</button>
+      <button type="button" class="chip" data-correct="1">Сформулировать одно следующее действие</button>
+      <button type="button" class="chip" data-correct="0">Отложить окончательное решение на поздний вечер</button>
+    </div>
+    <div data-role="specificBlock" class="hidden">
+      <div class="small" style="margin:12px 0 6px">Какое действие достаточно конкретно?</div>
+      <div class="grid2" data-role="specific">
+        <button type="button" class="choice" data-correct="0">Подготовить встречу</button>
+        <button type="button" class="choice" data-correct="1">Выписать из письма три спорных срока</button>
+        <button type="button" class="choice" data-correct="0">Разобраться с проектом</button>
+        <button type="button" class="choice" data-correct="0">Все внимательно обдумать</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="feedback"></div>
+  </div>
+</div>
+
+<script>
+
+(() => {
+  const root = document.getElementById('cognitiveOverloadTask');
+  const protocolButtons = [...root.querySelectorAll('[data-role="choices"] .chip')];
+  const specificButtons = [...root.querySelectorAll('[data-role="specific"] .choice')];
+  const specificBlock = root.querySelector('[data-role="specificBlock"]');
+  const check = root.querySelector('[data-role="check"]');
+  const reset = root.querySelector('[data-role="reset"]');
+  const feedback = root.querySelector('[data-role="feedback"]');
+  let selectedSpecific = null;
+  let completed = false;
+
+  function selectedProtocol() {
+    return protocolButtons.filter(button => button.classList.contains('selected'));
+  }
+  function updateState() {
+    const count = selectedProtocol().length;
+    specificBlock.classList.toggle('hidden', count !== 3);
+    if (count !== 3) {
+      selectedSpecific = null;
+      specificButtons.forEach(button => button.classList.remove('selected'));
+    }
+    check.disabled = completed || count !== 3 || selectedSpecific === null;
+  }
+  protocolButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      if (completed) return;
+      const isSelected = button.classList.contains('selected');
+      if (!isSelected && selectedProtocol().length >= 3) return;
+      button.classList.toggle('selected');
+      updateState();
+    });
+  });
+  specificButtons.forEach((button, index) => {
+    button.addEventListener('click', () => {
+      if (completed) return;
+      specificButtons.forEach(item => item.classList.remove('selected'));
+      button.classList.add('selected');
+      selectedSpecific = index;
+      updateState();
+    });
+  });
+  check.addEventListener('click', () => {
+    const protocolCorrect = protocolButtons.every(button =>
+      button.classList.contains('selected') === (button.dataset.correct === '1')
+    );
+    const specificCorrect = specificButtons[selectedSpecific]?.dataset.correct === '1';
+    protocolButtons.forEach(button => {
+      if (button.dataset.correct === '1') button.classList.add('good');
+      else if (button.classList.contains('selected')) button.classList.add('bad');
+    });
+    specificButtons.forEach((button, index) => {
+      if (button.dataset.correct === '1') button.classList.add('good');
+      else if (index === selectedSpecific) button.classList.add('bad');
+    });
+    const ok = protocolCorrect && specificCorrect;
+    feedback.className = `feedback show ${ok ? 'ok' : 'warn'}`;
+    feedback.innerHTML = ok
+      ? '<strong>Верно.</strong><br>Вы разгрузили оперативную память, вернули один фокус и сформулировали действие, которое можно выполнить за один подход.'
+      : '<strong>Есть ошибка.</strong><br>Рабочий протокол: назвать одну текущую задачу, вынести отвлекающие поручения во внешний список и определить конкретный следующий шаг. Кофе, многозадачность и позднее решение ясность не возвращают.';
+    completed = true;
+    check.disabled = true;
+  });
+  reset.addEventListener('click', () => {
+    completed = false;
+    selectedSpecific = null;
+    protocolButtons.forEach(button => button.className = 'chip');
+    specificButtons.forEach(button => button.className = 'choice');
+    specificBlock.classList.add('hidden');
+    feedback.className = 'feedback';
+    feedback.innerHTML = '';
+    updateState();
+  });
+  updateState();
+})();
+
+</script>
+</body>
+</html>

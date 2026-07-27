@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Журнал состояний</title>
+<style>
+:root{
+  --ink:#18212f; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa;
+  --card:#ffffff; --accent:#3157d5; --accent-soft:#eef2ff;
+  --ok:#147a55; --ok-soft:#e9f8f1; --bad:#b42318; --bad-soft:#fff0ee;
+  --warn:#9a6700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#f8faff,#eef2ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card + .card{margin-top:10px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;color:var(--muted);line-height:1.4}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.task-card,.action{width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+  border-radius:11px;padding:10px 11px;cursor:pointer;color:var(--ink);transition:.15s}
+.choice:hover,.chip:hover,.task-card:hover,.action:hover{border-color:#9cadf3}
+.choice.selected,.chip.selected,.task-card.selected,.action.selected{
+  border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.choice.good,.chip.good,.task-card.good,.action.good{border-color:var(--ok);background:var(--ok-soft)}
+.choice.bad,.chip.bad,.task-card.bad,.action.bad{border-color:var(--bad);background:var(--bad-soft)}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:white;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft);color:#0c5b3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.feedback.bad{background:var(--bad-soft);color:#8e1b13}
+.progress{height:5px;background:#e7ebf2}
+.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#eef1f6;color:#475467}
+.hidden{display:none!important}
+.metric{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.metric strong{font-size:18px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}.task{border-radius:14px}.head,.body{padding-left:14px;padding-right:14px}}
+
+button[type="button"]{appearance:none}
+.answer-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pattern-card{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fff}
+.pattern-text{font-size:13px;line-height:1.4;margin-bottom:8px}
+.pattern-card .choice{text-align:center;padding:8px 5px;font-size:12px}
+.locked{pointer-events:none}
+@media(max-width:420px){
+  .answer-grid-3{grid-template-columns:1fr}
+  .pattern-card .choice{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="task" id="stateJournalTask">
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Журнал состояний</div>
+    <h2>Система раннего предупреждения</h2>
+    <p class="lead">Пройдите три контрольные точки дня. Сначала выберите действие, затем проверьте его и переходите дальше.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <div class="metric"><span class="badge" data-role="time"></span><strong data-role="level"></strong></div>
+      <p data-role="symptom" style="margin:8px 0 0"></p>
+    </div>
+    <div data-role="questionLabel" class="small" style="margin:10px 0 6px">Что вы делаете сейчас?</div>
+    <div class="grid2" data-role="options"></div>
+    <div data-role="finalBlock" class="hidden">
+      <div class="small" style="margin:12px 0 6px">Три замера подряд — 7 и выше. Выберите ровно две некритичные задачи, которые снимете с дня.</div>
+      <div class="grid2" data-role="cuts"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="feedback"></div>
+  </div>
+</div>
+
+<script>
+
+(() => {
+  const root = document.getElementById('stateJournalTask');
+  const points = [
+    {
+      time:'11:00', level:7,
+      symptom:'Плечи подняты, тянет проверить чаты, письмо перечитано дважды.',
+      options:[
+        {text:'Сделать внеплановый перерыв на 15 минут и пройтись без экрана', correct:true},
+        {text:'Открыть еще почту, чтобы быстро все закрыть', correct:false},
+        {text:'Выпить кофе и продолжить', correct:false},
+        {text:'Принять важное решение по бюджету', correct:false}
+      ],
+      explanation:'Уровень 7 — зона риска. Нужен внеплановый перерыв, а не дополнительная информация, стимулятор или важное решение.'
+    },
+    {
+      time:'13:00', level:8,
+      symptom:'После созвона вы злитесь, путаете цифры и начинаете говорить быстрее.',
+      options:[
+        {text:'Перенести необязательный созвон, пообедать и снизить стимуляцию', correct:true},
+        {text:'Сразу провести еще одну встречу', correct:false},
+        {text:'Ответить всем, пока сохраняется возбуждение', correct:false},
+        {text:'Ругать себя за несобранность', correct:false}
+      ],
+      explanation:'Уровень 8 требует снизить нагрузку. Новая встреча, массовые ответы и самокритика только усиливают перегрузку.'
+    },
+    {
+      time:'16:00', level:7,
+      symptom:'Вы снова перечитываете отчет, дергаете ногой и отвлекаетесь на телефон.',
+      options:[
+        {text:'Остановиться на 15 минут и сменить модальность', correct:true},
+        {text:'Дожать отчет без перерыва', correct:false},
+        {text:'Добавить музыку и несколько параллельных задач', correct:false},
+        {text:'Перенести все решения на поздний вечер', correct:false}
+      ],
+      explanation:'Повторный уровень 7 показывает, что ресурс не восстановлен. Нужна пауза со сменой модальности, а не работа через силу.'
+    }
+  ];
+  const cuts = [
+    {text:'Внутренний созвон без повестки и решения', correct:true},
+    {text:'Просмотр отраслевых новостей', correct:true},
+    {text:'Отправка договора клиенту с дедлайном сегодня', correct:false},
+    {text:'Исправление критической ошибки в рабочей системе', correct:false}
+  ];
+
+  const bar = root.querySelector('[data-role="bar"]');
+  const time = root.querySelector('[data-role="time"]');
+  const level = root.querySelector('[data-role="level"]');
+  const symptom = root.querySelector('[data-role="symptom"]');
+  const optionsBox = root.querySelector('[data-role="options"]');
+  const finalBlock = root.querySelector('[data-role="finalBlock"]');
+  const cutsBox = root.querySelector('[data-role="cuts"]');
+  const questionLabel = root.querySelector('[data-role="questionLabel"]');
+  const next = root.querySelector('[data-role="next"]');
+  const reset = root.querySelector('[data-role="reset"]');
+  const feedback = root.querySelector('[data-role="feedback"]');
+
+  let pointIndex = 0;
+  let selectedOption = null;
+  let pointChecked = false;
+  let pointScore = 0;
+  let cutSelection = new Set();
+  let phase = 'points';
+  let completed = false;
+
+  function renderPoint() {
+    const point = points[pointIndex];
+    selectedOption = null;
+    pointChecked = false;
+    time.textContent = point.time;
+    level.textContent = `${point.level} / 10`;
+    symptom.textContent = point.symptom;
+    optionsBox.innerHTML = point.options.map((option, index) =>
+      `<button type="button" class="choice" data-index="${index}">${option.text}</button>`
+    ).join('');
+    optionsBox.querySelectorAll('.choice').forEach(button => {
+      button.addEventListener('click', () => {
+        if (pointChecked || completed) return;
+        optionsBox.querySelectorAll('.choice').forEach(item => item.classList.remove('selected'));
+        button.classList.add('selected');
+        selectedOption = Number(button.dataset.index);
+        next.disabled = false;
+      });
+    });
+    bar.style.width = `${(pointIndex / points.length) * 100}%`;
+    next.textContent = 'Проверить';
+    next.disabled = true;
+    feedback.className = 'feedback';
+    feedback.innerHTML = '';
+  }
+
+  function showCuts() {
+    phase = 'cuts';
+    cutSelection = new Set();
+    bar.style.width = '100%';
+    optionsBox.classList.add('hidden');
+    questionLabel.classList.add('hidden');
+    finalBlock.classList.remove('hidden');
+    time.textContent = 'Итог дня';
+    level.textContent = '3 × зона риска';
+    symptom.textContent = 'Три замера подряд оказались на уровне 7 и выше. Теперь нужно уменьшить план, не снимая критические обязательства.';
+    cutsBox.innerHTML = cuts.map((cut, index) =>
+      `<button type="button" class="task-card" data-index="${index}">${cut.text}</button>`
+    ).join('');
+    cutsBox.querySelectorAll('.task-card').forEach(button => {
+      button.addEventListener('click', () => {
+        if (completed) return;
+        const index = Number(button.dataset.index);
+        if (cutSelection.has(index)) cutSelection.delete(index);
+        else if (cutSelection.size < 2) cutSelection.add(index);
+        cutsBox.querySelectorAll('.task-card').forEach(item => {
+          item.classList.toggle('selected', cutSelection.has(Number(item.dataset.index)));
+        });
+        next.disabled = cutSelection.size !== 2;
+      });
+    });
+    next.textContent = 'Проверить итог';
+    next.disabled = true;
+    feedback.className = 'feedback';
+    feedback.innerHTML = '';
+  }
+
+  next.addEventListener('click', () => {
+    if (phase === 'points') {
+      const point = points[pointIndex];
+      if (!pointChecked) {
+        const correct = point.options[selectedOption].correct;
+        if (correct) pointScore++;
+        optionsBox.querySelectorAll('.choice').forEach((button, index) => {
+          if (point.options[index].correct) button.classList.add('good');
+          else if (index === selectedOption) button.classList.add('bad');
+        });
+        feedback.className = `feedback show ${correct ? 'ok' : 'warn'}`;
+        feedback.innerHTML = `<strong>${correct ? 'Верно.' : 'Есть ошибка.'}</strong><br>${point.explanation}`;
+        pointChecked = true;
+        next.textContent = pointIndex === points.length - 1 ? 'Перейти к итогу' : 'Следующая точка';
+        next.disabled = false;
+      } else if (pointIndex < points.length - 1) {
+        pointIndex++;
+        renderPoint();
+      } else {
+        showCuts();
+      }
+    } else if (phase === 'cuts') {
+      const exactCuts = cuts.every((cut, index) => cutSelection.has(index) === cut.correct);
+      cutsBox.querySelectorAll('.task-card').forEach((button, index) => {
+        if (cuts[index].correct) button.classList.add('good');
+        else if (cutSelection.has(index)) button.classList.add('bad');
+      });
+      feedback.className = `feedback show ${pointScore === points.length && exactCuts ? 'ok' : 'warn'}`;
+      feedback.innerHTML = pointScore === points.length && exactCuts
+        ? '<strong>Все решения верны.</strong><br>При каждом уровне 7–8 вы снижали нагрузку, а после третьего сигнала убрали две некритичные активности, сохранив обязательства с прямым риском.'
+        : `<strong>Решения на контрольных точках: ${pointScore} из ${points.length}.</strong><br>После трех замеров 7+ нужно снять внутренний созвон без результата и просмотр новостей. Договор с дедлайном и критическую ошибку переносить нельзя.`;
+      completed = true;
+      next.disabled = true;
+      next.textContent = 'Готово';
+    }
+  });
+
+  reset.addEventListener('click', () => {
+    pointIndex = 0;
+    selectedOption = null;
+    pointChecked = false;
+    pointScore = 0;
+    cutSelection = new Set();
+    phase = 'points';
+    completed = false;
+    optionsBox.classList.remove('hidden');
+    questionLabel.classList.remove('hidden');
+    finalBlock.classList.add('hidden');
+    renderPoint();
+  });
+
+  renderPoint();
+})();
+
+</script>
+</body>
+</html>

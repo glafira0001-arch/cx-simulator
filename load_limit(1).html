@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Предел выносливости</title>
+<style>
+:root{
+  --ink:#18212f; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa;
+  --card:#ffffff; --accent:#3157d5; --accent-soft:#eef2ff;
+  --ok:#147a55; --ok-soft:#e9f8f1; --bad:#b42318; --bad-soft:#fff0ee;
+  --warn:#9a6700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#f8faff,#eef2ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card + .card{margin-top:10px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;color:var(--muted);line-height:1.4}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.task-card,.action{width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+  border-radius:11px;padding:10px 11px;cursor:pointer;color:var(--ink);transition:.15s}
+.choice:hover,.chip:hover,.task-card:hover,.action:hover{border-color:#9cadf3}
+.choice.selected,.chip.selected,.task-card.selected,.action.selected{
+  border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.choice.good,.chip.good,.task-card.good,.action.good{border-color:var(--ok);background:var(--ok-soft)}
+.choice.bad,.chip.bad,.task-card.bad,.action.bad{border-color:var(--bad);background:var(--bad-soft)}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:white;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft);color:#0c5b3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.feedback.bad{background:var(--bad-soft);color:#8e1b13}
+.progress{height:5px;background:#e7ebf2}
+.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#eef1f6;color:#475467}
+.hidden{display:none!important}
+.metric{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.metric strong{font-size:18px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}.task{border-radius:14px}.head,.body{padding-left:14px;padding-right:14px}}
+
+button[type="button"]{appearance:none}
+.answer-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pattern-card{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fff}
+.pattern-text{font-size:13px;line-height:1.4;margin-bottom:8px}
+.pattern-card .choice{text-align:center;padding:8px 5px;font-size:12px}
+.locked{pointer-events:none}
+@media(max-width:420px){
+  .answer-grid-3{grid-template-columns:1fr}
+  .pattern-card .choice{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="task" id="loadLimitTask">
+  <div class="head">
+    <div class="kicker">Предел выносливости</div>
+    <h2>Собрать день без скрытой переработки</h2>
+    <p class="lead">Ваш предел — 8 эквивалентных единиц. Оставьте 1 единицу резерва и соберите самый приоритетный план ровно на 7 единиц.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="metric"><span>Выбранная нагрузка</span><strong data-role="load">0 / 7</strong></div>
+      <div class="small">Час переговоров считается как 2 единицы нагрузки. Задачи с дедлайном сегодня нельзя переносить.</div>
+    </div>
+    <div class="small" style="margin:10px 0 6px">Выберите задачи на сегодня</div>
+    <div data-role="tasks" class="grid2"></div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить план</button>
+    </div>
+    <div class="feedback" data-role="feedback"></div>
+  </div>
+</div>
+
+<script>
+
+(() => {
+  const root = document.getElementById('loadLimitTask');
+  const tasks = [
+    {name:'Отчет к 14:00', detail:'2 ч в тишине · дедлайн сегодня', cost:2, correct:true},
+    {name:'Переговоры с клиентом', detail:'1 ч общения · обязательны сегодня', cost:2, correct:true},
+    {name:'Командный созвон по блокеру', detail:'1 ч общения · без него команда остановится', cost:2, correct:true},
+    {name:'Отправить документацию', detail:'1 ч · дедлайн сегодня', cost:1, correct:true},
+    {name:'Разобрать всю почту', detail:'1 ч · можно перенести', cost:1, correct:false},
+    {name:'Стратегическая сессия', detail:'1,5 ч · внешнего дедлайна нет', cost:3, correct:false}
+  ];
+  const taskBox = root.querySelector('[data-role="tasks"]');
+  const loadLabel = root.querySelector('[data-role="load"]');
+  const check = root.querySelector('[data-role="check"]');
+  const reset = root.querySelector('[data-role="reset"]');
+  const feedback = root.querySelector('[data-role="feedback"]');
+  let selected = new Set();
+  let completed = false;
+
+  function currentLoad() {
+    return [...selected].reduce((sum, index) => sum + tasks[index].cost, 0);
+  }
+  function render() {
+    taskBox.innerHTML = tasks.map((task, index) => `
+      <button type="button" class="task-card ${selected.has(index) ? 'selected' : ''}" data-index="${index}">
+        <strong style="font-size:13px">${task.name}</strong><br>
+        <span class="small">${task.detail}<br>${task.cost} ед.</span>
+      </button>
+    `).join('');
+    taskBox.querySelectorAll('.task-card').forEach(button => {
+      button.addEventListener('click', () => {
+        if (completed) return;
+        const index = Number(button.dataset.index);
+        if (selected.has(index)) selected.delete(index);
+        else selected.add(index);
+        render();
+      });
+    });
+    const load = currentLoad();
+    loadLabel.textContent = `${load} / 7`;
+    loadLabel.style.color = load > 7 ? 'var(--bad)' : load === 7 ? 'var(--ok)' : 'var(--ink)';
+    check.disabled = completed || selected.size === 0;
+  }
+  check.addEventListener('click', () => {
+    const load = currentLoad();
+    const exactSet = tasks.every((task, index) => selected.has(index) === task.correct);
+    taskBox.querySelectorAll('.task-card').forEach((button, index) => {
+      if (tasks[index].correct) button.classList.add('good');
+      else if (selected.has(index)) button.classList.add('bad');
+    });
+    feedback.className = `feedback show ${exactSet ? 'ok' : 'warn'}`;
+    if (exactSet) {
+      feedback.innerHTML = '<strong>План собран верно.</strong><br>Нагрузка составляет ровно 7 единиц: обязательные задачи закрыты, блокер команды снят, а 1 единица резерва сохранена. Почту и стратегическую сессию нужно перенести.';
+    } else {
+      const issues = [];
+      if (load !== 7) issues.push(`нагрузка должна составлять 7 единиц, сейчас — ${load}`);
+      if (!selected.has(0) || !selected.has(1) || !selected.has(3)) issues.push('пропущена задача с дедлайном сегодня');
+      if (!selected.has(2)) issues.push('не снят командный блокер');
+      if (selected.has(4) || selected.has(5)) issues.push('в план попали задачи, которые можно перенести');
+      feedback.innerHTML = `<strong>План требует пересборки.</strong><br>${issues.join('; ')}. Правильный приоритет: дедлайны сегодня, обязательные переговоры и блокер команды.`;
+    }
+    completed = true;
+    check.disabled = true;
+  });
+  reset.addEventListener('click', () => {
+    selected = new Set();
+    completed = false;
+    feedback.className = 'feedback';
+    feedback.innerHTML = '';
+    render();
+  });
+  render();
+})();
+
+</script>
+</body>
+</html>
