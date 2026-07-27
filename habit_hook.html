@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Крючок для привычки</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.cycle,.task-card{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.cycle:hover,.task-card:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.sequence{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.seq-box{min-height:72px;border:1px dashed #b9c1ce;border-radius:11px;padding:8px;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;background:#fafbfc;font-size:12px;line-height:1.25}
+.seq-box strong{font-size:17px;margin-bottom:3px}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .sequence{grid-template-columns:1fr 1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="head">
+    <div class="kicker">Полезные привычки</div>
+    <h2>Соберите привычку, которая приживется</h2>
+    <p class="lead">Выберите существующий крючок, микродействие, подготовку среды и подкрепление. В финале получится готовая формула привычки.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <strong>Цель</strong>
+      <p style="margin:6px 0 0">Добавить больше движения в рабочий день без резкой перестройки режима.</p>
+    </div>
+    <div id="builder"></div>
+    <div class="card hidden" id="result" style="margin-top:10px">
+      <strong>Готовая привычка</strong>
+      <div id="formula" class="small" style="margin-top:6px"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="check" disabled>Проверить привычку</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const groups=[
+ {name:'Крючок',opts:[
+  ['После каждого завершенного созвона',1],
+  ['Когда появится свободное время',0],
+  ['Когда почувствую сильную усталость',0]
+ ]},
+ {name:'Микродействие',opts:[
+  ['Встать и пройтись две минуты',1],
+  ['Сделать полноценную тренировку на 45 минут',0],
+  ['Пройти дневную норму шагов целиком',0]
+ ]},
+ {name:'Среда',opts:[
+  ['Поставить напоминание и оставить обувь рядом',1],
+  ['Купить пять приложений для контроля',0],
+  ['Рассчитывать только на силу воли',0]
+ ]},
+ {name:'Подкрепление',opts:[
+  ['Отметить выполнение и коротко похвалить себя',1],
+  ['Ругать себя за каждый пропуск',0],
+  ['Сразу добавить еще три привычки',0]
+ ]}
+];
+let picks=[null,null,null,null];
+const $=s=>document.querySelector(s);
+function render(){
+ $('#builder').innerHTML=groups.map((g,gi)=>`<div class="card">
+  <div class="small" style="margin-bottom:6px"><strong>${g.name}</strong></div>
+  <div class="grid2">${g.opts.map((o,oi)=>`<button class="choice ${picks[gi]===oi?'selected':''}" data-g="${gi}" data-o="${oi}">${o[0]}</button>`).join('')}</div>
+ </div>`).join('');
+ $('#builder').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+  picks[+b.dataset.g]=+b.dataset.o;render();
+ });
+ $('#check').disabled=!picks.every(x=>x!==null);
+}
+$('#check').onclick=()=>{
+ const ok=picks.every((p,i)=>groups[i].opts[p][1]===1);
+ $('#builder').querySelectorAll('.choice').forEach(b=>{
+  const g=+b.dataset.g,o=+b.dataset.o;b.classList.add(groups[g].opts[o][1]?'good':(picks[g]===o?'bad':''));
+ });
+ $('#result').classList.remove('hidden');
+ $('#formula').textContent=`После того как я ${groups[0].opts[picks[0]][0].toLowerCase()}, я ${groups[1].opts[picks[1]][0].toLowerCase()}. Для этого я ${groups[2].opts[picks[2]][0].toLowerCase()}, а после выполнения ${groups[3].opts[picks[3]][0].toLowerCase()}.`;
+ const fb=$('#fb');fb.className=`feedback show ${ok?'ok':'warn'}`;
+ fb.innerHTML=ok
+ ?'<strong>Привычка собрана реалистично.</strong><br>Она привязана к уже существующему действию, занимает несколько минут, поддержана средой и не требует постоянного волевого усилия.'
+ :'<strong>В конструкции есть неопределенность, слишком большой шаг или лишний контроль.</strong><br>Рабочая привычка начинается после конкретного события, занимает не более нескольких минут и не опирается только на мотивацию.';
+};
+$('#reset').onclick=()=>{picks=[null,null,null,null];$('#result').classList.add('hidden');$('#fb').className='feedback';render();};
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Восстановление после конфликта</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4a56d4;--accent-soft:#eef0ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef0ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.cycle,.message{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.cycle:hover,.message:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.chat{display:flex;flex-direction:column;gap:8px}
+.bubble{max-width:86%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.assembled{font-size:13px;line-height:1.55}
+.counter{font-size:18px;font-weight:800}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="head">
+    <div class="kicker">Восстановление после конфликта</div>
+    <h2>Соберите протокол возвращения в работу</h2>
+    <p class="lead">Выберите четыре действия в правильном порядке. Лишние варианты запускают вторую волну стресса или маскируют напряжение.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="metric"><span>Ваш алгоритм</span><span class="badge" id="count">0 из 4</span></div>
+      <div id="protocol" class="small" style="margin-top:8px">Шаги еще не выбраны.</div>
+    </div>
+    <div class="small" style="margin:10px 0 6px">Нажимайте на действия в нужном порядке</div>
+    <div class="grid2" id="steps"></div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="check" disabled>Проверить алгоритм</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div class="note">При боли в груди, выраженной одышке, предобморочном состоянии или резком ухудшении самочувствия нужна медицинская помощь, а не тренировка саморегуляции.</div>
+  </div>
+</div>
+
+<script>
+const steps=[
+ {t:'Выйти из места, где произошел конфликт',id:'leave'},
+ {t:'Почувствовать опору и выровнять дыхание',id:'ground'},
+ {t:'Немного пройтись или мягко стряхнуть напряжение',id:'move'},
+ {t:'Вернуться через простую механическую задачу',id:'simple'},
+ {t:'Сразу подробно пересказать конфликт коллегам',id:'retell'},
+ {t:'Выпить еще кофе и продолжить сложную работу',id:'coffee'},
+ {t:'Прокрутить в голове более удачные ответы',id:'ruminate'},
+ {t:'Заесть раздражение сладким',id:'eat'}
+];
+const correct=['leave','ground','move','simple'];
+let seq=[];
+const $=s=>document.querySelector(s);
+function render(){
+ $('#steps').innerHTML=steps.map((s,i)=>`<button class="tile ${seq.includes(i)?'selected':''}" data-i="${i}">${s.t}</button>`).join('');
+ $('#steps').querySelectorAll('.tile').forEach(b=>b.onclick=()=>{
+  const i=+b.dataset.i;if(seq.includes(i))seq=seq.filter(x=>x!==i);else if(seq.length<4)seq.push(i);render();
+ });
+ $('#count').textContent=`${seq.length} из 4`;
+ $('#protocol').innerHTML=seq.length?seq.map((i,n)=>`${n+1}. ${steps[i].t}`).join('<br>'):'Шаги еще не выбраны.';
+ $('#check').disabled=seq.length!==4;
+}
+$('#check').onclick=()=>{
+ const ids=seq.map(i=>steps[i].id),ok=ids.every((x,i)=>x===correct[i]);
+ $('#steps').querySelectorAll('.tile').forEach((b,i)=>{
+  if(correct.includes(steps[i].id))b.classList.add('good');else if(seq.includes(i))b.classList.add('bad');
+ });
+ const fb=$('#fb');fb.className=`feedback show ${ok?'ok':'warn'}`;
+ fb.innerHTML=ok
+ ?'<strong>Алгоритм собран.</strong><br>Сначала вы физически завершаете контакт, затем возвращаете опору и движение, и только после снижения напряжения входите в работу через простое действие.'
+ :'<strong>В алгоритме есть действие, которое поддерживает стресс, или нарушен порядок.</strong><br>Не начинайте с пересказа, кофе, еды или мысленного продолжения конфликта. Сначала смените обстановку, верните телесную опору, подвигайтесь и лишь затем возвращайтесь к рабочей нагрузке.';
+};
+$('#reset').onclick=()=>{seq=[];$('#fb').className='feedback';render();};
+render();
+</script>
+</body>
+</html>

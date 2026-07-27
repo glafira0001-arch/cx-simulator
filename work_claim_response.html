@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Распаковать рабочую претензию</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4a56d4;--accent-soft:#eef0ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef0ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.cycle,.message{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.cycle:hover,.message:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.chat{display:flex;flex-direction:column;gap:8px}
+.bubble{max-width:86%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.assembled{font-size:13px;line-height:1.55}
+.counter{font-size:18px;font-weight:800}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="head">
+    <div class="kicker">Рабочая претензия</div>
+    <h2>Распакуйте критику</h2>
+    <p class="lead">Отделите факт от оценки и соберите ответ по формуле «Да — И — Давайте».</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <strong>Претензия руководителя</strong>
+      <p style="margin:6px 0 0">«Вы совершенно безответственны. Макет опять не готов вовремя, и с вами невозможно работать».</p>
+    </div>
+    <div class="small" style="margin:10px 0 6px">На что нужно ответить?</div>
+    <div class="grid2" id="facts">
+      <button class="choice" data-ok="0">«Вы безответственны»</button>
+      <button class="choice" data-ok="1">«Макет не готов к согласованному сроку»</button>
+      <button class="choice" data-ok="0">«С вами невозможно работать»</button>
+      <button class="choice" data-ok="0">На тон руководителя целиком</button>
+    </div>
+    <div id="builder" class="hidden">
+      <div class="small" style="margin:12px 0 6px">Соберите ответ</div>
+      <div id="parts"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="check" disabled>Проверить ответ</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const groups=[
+ {name:'Да',opts:[
+  ['Да, макет не готов к согласованному сроку.',1],
+  ['Да, я действительно безответственный человек.',0],
+  ['Да, но вы сами вчера задержали обратную связь.',0]
+ ]},
+ {name:'И',opts:[
+  ['И после вчерашнего изменения ТЗ на доработку нужно еще два часа.',1],
+  ['И вообще это не моя вина.',0],
+  ['И я не обязан терпеть такой тон.',0]
+ ]},
+ {name:'Давайте',opts:[
+  ['Давайте я пришлю финальный вариант к 15:00 и сразу отмечу изменения.',1],
+  ['Давайте сначала разберемся, кто виноват.',0],
+  ['Давайте больше не будем работать вместе.',0]
+ ]}
+];
+let fact=null,picks=[null,null,null];
+const $=s=>document.querySelector(s);
+document.querySelectorAll('#facts .choice').forEach((b,i)=>b.onclick=()=>{
+ document.querySelectorAll('#facts .choice').forEach(x=>x.classList.remove('selected'));
+ b.classList.add('selected');fact=i;$('#builder').classList.remove('hidden');renderBuilder();
+});
+function renderBuilder(){
+ $('#parts').innerHTML=groups.map((g,gi)=>`<div class="card">
+   <div class="small" style="margin-bottom:6px"><strong>${g.name}</strong></div>
+   <div class="grid2">${g.opts.map((o,oi)=>`<button class="choice ${picks[gi]===oi?'selected':''}" data-g="${gi}" data-o="${oi}">${o[0]}</button>`).join('')}</div>
+ </div>`).join('');
+ $('#parts').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+  picks[+b.dataset.g]=+b.dataset.o;renderBuilder();
+ });
+ $('#check').disabled=!(fact!==null&&picks.every(x=>x!==null));
+}
+$('#check').onclick=()=>{
+ const factOk=document.querySelectorAll('#facts .choice')[fact].dataset.ok==='1';
+ const partsOk=picks.every((p,i)=>groups[i].opts[p][1]===1);
+ document.querySelectorAll('#facts .choice').forEach((b,i)=>b.classList.add(b.dataset.ok==='1'?'good':(i===fact?'bad':'')));
+ $('#parts').querySelectorAll('.choice').forEach(b=>{
+  const g=+b.dataset.g,o=+b.dataset.o;
+  b.classList.add(groups[g].opts[o][1]?'good':(picks[g]===o?'bad':''));
+ });
+ const fb=$('#fb');fb.className=`feedback show ${factOk&&partsOk?'ok':'warn'}`;
+ fb.innerHTML=factOk&&partsOk
+ ?'<strong>Ответ сохраняет профессиональную позицию.</strong><br>Вы признали проверяемый факт, добавили контекст без оправданий и предложили конкретное решение.'
+ :'<strong>В ответе осталась оценка личности, оправдание или встречное нападение.</strong><br>Заберите из претензии только проверяемый факт. Затем добавьте нейтральный контекст и предложение с точным сроком или результатом.';
+};
+$('#reset').onclick=()=>{
+ fact=null;picks=[null,null,null];document.querySelectorAll('#facts .choice').forEach(x=>x.className='choice');
+ $('#builder').classList.add('hidden');$('#fb').className='feedback';$('#check').disabled=true;
+};
+</script>
+</body>
+</html>

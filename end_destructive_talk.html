@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Точка выхода из разговора</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4a56d4;--accent-soft:#eef0ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef0ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.cycle,.message{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.cycle:hover,.message:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.chat{display:flex;flex-direction:column;gap:8px}
+.bubble{max-width:86%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.assembled{font-size:13px;line-height:1.55}
+.counter{font-size:18px;font-weight:800}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="head">
+    <div class="kicker">Завершение деструктивного разговора</div>
+    <h2>Найдите точку выхода</h2>
+    <p class="lead">Определите момент, когда разговор перестал вести к решению, и соберите финальную фразу по схеме «резюме + мостик».</p>
+  </div>
+  <div class="body">
+    <div class="small" style="margin-bottom:6px">Нажмите на первую реплику, после которой разговор уже стоит завершать</div>
+    <div id="dialogue"></div>
+    <div id="finishBlock" class="hidden">
+      <div class="small" style="margin:12px 0 6px">Как завершить контакт?</div>
+      <div class="grid2" id="finishes"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="check" disabled>Проверить решение</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const lines=[
+ 'Вы: «Нам нужно определить, переносим ли запуск на два дня».',
+ 'Коллега: «Я считаю, что запускать сейчас рискованно».',
+ 'Вы: «Каких данных не хватает для решения?»',
+ 'Коллега: «Я уже сказал: все рискованно. Вы никогда меня не слушаете».',
+ 'Вы: «Давайте вернемся к конкретным рискам».',
+ 'Коллега: «Какая разница? Вы все равно сделаете по-своему».',
+ 'Коллега: «И вообще в прошлый раз было то же самое».'
+];
+const correct=5;
+const finishes=[
+ ['Я услышал, что вы считаете запуск рискованным. Сейчас новых аргументов не появляется. Давайте вернемся к вопросу завтра в 10:00 с перечнем конкретных рисков.',1],
+ ['Раз вы не хотите обсуждать нормально, разговор окончен.',0],
+ ['Ладно, последнее: в прошлый раз неправы были именно вы.',0],
+ ['Я просто ухожу, потому что это бессмысленно.',0]
+];
+let point=null,finish=null;
+const $=s=>document.querySelector(s);
+function render(){
+ $('#dialogue').innerHTML=lines.map((l,i)=>`<button class="message ${point===i?'selected':''}" data-i="${i}" style="margin-bottom:7px">${l}</button>`).join('');
+ $('#dialogue').querySelectorAll('.message').forEach(b=>b.onclick=()=>{
+  point=+b.dataset.i;render();$('#finishBlock').classList.remove('hidden');$('#check').disabled=finish===null;
+ });
+}
+$('#finishes').innerHTML=finishes.map((f,i)=>`<button class="choice" data-i="${i}">${f[0]}</button>`).join('');
+$('#finishes').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+ $('#finishes').querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');finish=+b.dataset.i;$('#check').disabled=point===null;
+});
+$('#check').onclick=()=>{
+ const a=point===correct,b=finishes[finish][1]===1;
+ document.querySelectorAll('#dialogue .message').forEach((x,i)=>x.classList.add(i===correct?'good':(i===point?'bad':'')));
+ document.querySelectorAll('#finishes .choice').forEach((x,i)=>x.classList.add(finishes[i][1]?'good':(i===finish?'bad':'')));
+ const fb=$('#fb');fb.className=`feedback show ${a&&b?'ok':'warn'}`;
+ fb.innerHTML=a&&b
+ ?'<strong>Точка выхода определена точно.</strong><br>После отказа обсуждать факты и перехода к повторным обвинениям разговор перестал производить решение. Вы зафиксировали итог и назначили конкретное возвращение к теме.'
+ :'<strong>Либо разговор завершен слишком рано, либо вы остались в нем после потери конструктива.</strong><br>Сигналы выхода: повтор аргументов, обвинения вместо фактов и отказ обсуждать следующий шаг. Завершение должно содержать итог и точный мостик в будущее.';
+};
+$('#reset').onclick=()=>{
+ point=null;finish=null;$('#finishes').querySelectorAll('.choice').forEach(x=>x.className='choice');
+ $('#finishBlock').classList.add('hidden');$('#fb').className='feedback';$('#check').disabled=true;render();
+};
+render();
+</script>
+</body>
+</html>
