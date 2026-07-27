@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Движение под ситуацию</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.row-card{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.row-card+.row-card{margin-top:8px}
+.number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:7px}
+.number-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 4px;cursor:pointer;font-weight:800}
+.number-btn.selected{border-color:var(--accent);background:var(--accent-soft)}
+.number-btn.good{border-color:var(--ok);background:var(--ok-soft)}
+.number-btn.bad{border-color:var(--bad);background:var(--bad-soft)}
+.sequence-list{margin-top:8px;font-size:13px;line-height:1.5}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="movementProtocolTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Движение и сброс напряжения</div>
+    <h2>Подберите действие под ситуацию</h2>
+    <p class="lead">В каждом кейсе есть один наиболее уместный вариант. После проверки станет доступна следующая ситуация.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <span class="badge" data-role="step"></span>
+      <p data-role="case" style="margin:9px 0 0"></p>
+    </div>
+    <div class="grid2" data-role="answers" style="margin-top:10px"></div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+    <div class="note">При боли в груди, предобморочном состоянии или резком ухудшении самочувствия интенсивное движение прекращают.</div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('movementProtocolTask');
+  if (!root) return;
+
+  const cases = [
+    {
+      text:'Вы один в кабинете. После конфликтного звонка чувствуете сильное раздражение, но через пять минут нужна ясная голова.',
+      options:[
+        'Сразу перейти к статической растяжке',
+        'Продолжить звонки без паузы',
+        'Упереться руками в стену на 10–15 секунд, затем стряхнуть напряжение',
+        'Сесть неподвижно и подавлять телесную реакцию'
+      ],
+      correct:2,
+      note:'В ограниченном пространстве подходит краткое силовое усилие крупными мышцами с последующим сбросом остаточного тонуса.'
+    },
+    {
+      text:'Во время стресса появилась естественная дрожь в руках. Боли и головокружения нет.',
+      options:[
+        'Дать телу безопасно протрястись и свободно выдыхать',
+        'Жестко зафиксировать руки усилием воли',
+        'Задержать дыхание до прекращения дрожи',
+        'Полностью исключить движение до конца дня'
+      ],
+      correct:0,
+      note:'Дрожь не нужно подавлять усилием. Контролируемое движение помогает завершить телесную реакцию.'
+    },
+    {
+      text:'Вы собирались быстро пройти два пролета, но внезапно возникли боль в груди и слабость.',
+      options:[
+        'Ускориться, чтобы быстрее «сжечь» стресс',
+        'Начать интенсивные удары в воздух',
+        'Продолжить через силу',
+        'Остановиться и обратиться за медицинской помощью'
+      ],
+      correct:3,
+      note:'Тревожные физические симптомы меняют приоритет: сначала безопасность, а не выполнение упражнения.'
+    },
+    {
+      text:'Вы перед встречей, пространство ограничено, бегать и активно двигаться нельзя.',
+      options:[
+        'Сесть и читать тревожные новости',
+        'Кратко надавить ладонями в стену или стол, затем расслабить руки',
+        'Начать бегать по кабинету',
+        'Выполнить минуту резких ударов рядом с коллегами'
+      ],
+      correct:1,
+      note:'Изометрическое усилие позволяет задействовать крупные мышцы без демонстративного движения и нарушения рабочего контекста.'
+    }
+  ];
+
+  let index = 0;
+  let selected = null;
+  let checked = false;
+  let score = 0;
+  const q = (role) => root.querySelector(`[data-role="${role}"]`);
+
+  function render() {
+    const item = cases[index];
+    selected = null;
+    checked = false;
+    q('step').textContent = `Ситуация ${index + 1} из ${cases.length}`;
+    q('case').textContent = item.text;
+    q('bar').style.width = `${index / cases.length * 100}%`;
+    q('answers').classList.remove('hidden');
+    q('answers').innerHTML = item.options.map((text, i) =>
+      `<button type="button" class="choice" data-answer="${i}">${text}</button>`
+    ).join('');
+    q('answers').querySelectorAll('[data-answer]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (checked) return;
+        q('answers').querySelectorAll('[data-answer]').forEach(x => x.classList.remove('selected'));
+        btn.classList.add('selected');
+        selected = Number(btn.dataset.answer);
+        q('next').disabled = false;
+      });
+    });
+    q('next').textContent = 'Проверить';
+    q('next').disabled = true;
+    q('fb').className = 'feedback';
+    q('fb').innerHTML = '';
+  }
+
+  q('next').addEventListener('click', () => {
+    const item = cases[index];
+
+    if (!checked) {
+      if (selected === null) return;
+      const ok = selected === item.correct;
+      if (ok) score += 1;
+
+      q('answers').querySelectorAll('[data-answer]').forEach(btn => {
+        const n = Number(btn.dataset.answer);
+        if (n === item.correct) btn.classList.add('good');
+        else if (n === selected) btn.classList.add('bad');
+        btn.disabled = true;
+      });
+
+      q('fb').className = `feedback show ${ok ? 'ok' : 'warn'}`;
+      q('fb').innerHTML = `<strong>${ok ? 'Верно.' : 'Контекст учтен не полностью.'}</strong><br>${item.note}`;
+      checked = true;
+      q('next').textContent = index === cases.length - 1 ? 'Показать результат' : 'Следующая ситуация';
+      return;
+    }
+
+    if (index < cases.length - 1) {
+      index += 1;
+      render();
+    } else {
+      q('bar').style.width = '100%';
+      q('answers').classList.add('hidden');
+      q('step').textContent = 'Результат';
+      q('case').innerHTML = `Уместные решения: <strong>${score} из ${cases.length}</strong>.`;
+      q('fb').className = `feedback show ${score === cases.length ? 'ok' : 'warn'}`;
+      q('fb').innerHTML = score === cases.length
+        ? 'Вы выбираете движение с учетом состояния, пространства и рисков.'
+        : 'Перед выбором техники проверьте физические симптомы, ограничения пространства и возможность безопасно выполнить движение.';
+      q('next').disabled = true;
+      q('next').textContent = 'Готово';
+    }
+  });
+
+  q('reset').addEventListener('click', () => {
+    index = 0;
+    selected = null;
+    checked = false;
+    score = 0;
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>

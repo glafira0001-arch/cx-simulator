@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Техника 5–4–3–2–1</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.row-card{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.row-card+.row-card{margin-top:8px}
+.number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:7px}
+.number-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 4px;cursor:pointer;font-weight:800}
+.number-btn.selected{border-color:var(--accent);background:var(--accent-soft)}
+.number-btn.good{border-color:var(--ok);background:var(--ok-soft)}
+.number-btn.bad{border-color:var(--bad);background:var(--bad-soft)}
+.sequence-list{margin-top:8px;font-size:13px;line-height:1.5}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="sensorySwitchTask">
+
+  <div class="head">
+    <div class="kicker">Сенсорное переключение</div>
+    <h2>Настройте технику 5–4–3–2–1</h2>
+    <p class="lead">Для каждого сенсорного канала выберите нужное количество объектов. Проверка станет доступна после заполнения всех строк.</p>
+  </div>
+  <div class="body">
+    <div data-role="rows"></div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить схему</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('sensorySwitchTask');
+  if (!root) return;
+
+  const rows = [
+    {name:'Что вы видите', correct:5},
+    {name:'Что можете потрогать', correct:4},
+    {name:'Что слышите', correct:3},
+    {name:'Какие запахи чувствуете', correct:2},
+    {name:'Какой вкус ощущаете', correct:1}
+  ];
+  let answers = Array(rows.length).fill(null);
+
+  const q = (role) => root.querySelector(`[data-role="${role}"]`);
+
+  function render() {
+    q('rows').innerHTML = rows.map((row, rowIndex) => `
+      <div class="row-card" data-row="${rowIndex}">
+        <div class="small"><strong>${row.name}</strong></div>
+        <div class="number-grid">
+          ${[1,2,3,4,5].map(n =>
+            `<button type="button" class="number-btn ${answers[rowIndex] === n ? 'selected' : ''}" data-value="${n}">${n}</button>`
+          ).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    q('rows').querySelectorAll('[data-row]').forEach(rowEl => {
+      const rowIndex = Number(rowEl.dataset.row);
+      rowEl.querySelectorAll('[data-value]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          answers[rowIndex] = Number(btn.dataset.value);
+          q('fb').className = 'feedback';
+          render();
+        });
+      });
+    });
+
+    q('check').disabled = !answers.every(v => v !== null);
+  }
+
+  q('check').addEventListener('click', () => {
+    let score = 0;
+    q('rows').querySelectorAll('[data-row]').forEach(rowEl => {
+      const rowIndex = Number(rowEl.dataset.row);
+      rowEl.querySelectorAll('[data-value]').forEach(btn => {
+        const value = Number(btn.dataset.value);
+        if (value === rows[rowIndex].correct) btn.classList.add('good');
+        if (value === answers[rowIndex] && value !== rows[rowIndex].correct) btn.classList.add('bad');
+        btn.disabled = true;
+      });
+      if (answers[rowIndex] === rows[rowIndex].correct) score += 1;
+    });
+
+    const ok = score === rows.length;
+    q('fb').className = `feedback show ${ok ? 'ok' : 'warn'}`;
+    q('fb').innerHTML = ok
+      ? '<strong>Схема настроена верно.</strong><br>Порядок: 5 объектов, которые вы видите; 4 текстуры; 3 звука; 2 запаха; 1 вкус.'
+      : `<strong>${score} из ${rows.length} строк заполнено верно.</strong><br>Схема идет по убыванию: 5 — зрение, 4 — осязание, 3 — слух, 2 — запах, 1 — вкус.`;
+    q('check').disabled = true;
+  });
+
+  q('reset').addEventListener('click', () => {
+    answers = Array(rows.length).fill(null);
+    q('fb').className = 'feedback';
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>
