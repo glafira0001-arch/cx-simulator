@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Безопасная адаптация холода</title>
+<style>
+:root{
+  --ink:#172033; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa; --card:#fff;
+  --accent:#4a56d4; --accent-soft:#eef0ff; --ok:#167451; --ok-soft:#eaf8f1;
+  --bad:#b42318; --bad-soft:#fff0ee; --warn:#986700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef0ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.slot,.cycle{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.slot:hover,.cycle:hover{border-color:#a8b2ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.sequence{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.seq-box{min-height:72px;border:1px dashed #b8c0cd;border-radius:11px;padding:8px;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;font-size:12px;line-height:1.25;background:#fafbfc}
+.seq-box strong{display:block;font-size:17px;margin-bottom:3px}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.counter{font-size:18px;font-weight:800}
+@media(max-width:430px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .sequence{grid-template-columns:1fr 1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="progress"><div id="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Температурное переключение</div>
+    <h2>Выберите безопасную адаптацию</h2>
+    <p class="lead">Одна техника не подходит всем. Для каждой ситуации выберите действие с наименьшим риском.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <div class="metric"><span class="badge" id="step"></span><strong id="risk"></strong></div>
+      <p id="case" style="margin:8px 0 0"></p>
+    </div>
+    <div class="grid2" id="answers" style="margin-top:10px"></div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div class="note">Холод не используют при боли в груди, выраженной одышке, обморочном состоянии или резком ухудшении самочувствия.</div>
+  </div>
+</div>
+
+<script>
+const cases=[
+ {risk:'Низкий риск',case:'Перед выступлением вы сильно взволнованы. Сердечных заболеваний и проблем с давлением нет.',
+  a:[['Охладить область лица прохладной водой и затем сделать медленный выдох',1],['Встать под ледяной душ целиком',0],['Долго удерживать лед на коже',0],['Сделать серию резких вдохов',0]],
+  note:'Локальное и краткое охлаждение лица безопаснее, чем воздействие на все тело. После резкой реакции важно перейти к спокойному выдоху.'},
+ {risk:'Нужна осторожность',case:'У человека есть сердечно-сосудистое заболевание и эпизоды повышенного давления.',
+  a:[['Использовать прохладную, а не ледяную воду и не форсировать воздействие',1],['Погрузить лицо в ледяную воду надолго',0],['Охладить все тело, чтобы эффект был сильнее',0],['Сочетать холод с длительной задержкой дыхания',0]],
+  note:'При сердечно-сосудистых рисках интенсивный холод и задержки дыхания требуют особой осторожности. В учебной ситуации выбираем мягкую адаптацию.'},
+ {risk:'Высокий риск',case:'Во время стресса появились боль в груди, слабость и предобморочное состояние.',
+  a:[['Прекратить эксперимент и обратиться за медицинской помощью',1],['Усилить холод, чтобы быстрее переключиться',0],['Продолжить, пока пульс не снизится',0],['Сделать интенсивную нагрузку',0]],
+  note:'При таких симптомах задача не в саморегуляции, а в безопасности. Технику прекращают и обращаются за медицинской помощью.'}
+];
+let i=0,sel=null,checked=false,score=0;
+const $=s=>document.querySelector(s);
+function render(){
+ const c=cases[i];sel=null;checked=false;
+ $('#step').textContent=`Ситуация ${i+1} из ${cases.length}`;$('#risk').textContent=c.risk;$('#case').textContent=c.case;
+ $('#answers').innerHTML=c.a.map((x,n)=>`<button class="choice" data-i="${n}">${x[0]}</button>`).join('');
+ $('#answers').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+  $('#answers').querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');sel=+b.dataset.i;$('#next').disabled=false;
+ });
+ $('#bar').style.width=`${i/cases.length*100}%`;$('#next').textContent='Проверить';$('#next').disabled=true;$('#fb').className='feedback';
+}
+$('#next').onclick=()=>{
+ if(!checked){
+  const c=cases[i],ok=c.a[sel][1]===1;if(ok)score++;
+  $('#answers').querySelectorAll('.choice').forEach((b,n)=>b.classList.add(c.a[n][1]?'good':(n===sel?'bad':'')));
+  $('#fb').className=`feedback show ${ok?'ok':'warn'}`;$('#fb').innerHTML=`<strong>${ok?'Решение безопасно.':'Риск недооценен.'}</strong><br>${c.note}`;
+  checked=true;$('#next').textContent=i===cases.length-1?'Показать результат':'Следующая ситуация';
+ }else if(i<cases.length-1){i++;render();}
+ else{
+  $('#bar').style.width='100%';$('#answers').classList.add('hidden');$('#step').textContent='Результат';$('#risk').textContent=`${score} / ${cases.length}`;
+  $('#case').textContent=score===3?'Вы адаптируете технику под состояние и медицинские ограничения.':'Вы иногда выбираете более сильное воздействие вместо более безопасного.';
+  $('#fb').className=`feedback show ${score===3?'ok':'warn'}`;$('#fb').innerHTML='Ключевой принцип: локально, кратко, без эскалации. При тревожных физических симптомах самопомощь прекращают.';
+  $('#next').disabled=true;$('#next').textContent='Готово';
+ }
+};
+$('#reset').onclick=()=>{i=0;score=0;$('#answers').classList.remove('hidden');render();};
+render();
+</script>
+</body>
+</html>

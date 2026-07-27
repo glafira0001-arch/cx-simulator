@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Аудит безопасности самомассажа</title>
+<style>
+:root{
+  --ink:#172033; --muted:#667085; --line:#d9e0e8; --bg:#f5f7fa; --card:#fff;
+  --accent:#4a56d4; --accent-soft:#eef0ff; --ok:#167451; --ok-soft:#eaf8f1;
+  --bad:#b42318; --bad-soft:#fff0ee; --warn:#986700; --warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef0ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.slot,.cycle{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.slot:hover,.cycle:hover{border-color:#a8b2ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.sequence{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.seq-box{min-height:72px;border:1px dashed #b8c0cd;border-radius:11px;padding:8px;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;font-size:12px;line-height:1.25;background:#fafbfc}
+.seq-box strong{display:block;font-size:17px;margin-bottom:3px}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.counter{font-size:18px;font-weight:800}
+@media(max-width:430px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .sequence{grid-template-columns:1fr 1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="head">
+    <div class="kicker">Самомассаж</div>
+    <h2>Проведите аудит безопасности</h2>
+    <p class="lead">Для каждого действия выберите статус: допустимо или рискованно. Формулировки намеренно похожи.</p>
+  </div>
+  <div class="body">
+    <div id="items"></div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="check">Проверить решения</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div class="note">Самомассаж не должен вызывать боль, онемение, головокружение или ухудшение самочувствия.</div>
+  </div>
+</div>
+
+<script>
+const labels=['Не выбрано','Допустимо','Рискованно'];
+const data=[
+ ['Растирать ладони до комфортного тепла',1],
+ ['Сильно давить на переднюю поверхность шеи',2],
+ ['Мягко разминать мочки ушей',1],
+ ['Продолжать воздействие, несмотря на боль',2],
+ ['Работать с мягкими тканями сзади и сбоку шеи',1],
+ ['Массировать область сонной артерии',2]
+];
+let state=data.map(()=>0);
+const box=document.querySelector('#items');
+function render(){
+ box.innerHTML=data.map((x,i)=>`<button class="cycle" data-i="${i}" style="margin-bottom:8px">
+   <div class="metric"><span>${x[0]}</span><span class="badge">${labels[state[i]]}</span></div></button>`).join('');
+ box.querySelectorAll('.cycle').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;state[i]=(state[i]+1)%3;render();});
+}
+document.querySelector('#check').onclick=()=>{
+ let ok=0;
+ document.querySelectorAll('.cycle').forEach((b,i)=>{
+  if(state[i]===data[i][1]){b.classList.add('good');ok++;}else b.classList.add('bad');
+ });
+ const fb=document.querySelector('#fb');fb.className=`feedback show ${ok===data.length?'ok':'warn'}`;
+ fb.innerHTML=ok===data.length
+ ?'<strong>Аудит пройден.</strong><br>Безопасная техника мягкая, комфортная и не затрагивает переднюю поверхность шеи. Боль — не показатель эффективности.'
+ :`<strong>${ok} из ${data.length} решений верны.</strong><br>Разрешены мягкие воздействия без боли. Передняя поверхность шеи, сонная артерия и давление через боль относятся к рискованным действиям.`;
+};
+document.querySelector('#reset').onclick=()=>{state=data.map(()=>0);document.querySelector('#fb').className='feedback';render();};
+render();
+</script>
+</body>
+</html>
