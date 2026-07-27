@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Зоны личного контроля</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.cycle,.source,.option{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.cycle:hover,.source:hover,.option:hover{border-color:#a5b0ef}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.statement{font-size:14px;line-height:1.5;padding:12px;border-radius:12px;background:#f8f9fb;border:1px solid var(--line)}
+.slots{display:grid;gap:8px}
+.slot{border:1px dashed #b9c1ce;border-radius:11px;padding:10px;background:#fafbfc}
+.slot strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+.assembled{font-size:13px;line-height:1.55}
+@media(max-width:430px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="head">
+    <div class="kicker">Зоны личного контроля</div>
+    <h2>Верните проблему в свою зону действий</h2>
+    <p class="lead">Распределите элементы ситуации, а затем выберите действие на ближайшие два часа.</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <strong>Ситуация</strong>
+      <p style="margin:6px 0 0">Заказчик задерживает решение по проекту, команда нервничает, а запуск запланирован на пятницу.</p>
+    </div>
+    <div class="small" style="margin:10px 0 6px">Нажимайте: под моим контролем → вне контроля → не выбрано</div>
+    <div id="items"></div>
+    <div id="actionBlock" class="hidden">
+      <div class="small" style="margin:12px 0 6px">Что сделать в ближайшие два часа?</div>
+      <div class="grid2" id="actions"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="check" disabled>Проверить</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const labels=['Не выбрано','Под моим контролем','Вне контроля'];
+const data=[
+ ['Качество подготовленной презентации',1],
+ ['Решение заказчика',2],
+ ['Тон моего следующего письма',1],
+ ['Настроение команды',2],
+ ['План действий при задержке согласования',1],
+ ['Экономическая ситуация на рынке',2]
+];
+const actions=[
+ ['Составить письмо с двумя вариантами запуска и сроком ответа',1],
+ ['Продумать десять причин, почему заказчик молчит',0],
+ ['Попытаться гарантировать команде решение заказчика',0],
+ ['Следить за новостями рынка до конца дня',0]
+];
+let state=data.map(()=>0),action=null;
+const $=s=>document.querySelector(s);
+function render(){
+ $('#items').innerHTML=data.map((d,i)=>`<button class="cycle" data-i="${i}" style="margin-bottom:8px">
+ <div class="metric"><span>${d[0]}</span><span class="badge">${labels[state[i]]}</span></div></button>`).join('');
+ $('#items').querySelectorAll('.cycle').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;state[i]=(state[i]+1)%3;render();});
+ const done=state.every(x=>x!==0);$('#actionBlock').classList.toggle('hidden',!done);$('#check').disabled=!(done&&action!==null);
+}
+$('#actions').innerHTML=actions.map((a,i)=>`<button class="choice" data-i="${i}">${a[0]}</button>`).join('');
+$('#actions').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+ $('#actions').querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');action=+b.dataset.i;$('#check').disabled=!state.every(x=>x!==0);
+});
+$('#check').onclick=()=>{
+ const a=state.every((x,i)=>x===data[i][1]),b=actions[action][1]===1;
+ document.querySelectorAll('#items .cycle').forEach((x,i)=>x.classList.add(state[i]===data[i][1]?'good':'bad'));
+ document.querySelectorAll('#actions .choice').forEach((x,i)=>x.classList.add(actions[i][1]?'good':(i===action?'bad':'')));
+ const fb=$('#fb');fb.className=`feedback show ${a&&b?'ok':'warn'}`;
+ fb.innerHTML=a&&b
+ ?'<strong>Фокус возвращен в управляемую часть.</strong><br>Вы не пытаетесь контролировать решение и настроение других людей, а формируете письмо, варианты и следующий шаг.'
+ :'<strong>Часть ответственности взята за чужие решения или эмоции.</strong><br>Внутренний круг — ваши слова, действия, качество подготовки и алгоритм на случай риска. Остальное нужно учитывать как условия, но не пытаться им командовать.';
+};
+$('#reset').onclick=()=>{
+ state=data.map(()=>0);action=null;
+ $('#actions').querySelectorAll('.choice').forEach(x=>x.className='choice');
+ $('#fb').className='feedback';render();
+};
+render();
+</script>
+</body>
+</html>

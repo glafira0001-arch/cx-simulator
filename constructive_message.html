@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Конструктивное сообщение</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,24,40,.08)}
+.head{padding:18px 18px 14px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:20px;line-height:1.2;margin:6px 0 7px}
+.lead{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.body{padding:16px 18px 18px}
+.card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}
+.card+.card{margin-top:9px}
+.case{font-size:14px;line-height:1.45}
+.small{font-size:12px;line-height:1.4;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font:inherit}
+.choice,.chip,.tile,.cycle,.source,.option{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:11px;padding:10px 11px;text-align:left;cursor:pointer;transition:.15s}
+.choice:hover,.chip:hover,.tile:hover,.cycle:hover,.source:hover,.option:hover{border-color:#a5b0ef}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:8px;margin-top:14px}
+.primary,.secondary{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}.feedback.bad{background:var(--bad-soft);color:#8f1b13}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#eef1f6;
+  color:#475467;font-size:11px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:5px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f6f7fa;font-size:11px;line-height:1.4;color:#586174}
+.statement{font-size:14px;line-height:1.5;padding:12px;border-radius:12px;background:#f8f9fb;border:1px solid var(--line)}
+.slots{display:grid;gap:8px}
+.slot{border:1px dashed #b9c1ce;border-radius:11px;padding:10px;background:#fafbfc}
+.slot strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+.assembled{font-size:13px;line-height:1.55}
+@media(max-width:430px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .task{border-radius:14px}
+  .head,.body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="task">
+  <div class="progress"><div id="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Конструктивный разговор</div>
+    <h2>Соберите сообщение без обвинения</h2>
+    <p class="lead">На каждом шаге выберите одну формулировку. В финале получится готовая реплика по схеме «факт → чувство → потребность → просьба».</p>
+  </div>
+  <div class="body">
+    <div class="card case">
+      <strong>Ситуация</strong>
+      <p style="margin:6px 0 0">Коллега трижды перебил вас на планерке, и часть данных команда не услышала.</p>
+    </div>
+    <div class="small" style="margin:10px 0 6px" id="prompt"></div>
+    <div id="options" class="grid2"></div>
+    <div id="result" class="card hidden" style="margin-top:10px">
+      <strong>Собранная реплика</strong>
+      <div class="assembled" id="assembled" style="margin-top:6px"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="reset">Начать заново</button>
+      <button class="primary" id="next" disabled>Продолжить</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const stages=[
+ {name:'Факт',opts:[
+  ['Сегодня на планерке ты трижды перебил меня до конца фразы.',1],
+  ['Ты постоянно не уважаешь коллег.',0],
+  ['Ты опять устроил хаос.',0]
+ ]},
+ {name:'Чувство',opts:[
+  ['Я начинаю раздражаться и теряю мысль.',1],
+  ['Ты заставляешь меня злиться.',0],
+  ['Это просто кошмар.',0]
+ ]},
+ {name:'Потребность',opts:[
+  ['Мне важно договорить, чтобы команда услышала данные без искажений.',1],
+  ['Мне нужно, чтобы ты признал свою неправоту.',0],
+  ['Мне важно, чтобы все всегда соглашались со мной.',0]
+ ]},
+ {name:'Просьба',opts:[
+  ['Пожалуйста, выслушай мою часть до конца, а затем задай вопросы.',1],
+  ['Больше никогда меня не перебивай.',0],
+  ['Постарайся вести себя нормально.',0]
+ ]}
+];
+let i=0,sel=null,chosen=[],score=0;
+const $=s=>document.querySelector(s);
+function render(){
+ const s=stages[i];sel=null;$('#prompt').textContent=`Выберите блок: ${s.name}`;
+ $('#options').innerHTML=s.opts.map((o,n)=>`<button class="choice" data-i="${n}">${o[0]}</button>`).join('');
+ $('#options').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+  $('#options').querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');sel=+b.dataset.i;$('#next').disabled=false;
+ });
+ $('#bar').style.width=`${i/stages.length*100}%`;$('#next').textContent=i===stages.length-1?'Собрать сообщение':'Продолжить';$('#next').disabled=true;$('#fb').className='feedback';
+}
+$('#next').onclick=()=>{
+ const s=stages[i];chosen.push(s.opts[sel][0]);if(s.opts[sel][1])score++;
+ if(i<stages.length-1){i++;render();}
+ else{
+  $('#bar').style.width='100%';$('#options').classList.add('hidden');$('#prompt').classList.add('hidden');
+  $('#result').classList.remove('hidden');$('#assembled').textContent=chosen.join(' ');
+  $('#fb').className=`feedback show ${score===4?'ok':'warn'}`;
+  $('#fb').innerHTML=score===4
+   ?'<strong>Реплика собрана конструктивно.</strong><br>В ней есть наблюдаемый факт, ваше состояние, рабочая потребность и конкретная выполнимая просьба.'
+   :'<strong>В сообщении остались обвинение, обобщение или размытая просьба.</strong><br>Проверьте, можно ли увидеть факт, принадлежит ли чувство вам и ясно ли собеседнику, что именно сделать.';
+  $('#next').disabled=true;$('#next').textContent='Готово';
+ }
+};
+$('#reset').onclick=()=>{i=0;sel=null;chosen=[];score=0;$('#options').classList.remove('hidden');$('#prompt').classList.remove('hidden');$('#result').classList.add('hidden');render();};
+render();
+</script>
+</body>
+</html>
