@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Матрица приоритетов</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+button{font:inherit}
+.choice,.tile,.answer-btn,.task-card{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover,.task-card:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.zone{min-height:78px;background:#fafbfc}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.capacity{height:8px;border-radius:999px;background:#e8ebf3;overflow:hidden;margin-top:5px}
+.capacity>div{height:100%;background:var(--accent)}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:93%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+@media(max-width:430px){
+  .grid2,.grid4,.inline-choices{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="priorityMatrixTask">
+
+  <div class="head">
+    <div class="kicker">Матрица приоритетов</div>
+    <h2>Распределите рабочую нагрузку</h2>
+    <p class="lead">Выберите карточку, затем нажмите на нужный квадрат. Карточки можно переносить повторно.</p>
+  </div>
+  <div class="body">
+    <div class="small">Нераспределенные задачи</div>
+    <div class="grid2" data-role="pool" style="margin-top:6px"></div>
+    <div class="grid4" style="margin-top:8px">
+      <button type="button" class="zone" data-zone="ui">
+        <div class="zone-title">Срочно и важно<br><span class="small">Сделать</span></div>
+        <div class="zone-list" data-list="ui"></div>
+      </button>
+      <button type="button" class="zone" data-zone="inu">
+        <div class="zone-title">Важно, не срочно<br><span class="small">Защитить время</span></div>
+        <div class="zone-list" data-list="inu"></div>
+      </button>
+      <button type="button" class="zone" data-zone="uni">
+        <div class="zone-title">Срочно, не важно<br><span class="small">Делегировать или отказать</span></div>
+        <div class="zone-list" data-list="uni"></div>
+      </button>
+      <button type="button" class="zone" data-zone="nn">
+        <div class="zone-title">Не срочно и не важно<br><span class="small">Убрать</span></div>
+        <div class="zone-list" data-list="nn"></div>
+      </button>
+    </div>
+    <div data-role="refusalBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Как ответить на внеплановый созвон без повестки?</div>
+      <div class="grid2" data-role="refusals"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('priorityMatrixTask');
+  if (!root) return;
+
+  const tasks = [
+    {text:'Исправить критическую ошибку перед дедлайном сегодня', correct:'ui'},
+    {text:'Запланировать обучение на следующий квартал', correct:'inu'},
+    {text:'Ответить на сообщение «срочно», которое не влияет на результат', correct:'uni'},
+    {text:'Просмотреть ленту новостей', correct:'nn'},
+    {text:'Подготовить отчет клиенту к завтрашнему утру', correct:'ui'},
+    {text:'Поставить в календарь время на восстановление', correct:'inu'},
+    {text:'Подключиться к внеплановому созвону без повестки', correct:'uni'},
+    {text:'Разобрать старые файлы, не связанные с текущими задачами', correct:'nn'}
+  ];
+  const refusals = [
+    {text:'«Я понимаю, что созвон срочный, но я очень занят».', correct:false},
+    {text:'«Пришлите, пожалуйста, повестку. Если моего участия не требуется для решения, я дам комментарий письменно».', correct:true},
+    {text:'«Ладно, подключусь ненадолго».', correct:false},
+    {text:'«Я не хожу на бессмысленные встречи».', correct:false}
+  ];
+  let placement = Array(tasks.length).fill(null);
+  let selectedTask = null;
+  let refusal = null;
+  const q = role => root.querySelector(`[data-role="${role}"]`);
+
+  function render(){
+    q('pool').innerHTML = tasks.map((task,i) => placement[i]===null
+      ? `<button type="button" class="task-card ${selectedTask===i?'selected':''}" data-task="${i}">${task.text}</button>`
+      : '').join('');
+
+    q('pool').querySelectorAll('[data-task]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        selectedTask=Number(btn.dataset.task);
+        render();
+      });
+    });
+
+    ['ui','inu','uni','nn'].forEach(zone=>{
+      q('pool');
+      const list=root.querySelector(`[data-list="${zone}"]`);
+      list.innerHTML=tasks.map((task,i)=>placement[i]===zone
+        ? `<div class="chip" data-placed="${i}">${task.text}</div>`:'').join('');
+      list.querySelectorAll('[data-placed]').forEach(chip=>{
+        chip.addEventListener('click',(e)=>{
+          e.stopPropagation();
+          selectedTask=Number(chip.dataset.placed);
+          placement[selectedTask]=null;
+          render();
+        });
+      });
+    });
+
+    const complete=placement.every(v=>v!==null);
+    q('refusalBlock').classList.toggle('hidden',!complete);
+    q('check').disabled=!(complete&&refusal!==null);
+  }
+
+  root.querySelectorAll('[data-zone]').forEach(zoneBtn=>{
+    zoneBtn.addEventListener('click',()=>{
+      if(selectedTask===null)return;
+      placement[selectedTask]=zoneBtn.dataset.zone;
+      selectedTask=null;
+      q('fb').className='feedback';
+      render();
+    });
+  });
+
+  q('refusals').innerHTML=refusals.map((r,i)=>
+    `<button type="button" class="choice" data-refusal="${i}">${r.text}</button>`
+  ).join('');
+  q('refusals').querySelectorAll('[data-refusal]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('refusals').querySelectorAll('[data-refusal]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      refusal=Number(btn.dataset.refusal);
+      q('check').disabled=!placement.every(v=>v!==null);
+    });
+  });
+
+  q('check').addEventListener('click',()=>{
+    let score=0;
+    placement.forEach((zone,i)=>{if(zone===tasks[i].correct)score++;});
+    const refusalOk=refusal!==null&&refusals[refusal].correct;
+    const ok=score===tasks.length&&refusalOk;
+
+    root.querySelectorAll('[data-zone]').forEach(zoneBtn=>{
+      const zone=zoneBtn.dataset.zone;
+      zoneBtn.classList.remove('good','bad');
+      const wrong=placement.some((z,i)=>z===zone&&tasks[i].correct!==zone);
+      if(wrong)zoneBtn.classList.add('bad');
+      else zoneBtn.classList.add('good');
+      zoneBtn.disabled=true;
+    });
+    q('refusals').querySelectorAll('[data-refusal]').forEach(btn=>{
+      const i=Number(btn.dataset.refusal);
+      if(refusals[i].correct)btn.classList.add('good');
+      else if(i===refusal)btn.classList.add('bad');
+      btn.disabled=true;
+    });
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Матрица собрана точно.</strong><br>Вы защитили важное несрочное, убрали пожиратели времени и подготовили профессиональный отказ для срочной, но неважной задачи.'
+      : `<strong>Верно распределено: ${score} из ${tasks.length} задач.</strong><br>Капслок и давление не делают задачу важной. Важность определяется влиянием на результат, а срочность — сроком.`;
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    placement=Array(tasks.length).fill(null);
+    selectedTask=null;
+    refusal=null;
+    root.querySelectorAll('[data-zone]').forEach(x=>{x.disabled=false;x.classList.remove('good','bad');});
+    q('refusals').querySelectorAll('[data-refusal]').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>
