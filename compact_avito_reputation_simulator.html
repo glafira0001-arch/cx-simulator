@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Репутация мастера на Авито</title>
+<style>
+:root{
+  --ink:#152238;--muted:#667085;--line:#dbe2ea;--bg:#fff;
+  --accent:#2f6fd2;--accent2:#2558a8;--soft:#edf4ff;
+  --ok:#147552;--oksoft:#eaf8f1;--warn:#8a5a00;--warnsoft:#fff5d6;
+  --bad:#b42318;--badsoft:#fff0ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{
+  width:100%;max-width:560px;margin:0 auto;background:var(--bg);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 6px 18px rgba(30,55,90,.08)
+}
+.progress{height:4px;background:#e8edf5}
+.progress>div{height:100%;background:#77a8f3;width:0;transition:.25s}
+.head{
+  padding:13px 15px 11px;
+  background:linear-gradient(135deg,var(--accent2),#347bdc);
+  color:#fff
+}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+h2{font-size:18px;line-height:1.15;margin:4px 0}
+.lead{font-size:12px;line-height:1.35;margin:0;opacity:.92}
+.body{padding:11px 14px 13px}
+.meta{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  margin-bottom:7px;font-size:10px;color:var(--muted)
+}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;
+  background:#eef2f7;color:#475467;font-size:10px;font-weight:800
+}
+.rep{
+  display:flex;align-items:center;gap:6px;min-width:145px
+}
+.rep-track{
+  height:6px;flex:1;border-radius:999px;background:#e6ebf2;overflow:hidden
+}
+.rep-fill{height:100%;width:50%;background:var(--accent);transition:.25s}
+.review{
+  border:1px solid var(--line);border-radius:11px;background:#fff;
+  padding:9px
+}
+.review-top{display:flex;align-items:center;gap:8px}
+.avatar{
+  width:34px;height:34px;border-radius:50%;background:#d9dde3;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#667085;flex:0 0 auto
+}
+.name{font-size:11.5px;font-weight:800}
+.stars{font-size:10px;color:#f59e0b;margin-top:1px}
+.review-text{font-size:11.5px;line-height:1.35;margin-top:7px}
+.question{font-size:12px;font-weight:800;line-height:1.3;margin:8px 0 5px}
+.options{display:grid;grid-template-columns:1fr;gap:5px}
+.choice{
+  width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:7px 8px;text-align:left;cursor:pointer;
+  font-size:10.8px;line-height:1.27;transition:.12s
+}
+.choice:hover{border-color:#9db8e5}
+.choice.selected{
+  border-color:var(--accent);background:var(--soft);
+  box-shadow:0 0 0 1px var(--accent) inset
+}
+.actions{display:flex;gap:7px;margin-top:9px}
+.primary,.secondary{
+  border:0;border-radius:9px;padding:8px 10px;font-weight:800;
+  cursor:pointer;font-size:11.5px
+}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#eef1f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{
+  display:none;margin-top:8px;border-radius:9px;padding:8px 9px;
+  font-size:11.2px;line-height:1.35
+}
+.feedback.show{display:block}
+.feedback.ok{background:var(--oksoft);color:#0c5a3f}
+.feedback.warn{background:var(--warnsoft);color:#6e4900}
+.feedback.bad{background:var(--badsoft);color:#8c1d18}
+.result{
+  display:none;border:1px solid var(--line);border-radius:10px;
+  padding:9px;background:#fafcff;margin-top:8px
+}
+.result.show{display:block}
+.result-title{font-size:11px;font-weight:800;margin-bottom:5px}
+.result-line{
+  font-size:10.8px;line-height:1.34;padding:4px 0;
+  border-bottom:1px dashed #e0e5ec
+}
+.result-line:last-child{border-bottom:0}
+@media(max-width:430px){
+  .task{border-radius:12px}
+  .head,.body{padding-left:11px;padding-right:11px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="reputationTask">
+  <div class="progress"><div data-role="bar"></div></div>
+
+  <div class="head">
+    <div class="kicker">Симулятор отзывов</div>
+    <h2>Репутация мастера на Авито</h2>
+    <p class="lead">Ваш публичный ответ увидит не только автор отзыва, но и будущие клиенты.</p>
+  </div>
+
+  <div class="body">
+    <div class="meta">
+      <span class="badge" data-role="step">Отзыв 1 из 5</span>
+      <div class="rep">
+        <span>Репутация</span>
+        <div class="rep-track"><div class="rep-fill" data-role="repFill"></div></div>
+        <strong data-role="repValue">50</strong>
+      </div>
+    </div>
+
+    <div class="review" data-role="review"></div>
+
+    <div class="question" data-role="question">Как ответить публично?</div>
+    <div class="options" data-role="options"></div>
+
+    <div class="result" data-role="result"></div>
+
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Сбросить</button>
+      <button type="button" class="primary" data-role="send" disabled>Опубликовать ответ</button>
+    </div>
+
+    <div class="feedback" data-role="fb"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('reputationTask');
+  if (!root) return;
+
+  const reviews = [
+    {
+      name:'Ирина',
+      initials:'И',
+      stars:'★★☆☆☆',
+      age:'2 дня назад',
+      text:'Мастер приехал вовремя, работу сделал. Но через неделю снова появился шум. Пришлось писать самому, никто не интересовался результатом.',
+      correct:1,
+      options:[
+        {
+          text:'«Гарантия есть, но нужно было обратиться сразу, а не ждать неделю».',
+          delta:-18,
+          feedback:'Ответ звучит как защита и перекладывает ответственность на клиента.'
+        },
+        {
+          text:'«Ирина, спасибо за отзыв. Уточню ситуацию и предложу бесплатно проверить технику по гарантии. Напишу вам сегодня».',
+          delta:18,
+          feedback:'Вы признали проблему, не спорите и предлагаете конкретное действие.'
+        },
+        {
+          text:'«Такие случаи бывают у всех мастеров, это нормально».',
+          delta:-12,
+          feedback:'Обобщение не показывает ответственности и не решает проблему клиента.'
+        }
+      ]
+    },
+    {
+      name:'Михаил',
+      initials:'М',
+      stars:'★★★★★',
+      age:'5 дней назад',
+      text:'Все понравилось: мастер объяснил причину поломки, заранее назвал цену и убрал после ремонта.',
+      correct:2,
+      options:[
+        {
+          text:'«Спасибо. Обращайтесь еще».',
+          delta:4,
+          feedback:'Ответ вежливый, но можно усилить его личным обращением и благодарностью за конкретику.'
+        },
+        {
+          text:'Не отвечать: положительный отзыв и так работает.',
+          delta:-4,
+          feedback:'Публичная благодарность показывает будущим клиентам внимание к обратной связи.'
+        },
+        {
+          text:'«Михаил, спасибо за подробный отзыв и доверие. Рад, что вы отметили прозрачную цену и порядок после ремонта».',
+          delta:14,
+          feedback:'Вы благодарите лично и подчеркиваете сильные стороны сервиса.'
+        }
+      ]
+    },
+    {
+      name:'Олег',
+      initials:'О',
+      stars:'★☆☆☆☆',
+      age:'неделю назад',
+      text:'Мастер потребовал доплату уже во время ремонта. Сначала называл одну цену, потом другую.',
+      correct:0,
+      options:[
+        {
+          text:'«Олег, понимаю ваше недовольство. Доплата была связана со скрытым дефектом, но я должен был отдельно и яснее согласовать ее до продолжения работы. Напишу вам, чтобы разобраться».',
+          delta:20,
+          feedback:'Вы не спорите, фиксируете факт и признаете, что согласование могло быть недостаточно ясным.'
+        },
+        {
+          text:'«Вы сами согласились, поэтому претензия необоснованна».',
+          delta:-20,
+          feedback:'Даже если согласие было, публичный спор усиливает недоверие будущих клиентов.'
+        },
+        {
+          text:'«Цена изменилась, потому что техника старая».',
+          delta:-10,
+          feedback:'Объяснение слишком общее и не показывает прозрачности согласования.'
+        }
+      ]
+    },
+    {
+      name:'Анна',
+      initials:'А',
+      stars:'★☆☆☆☆',
+      age:'3 дня назад',
+      text:'Никогда не вызывала этого мастера, но знакомая сказала, что он берет слишком дорого.',
+      correct:2,
+      options:[
+        {
+          text:'«Это отзыв конкурентов, не обращайте внимания».',
+          delta:-12,
+          feedback:'Публичное обвинение без доказательств выглядит непрофессионально.'
+        },
+        {
+          text:'«Анна, удалите ложь, иначе я подам в суд».',
+          delta:-18,
+          feedback:'Угрозы в публичном ответе усиливают конфликт и не подтверждают отсутствие сделки.'
+        },
+        {
+          text:'«Анна, в моей истории заказов и переписке нет обращения от вас. Прошу уточнить номер заказа. Параллельно направлю отзыв на проверку площадке».',
+          delta:18,
+          feedback:'Вы спокойно фиксируете отсутствие сделки и используете официальный механизм проверки.'
+        }
+      ]
+    },
+    {
+      name:'Сергей',
+      initials:'С',
+      stars:'★★★☆☆',
+      age:'вчера',
+      text:'Ремонт хороший, но мастер опоздал почти на час и не предупредил.',
+      correct:1,
+      options:[
+        {
+          text:'«В городе пробки, это не зависит от мастера».',
+          delta:-14,
+          feedback:'Объяснение не отменяет того, что клиента следовало предупредить.'
+        },
+        {
+          text:'«Сергей, спасибо, что отметили качество ремонта. За опоздание и отсутствие предупреждения приношу извинения — это моя ошибка. Я уже изменил порядок уведомления клиентов».',
+          delta:20,
+          feedback:'Вы признаете конкретную ошибку и показываете, что изменили процесс.'
+        },
+        {
+          text:'«Главное, что техника работает».',
+          delta:-10,
+          feedback:'Ответ обесценивает время клиента и снижает доверие к сервису.'
+        }
+      ]
+    }
+  ];
+
+  let index=0;
+  let selected=null;
+  let reputation=50;
+  const answers=[];
+
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function updateReputation(){
+    reputation=Math.max(0,Math.min(100,reputation));
+    q('repFill').style.width=`${reputation}%`;
+    q('repValue').textContent=reputation;
+  }
+
+  function render(){
+    const review=reviews[index];
+    selected=null;
+
+    q('bar').style.width=`${index/reviews.length*100}%`;
+    q('step').textContent=`Отзыв ${index+1} из ${reviews.length}`;
+
+    q('review').innerHTML=`
+      <div class="review-top">
+        <div class="avatar">${review.initials}</div>
+        <div>
+          <div class="name">${review.name}</div>
+          <div class="stars">${review.stars} <span style="color:#98a2b3">${review.age}</span></div>
+        </div>
+      </div>
+      <div class="review-text">${review.text}</div>`;
+
+    q('question').textContent='Как ответить публично?';
+    q('options').style.display='grid';
+    q('options').innerHTML=review.options
+      .map((o,i)=>`<button type="button" class="choice" data-option="${i}">${o.text}</button>`)
+      .join('');
+
+    q('options').querySelectorAll('[data-option]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        q('options').querySelectorAll('.choice').forEach(item=>item.classList.remove('selected'));
+        button.classList.add('selected');
+        selected=Number(button.dataset.option);
+        q('send').disabled=false;
+        q('fb').className='feedback';
+      });
+    });
+
+    q('send').disabled=true;
+    q('send').textContent=index===reviews.length-1?'Показать результат':'Опубликовать ответ';
+  }
+
+  q('send').addEventListener('click',()=>{
+    if(selected===null)return;
+
+    const review=reviews[index];
+    const option=review.options[selected];
+
+    reputation+=option.delta;
+    updateReputation();
+
+    answers.push({
+      review:review.name,
+      answer:option.text,
+      correct:selected===review.correct
+    });
+
+    q('options').style.display='none';
+    q('send').disabled=false;
+    q('send').textContent=index===reviews.length-1?'Показать результат':'Перейти к следующему отзыву';
+
+    q('fb').className=`feedback show ${option.delta>10?'ok':option.delta<0?'bad':'warn'}`;
+    q('fb').innerHTML=`${option.feedback}<br><span style="opacity:.78">Плашка останется до перехода к следующему отзыву.</span>`;
+
+    q('send').onclick=()=>{
+      q('send').onclick=null;
+
+      if(index<reviews.length-1){
+        index+=1;
+        q('fb').className='feedback';
+        render();
+        return;
+      }
+
+      finish();
+    };
+  });
+
+  function finish(){
+    q('bar').style.width='100%';
+    q('question').textContent='';
+    q('options').style.display='none';
+    q('review').innerHTML=`
+      <div class="review-top">
+        <div class="avatar">✓</div>
+        <div>
+          <div class="name">Симуляция завершена</div>
+          <div class="stars" style="color:#667085">Итоговая репутация: ${reputation} из 100</div>
+        </div>
+      </div>`;
+
+    const level=
+      reputation>=80?'Репутация укреплена':
+      reputation>=55?'Репутация сохранена':
+      reputation>=30?'Репутация под угрозой':
+      'Публичные ответы отпугивают клиентов';
+
+    q('result').className='result show';
+    q('result').innerHTML=`
+      <div class="result-title">${level}</div>
+      <div class="result-line"><strong>Положительный отзыв:</strong> поблагодарить лично и отметить конкретную сильную сторону.</div>
+      <div class="result-line"><strong>Негативный отзыв:</strong> признать переживание, уточнить факты и предложить решение.</div>
+      <div class="result-line"><strong>Фейковый отзыв:</strong> спокойно зафиксировать отсутствие сделки и обратиться в поддержку.</div>`;
+
+    q('fb').className=`feedback show ${reputation>=70?'ok':reputation>=40?'warn':'bad'}`;
+    q('fb').innerHTML=
+      reputation>=70
+        ?'<strong>Ответы работают на доверие будущих клиентов.</strong>'
+        :reputation>=40
+          ?'<strong>Часть ответов выглядит защитно.</strong> Добавьте факты, ответственность и понятный следующий шаг.'
+          :'<strong>Репутация ухудшилась.</strong> Публичные споры, угрозы и обесценивание претензий отпугивают клиентов.';
+
+    q('send').disabled=true;
+    q('send').textContent='Готово';
+  }
+
+  q('reset').addEventListener('click',()=>{
+    index=0;
+    selected=null;
+    reputation=50;
+    answers.length=0;
+    q('send').onclick=null;
+    q('result').className='result';
+    q('fb').className='feedback';
+    updateReputation();
+    render();
+  });
+
+  updateReputation();
+  render();
+})();
+</script>
+</body>
+</html>
