@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тренажер «Сложный клиент»</title>
+<style>
+:root{
+  --ink:#152238;--muted:#667085;--line:#dbe2ea;--bg:#fff;
+  --accent:#2f6fd2;--accent2:#2558a8;--soft:#edf4ff;
+  --ok:#147552;--oksoft:#eaf8f1;--warn:#8a5a00;--warnsoft:#fff5d6;
+  --bad:#b42318;--badsoft:#fff0ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{
+  width:100%;max-width:560px;margin:0 auto;background:var(--bg);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 6px 18px rgba(30,55,90,.08)
+}
+.progress{height:4px;background:#e8edf5}
+.progress>div{height:100%;background:#77a8f3;width:0;transition:.25s}
+.head{
+  padding:13px 15px 11px;
+  background:linear-gradient(135deg,var(--accent2),#347bdc);
+  color:#fff
+}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+h2{font-size:18px;line-height:1.15;margin:4px 0}
+.lead{font-size:12px;line-height:1.35;margin:0;opacity:.92}
+.body{padding:11px 14px 13px}
+.meta{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:7px;font-size:10px;color:var(--muted)
+}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;
+  background:#eef2f7;color:#475467;font-size:10px;font-weight:800
+}
+.trust{
+  display:flex;align-items:center;gap:6px;min-width:156px
+}
+.trust-track{
+  height:6px;flex:1;border-radius:999px;background:#e6ebf2;overflow:hidden
+}
+.trust-fill{
+  height:100%;width:50%;background:var(--accent);transition:.25s
+}
+.chat{
+  height:196px;overflow-y:auto;border:1px solid var(--line);
+  border-radius:11px;background:#f0f3f7;padding:9px;
+  display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth
+}
+.bubble{
+  max-width:88%;padding:7px 9px;border-radius:11px;
+  font-size:11.5px;line-height:1.34
+}
+.client{
+  align-self:flex-start;background:#fff;border-bottom-left-radius:4px
+}
+.master{
+  align-self:flex-end;background:#dfeaff;border-bottom-right-radius:4px
+}
+.system{
+  align-self:center;max-width:96%;background:transparent;color:var(--muted);
+  font-size:9.8px;text-align:center;padding:2px 4px
+}
+.question{
+  font-size:12px;font-weight:800;line-height:1.3;margin:8px 0 5px
+}
+.options{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px
+}
+.choice{
+  width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:7px 8px;text-align:left;cursor:pointer;
+  font-size:10.8px;line-height:1.27;transition:.12s
+}
+.choice:hover{border-color:#9db8e5}
+.choice.selected{
+  border-color:var(--accent);background:var(--soft);
+  box-shadow:0 0 0 1px var(--accent) inset
+}
+.actions{display:flex;gap:7px;margin-top:9px}
+.primary,.secondary{
+  border:0;border-radius:9px;padding:8px 10px;font-weight:800;
+  cursor:pointer;font-size:11.5px
+}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#eef1f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{
+  display:none;margin-top:8px;border-radius:9px;padding:8px 9px;
+  font-size:11.2px;line-height:1.35
+}
+.feedback.show{display:block}
+.feedback.ok{background:var(--oksoft);color:#0c5a3f}
+.feedback.warn{background:var(--warnsoft);color:#6e4900}
+.feedback.bad{background:var(--badsoft);color:#8c1d18}
+.result{
+  display:none;border:1px solid var(--line);border-radius:10px;
+  padding:9px;background:#fafcff;margin-top:8px
+}
+.result.show{display:block}
+.result-title{font-size:11px;font-weight:800;margin-bottom:5px}
+.result-line{
+  font-size:10.8px;line-height:1.34;padding:4px 0;
+  border-bottom:1px dashed #e0e5ec
+}
+.result-line:last-child{border-bottom:0}
+@media(max-width:430px){
+  .task{border-radius:12px}
+  .head,.body{padding-left:11px;padding-right:11px}
+  .options{grid-template-columns:1fr}
+  .chat{height:184px}
+  .bubble{max-width:94%}
+}
+</style>
+</head>
+<body>
+<div class="task" id="difficultClientTask">
+  <div class="progress"><div data-role="bar"></div></div>
+
+  <div class="head">
+    <div class="kicker">Диалоговый тренажер</div>
+    <h2>Сложный клиент: цена, дефекты и конфликт</h2>
+    <p class="lead">Ваши ответы меняют доверие клиента и продолжение разговора.</p>
+  </div>
+
+  <div class="body">
+    <div class="meta">
+      <span class="badge" data-role="step">Реплика 1 из 5</span>
+      <div class="trust">
+        <span>Доверие</span>
+        <div class="trust-track"><div class="trust-fill" data-role="trustFill"></div></div>
+        <strong data-role="trustValue">50</strong>
+      </div>
+    </div>
+
+    <div class="chat" data-role="chat"></div>
+
+    <div class="question" data-role="question">Как ответить клиенту?</div>
+    <div class="options" data-role="options"></div>
+
+    <div class="result" data-role="result"></div>
+
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Сбросить</button>
+      <button type="button" class="primary" data-role="send" disabled>Отправить ответ</button>
+    </div>
+
+    <div class="feedback" data-role="fb"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('difficultClientTask');
+  if (!root) return;
+
+  const turns = [
+    {
+      scene: 'Возражение по цене',
+      client: '8 000 рублей за подшипники? Это слишком дорого. За такие деньги можно новую машину купить.',
+      options: [
+        {
+          text: '«Хорошие мастера дешево не работают. Можете поискать другого».',
+          delta: -22,
+          clientReply: 'Ясно. Значит, нормально объяснить цену вы не можете.',
+          feedback: 'Спор и давление усиливают сопротивление клиента.'
+        },
+        {
+          text: '«Понимаю, незапланированные расходы неприятны. Давайте сравним ремонт с покупкой новой машины».',
+          delta: 16,
+          clientReply: 'Хорошо, объясните, почему ремонт выгоднее.',
+          feedback: 'Вы признали сомнение клиента и перевели разговор к расчету.'
+        },
+        {
+          text: '«Давайте сразу сделаю скидку 2 000 рублей».',
+          delta: -8,
+          clientReply: 'А почему цена так легко изменилась? Значит, сначала она была завышена?',
+          feedback: 'Мгновенная скидка может вызвать сомнение в честности первоначальной цены.'
+        }
+      ]
+    },
+    {
+      scene: 'Обоснование выгоды',
+      client: 'Новая машина все равно кажется надежнее. Почему мне стоит ремонтировать эту?',
+      options: [
+        {
+          text: '«Потому что я лучше знаю, что вам нужно».',
+          delta: -18,
+          clientReply: 'Я хотел услышать аргументы, а не давление.',
+          feedback: 'Авторитет без объяснения не создает доверия.'
+        },
+        {
+          text: '«Не хотите — не ремонтируйте».',
+          delta: -24,
+          clientReply: 'Тогда, пожалуй, я найду другого мастера.',
+          feedback: 'Резкий ответ обрывает переговоры и снижает доверие.'
+        },
+        {
+          text: '«Новая машина такого класса стоит около 45 000 рублей. Здесь меняем узел за 8 000 и сохраняем исправную технику».',
+          delta: 16,
+          clientReply: 'Понял. А можно немного снизить стоимость без потери качества?',
+          feedback: 'Конкретное сравнение помогает клиенту увидеть экономику решения.'
+        }
+      ]
+    },
+    {
+      scene: 'Альтернатива',
+      client: 'Есть вариант дешевле?',
+      options: [
+        {
+          text: '«Ладно, скину еще тысячу, только решайте быстрее».',
+          delta: -10,
+          clientReply: 'У меня ощущение, что цена берется с потолка.',
+          feedback: 'Случайная скидка разрушает прозрачность расчета.'
+        },
+        {
+          text: '«Могу поставить проверенный аналог: на 1 500 рублей дешевле, но гарантия будет меньше. Какой вариант вам ближе?»',
+          delta: 18,
+          clientReply: 'Спасибо, теперь я понимаю разницу. Выберу вариант после сравнения.',
+          feedback: 'Вы сохранили цену работы и дали клиенту осознанный выбор.'
+        },
+        {
+          text: '«Дешевле только плохие детали. Потом сами пожалеете».',
+          delta: -14,
+          clientReply: 'Не нужно меня запугивать. Я просто спросил о вариантах.',
+          feedback: 'Запугивание лишает клиента ощущения выбора.'
+        }
+      ]
+    },
+    {
+      scene: 'Скрытый дефект',
+      client: 'Вы говорили про замену ТЭНа, а теперь называете еще 1 000 рублей. Откуда доплата?',
+      options: [
+        {
+          text: '«Я уже все сделал, поэтому доплата обязательна».',
+          delta: -24,
+          clientReply: 'Я не соглашался на дополнительные работы. Почему вы решили за меня?',
+          feedback: 'Дополнительную работу нельзя выполнять молча и предъявлять постфактум.'
+        },
+        {
+          text: '«Так бывает. В ремонте всегда что-нибудь всплывает».',
+          delta: -12,
+          clientReply: 'Это не объяснение. Я хочу увидеть проблему и понять стоимость.',
+          feedback: 'Общая фраза не заменяет демонстрацию дефекта и прозрачный расчет.'
+        },
+        {
+          text: '«При разборке обнаружилось повреждение крепления. Я остановил работу: покажу дефект, объясню риск и отдельно согласую доработку».',
+          delta: 20,
+          clientReply: 'Покажите, пожалуйста. Если это действительно нужно, согласуем.',
+          feedback: 'Вы не ставите клиента перед фактом и согласовываете новую работу заранее.'
+        }
+      ]
+    },
+    {
+      scene: 'Претензия после ремонта',
+      client: 'После вашего ремонта под машиной появилась вода. Я очень недоволен.',
+      options: [
+        {
+          text: '«До меня машина тоже была старая. Я тут ни при чем».',
+          delta: -24,
+          clientReply: 'То есть вы даже не хотите проверить результат своей работы?',
+          feedback: 'Отказ от проверки превращает претензию в конфликт.'
+        },
+        {
+          text: '«Понимаю ваше недовольство. Я проверю место ремонта. Если это мой недосмотр, исправлю по гарантии бесплатно».',
+          delta: 22,
+          clientReply: 'Хорошо. Спасибо, что не спорите и готовы разобраться.',
+          feedback: 'Вы признали проблему, не признали вину без проверки и предложили четкий план.'
+        },
+        {
+          text: '«Пришлите фото, а там посмотрим, когда у меня будет время».',
+          delta: -8,
+          clientReply: 'Мне нужен понятный срок, а не неопределенное ожидание.',
+          feedback: 'Запросить фото можно, но клиенту также нужен конкретный план и срок.'
+        }
+      ]
+    }
+  ];
+
+  let turnIndex = 0;
+  let selected = null;
+  let trust = 50;
+  const decisions = [];
+
+  const q = role => root.querySelector(`[data-role="${role}"]`);
+
+  function addBubble(type, text) {
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${type}`;
+    bubble.textContent = text;
+    q('chat').appendChild(bubble);
+    q('chat').scrollTop = q('chat').scrollHeight;
+  }
+
+  function addSystem(text) {
+    const line = document.createElement('div');
+    line.className = 'system';
+    line.textContent = text;
+    q('chat').appendChild(line);
+    q('chat').scrollTop = q('chat').scrollHeight;
+  }
+
+  function updateTrust() {
+    trust = Math.max(0, Math.min(100, trust));
+    q('trustFill').style.width = `${trust}%`;
+    q('trustValue').textContent = trust;
+  }
+
+  function renderTurn(addClient = true) {
+    const turn = turns[turnIndex];
+    selected = null;
+
+    q('bar').style.width = `${turnIndex / turns.length * 100}%`;
+    q('step').textContent = `Реплика ${turnIndex + 1} из ${turns.length}`;
+    q('question').textContent = 'Как ответить клиенту?';
+
+    if (addClient) {
+      addSystem(turn.scene);
+      addBubble('client', turn.client);
+    }
+
+    q('options').style.display = 'grid';
+    q('options').innerHTML = turn.options
+      .map((option, index) =>
+        `<button type="button" class="choice" data-option="${index}">${option.text}</button>`
+      )
+      .join('');
+
+    q('options').querySelectorAll('[data-option]').forEach(button => {
+      button.addEventListener('click', () => {
+        q('options').querySelectorAll('.choice').forEach(item => item.classList.remove('selected'));
+        button.classList.add('selected');
+        selected = Number(button.dataset.option);
+        q('send').disabled = false;
+        q('fb').className = 'feedback';
+      });
+    });
+
+    q('send').disabled = true;
+    q('send').textContent = turnIndex === turns.length - 1 ? 'Завершить диалог' : 'Отправить ответ';
+  }
+
+  q('send').addEventListener('click', () => {
+    if (selected === null) return;
+
+    const turn = turns[turnIndex];
+    const option = turn.options[selected];
+
+    addBubble('master', option.text);
+    trust += option.delta;
+    updateTrust();
+
+    decisions.push({
+      scene: turn.scene,
+      answer: option.text,
+      delta: option.delta
+    });
+
+    q('options').style.display = 'none';
+    q('send').disabled = true;
+
+    window.setTimeout(() => {
+      addBubble('client', option.clientReply);
+
+      q('fb').className =
+        `feedback show ${option.delta > 0 ? 'ok' : option.delta <= -18 ? 'bad' : 'warn'}`;
+      q('fb').innerHTML = `${option.feedback}<br><span style="opacity:.78">Плашка останется до выбора следующего ответа.</span>`;
+
+      if (turnIndex < turns.length - 1) {
+        window.setTimeout(() => {
+          turnIndex += 1;
+          renderTurn(true);
+        }, 1600);
+        return;
+      }
+
+      finish();
+    }, 260);
+  });
+
+  function finish() {
+    q('bar').style.width = '100%';
+    q('question').textContent = '';
+    q('options').style.display = 'none';
+    q('result').className = 'result show';
+
+    const level =
+      trust >= 80 ? 'Высокое доверие' :
+      trust >= 55 ? 'Рабочее доверие' :
+      trust >= 30 ? 'Доверие под угрозой' :
+      'Клиент, вероятно, уйдет';
+
+    q('result').innerHTML =
+      `<div class="result-title">${level}: ${trust} из 100</div>` +
+      `<div class="result-line"><strong>Цена:</strong> присоединиться к сомнению, показать расчет и дать выбор.</div>` +
+      `<div class="result-line"><strong>Скрытый дефект:</strong> остановить работу, показать проблему и согласовать доплату.</div>` +
+      `<div class="result-line"><strong>Претензия:</strong> выслушать, проверить факты и предложить конкретный план исправления.</div>`;
+
+    q('fb').className = `feedback show ${trust >= 70 ? 'ok' : trust >= 40 ? 'warn' : 'bad'}`;
+    q('fb').innerHTML =
+      trust >= 70
+        ? '<strong>Диалог сохранил доверие.</strong> Вы не спорили, не демпинговали и не скрывали дополнительные работы.'
+        : trust >= 40
+          ? '<strong>Клиент пока остается в диалоге.</strong> Но часть ответов создала сомнения в прозрачности или готовности отвечать за результат.'
+          : '<strong>Доверие потеряно.</strong> Спор, давление и решения без согласования перевели разговор в конфликт.';
+
+    q('send').disabled = true;
+    q('send').textContent = 'Диалог завершен';
+  }
+
+  q('reset').addEventListener('click', () => {
+    turnIndex = 0;
+    selected = null;
+    trust = 50;
+    decisions.length = 0;
+
+    q('chat').innerHTML = '';
+    q('result').className = 'result';
+    q('fb').className = 'feedback';
+    updateTrust();
+    renderTurn(true);
+  });
+
+  updateTrust();
+  renderTurn(true);
+})();
+</script>
+</body>
+</html>
