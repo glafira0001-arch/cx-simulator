@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Позитивное нет себе</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.slot{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn,.block-card{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover,.block-card:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{min-height:42px;cursor:pointer;padding:7px}
+.slot.selected{background:var(--accent-soft)}
+.slot-title{font-size:11px;font-weight:800}
+.slot-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.wave{height:10px;border-radius:999px;background:#e8ebf3;overflow:hidden}
+.wave>div{height:100%;width:100%;background:var(--accent);transition:width .2s linear}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:93%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="positiveNoTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Позитивное «нет» себе</div>
+    <h2>Соберите формулу «да — нет — да»</h2>
+    <p class="lead">Для каждой ситуации выберите главный приоритет, твердый отказ импульсу и разрешенное действие на будущее.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <span class="badge" data-role="step"></span>
+      <p data-role="case" style="margin:7px 0 0;font-size:12px;line-height:1.4"></p>
+    </div>
+    <div class="small" data-role="prompt" style="margin:8px 0 5px"></div>
+    <div class="grid2" data-role="options"></div>
+    <div class="card hidden" data-role="result" style="margin-top:8px">
+      <strong style="font-size:12px">Собранная формула</strong>
+      <div class="summary" data-role="formula" style="margin-top:5px"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Продолжить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('positiveNoTask');
+  if (!root) return;
+
+  const cases=[
+    {
+      situation:'До конца презентации осталось 30 минут, но хочется открыть Telegram.',
+      stages:[
+        {name:'Да главному',options:[
+          {text:'«Я выбираю закончить презентацию до 18:00 и уйти вовремя».',correct:true},
+          {text:'«Я обязан терпеть эту скучную работу».',correct:false},
+          {text:'«Нужно быть идеальным и никогда не отвлекаться».',correct:false}
+        ]},
+        {name:'Нет импульсу',options:[
+          {text:'«Поэтому сейчас я не открываю Telegram».',correct:true},
+          {text:'«Я вообще больше никогда не буду пользоваться Telegram».',correct:false},
+          {text:'«Ладно, только на минуту».',correct:false}
+        ]},
+        {name:'Да на будущее',options:[
+          {text:'«Проверю сообщения в 17:30 после готовой презентации».',correct:true},
+          {text:'«Проверю когда-нибудь потом».',correct:false},
+          {text:'«Открою сейчас, чтобы не думать об этом».',correct:false}
+        ]}
+      ]
+    },
+    {
+      situation:'После сложного блока хочется заняться уборкой стола вместо важного отчета.',
+      stages:[
+        {name:'Да главному',options:[
+          {text:'«Я выбираю завершить раздел отчета, чтобы освободить вечер».',correct:true},
+          {text:'«Я должен заставить себя страдать».',correct:false},
+          {text:'«Уборка важнее, потому что проще».',correct:false}
+        ]},
+        {name:'Нет импульсу',options:[
+          {text:'«Поэтому сейчас я не переключаюсь на уборку».',correct:true},
+          {text:'«Я запрещаю себе отдыхать весь день».',correct:false},
+          {text:'«Сначала быстро протру стол».',correct:false}
+        ]},
+        {name:'Да на будущее',options:[
+          {text:'«После раздела сделаю десятиминутный перерыв и приведу стол в порядок».',correct:true},
+          {text:'«Уберусь ночью, если останутся силы».',correct:false},
+          {text:'«Откажусь от перерыва ради отчета».',correct:false}
+        ]}
+      ]
+    }
+  ];
+
+  let caseIndex=0;
+  let stageIndex=0;
+  let selected=null;
+  let score=0;
+  let chosen=[];
+  let mode='choosing';
+
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function render(){
+    const item=cases[caseIndex];
+    const stage=item.stages[stageIndex];
+    selected=null;
+    mode='choosing';
+
+    q('bar').style.width=`${((caseIndex*3)+stageIndex)/6*100}%`;
+    q('step').textContent=`Ситуация ${caseIndex+1} из ${cases.length}`;
+    q('case').textContent=item.situation;
+    q('prompt').classList.remove('hidden');
+    q('prompt').textContent=`Шаг ${stageIndex+1}: ${stage.name}`;
+    q('options').classList.remove('hidden');
+    q('result').classList.add('hidden');
+
+    q('options').innerHTML=stage.options.map((o,i)=>
+      `<button type="button" class="choice" data-option="${i}">${o.text}</button>`
+    ).join('');
+
+    q('options').querySelectorAll('[data-option]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('options').querySelectorAll('[data-option]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        selected=Number(btn.dataset.option);
+        q('next').disabled=false;
+      });
+    });
+
+    q('next').disabled=true;
+    q('next').textContent=stageIndex===2?'Собрать формулу':'Продолжить';
+    q('fb').className='feedback';
+  }
+
+  function showFormula(){
+    q('bar').style.width=`${((caseIndex+1)*3)/6*100}%`;
+    q('options').classList.add('hidden');
+    q('result').classList.remove('hidden');
+    q('formula').textContent=chosen.map(x=>x.text).join(' ');
+
+    const localCorrect=chosen.length===3 && chosen.every(x=>x.correct);
+    q('fb').className=`feedback show ${localCorrect?'ok':'warn'}`;
+    q('fb').innerHTML=localCorrect
+      ? '<strong>Формула сохраняет и приоритет, и право на удовольствие.</strong><br>Вы не запрещаете себе импульс навсегда, а назначаете ему подходящее время.'
+      : '<strong>В формуле есть давление, абсолютный запрет или размытое обещание.</strong><br>Нужны свободный выбор, конкретное «нет» сейчас и точное условие на будущее.';
+
+    mode='formula';
+    q('next').disabled=false;
+    q('next').textContent=caseIndex===cases.length-1?'Показать результат':'Следующая ситуация';
+  }
+
+  function showResult(){
+    mode='done';
+    q('bar').style.width='100%';
+    q('options').classList.add('hidden');
+    q('result').classList.add('hidden');
+    q('prompt').classList.add('hidden');
+    q('case').innerHTML=`Верных элементов: <strong>${score} из 6</strong>.`;
+    q('fb').className=`feedback show ${score===6?'ok':'warn'}`;
+    q('fb').innerHTML='Позитивное «нет» не строится на насилии над собой: оно показывает, ради чего вы выбираете фокус и когда вернетесь к отложенному удовольствию.';
+    q('next').disabled=true;
+    q('next').textContent='Готово';
+  }
+
+  q('next').addEventListener('click',()=>{
+    if(mode==='choosing'){
+      if(selected===null)return;
+
+      const option=cases[caseIndex].stages[stageIndex].options[selected];
+      if(option.correct)score++;
+      chosen.push(option);
+
+      if(stageIndex<2){
+        stageIndex++;
+        render();
+      }else{
+        showFormula();
+      }
+      return;
+    }
+
+    if(mode==='formula'){
+      if(caseIndex<cases.length-1){
+        caseIndex++;
+        stageIndex=0;
+        chosen=[];
+        render();
+      }else{
+        showResult();
+      }
+    }
+  });
+
+  q('reset').addEventListener('click',()=>{
+    caseIndex=0;
+    stageIndex=0;
+    selected=null;
+    score=0;
+    chosen=[];
+    mode='choosing';
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
