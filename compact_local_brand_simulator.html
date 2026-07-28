@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Из мастера в локальный бренд</title>
+<style>
+:root{
+  --ink:#152238;--muted:#667085;--line:#dbe2ea;--bg:#fff;
+  --accent:#2f6fd2;--accent2:#2558a8;--soft:#edf4ff;
+  --ok:#147552;--oksoft:#eaf8f1;--warn:#8a5a00;--warnsoft:#fff5d6;
+  --bad:#b42318;--badsoft:#fff0ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{
+  width:100%;max-width:560px;margin:0 auto;background:var(--bg);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 6px 18px rgba(30,55,90,.08)
+}
+.progress{height:4px;background:#e8edf5}
+.progress>div{height:100%;background:#77a8f3;width:0;transition:.25s}
+.head{
+  padding:13px 15px 11px;
+  background:linear-gradient(135deg,var(--accent2),#347bdc);
+  color:#fff
+}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+h2{font-size:18px;line-height:1.15;margin:4px 0}
+.lead{font-size:12px;line-height:1.35;margin:0;opacity:.92}
+.body{padding:11px 14px 13px}
+.meta{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  margin-bottom:7px;font-size:10px;color:var(--muted)
+}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;
+  background:#eef2f7;color:#475467;font-size:10px;font-weight:800
+}
+.score{font-size:10px;color:var(--muted)}
+.dashboard{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:5px;
+  margin-bottom:7px
+}
+.metric{
+  border:1px solid var(--line);border-radius:9px;background:#f8fafc;
+  padding:6px 5px;text-align:center
+}
+.metric span{display:block;font-size:9.5px;color:var(--muted);line-height:1.15}
+.metric strong{display:block;font-size:14px;line-height:1.1;margin-top:2px}
+.case{
+  border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:10px;padding:8px 9px;background:#f8fafc;
+  font-size:11.5px;line-height:1.34
+}
+.question{font-size:12.5px;font-weight:800;line-height:1.3;margin:8px 0 5px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.choice{
+  width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:7px 8px;text-align:left;cursor:pointer;
+  font-size:10.8px;line-height:1.27;transition:.12s
+}
+.choice:hover{border-color:#9db8e5}
+.choice.selected{
+  border-color:var(--accent);background:var(--soft);
+  box-shadow:0 0 0 1px var(--accent) inset
+}
+.actions{display:flex;gap:7px;margin-top:9px}
+.primary,.secondary{
+  border:0;border-radius:9px;padding:8px 10px;font-weight:800;
+  cursor:pointer;font-size:11.5px
+}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#eef1f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{
+  display:none;margin-top:8px;border-radius:9px;padding:8px 9px;
+  font-size:11.2px;line-height:1.35
+}
+.feedback.show{display:block}
+.feedback.ok{background:var(--oksoft);color:#0c5a3f}
+.feedback.warn{background:var(--warnsoft);color:#6e4900}
+.feedback.bad{background:var(--badsoft);color:#8c1d18}
+.result{
+  display:none;border:1px solid var(--line);border-radius:10px;
+  padding:9px;background:#fafcff;margin-top:8px
+}
+.result.show{display:block}
+.result-title{font-size:11px;font-weight:800;margin-bottom:5px}
+.result-line{
+  font-size:10.8px;line-height:1.34;padding:4px 0;
+  border-bottom:1px dashed #e0e5ec
+}
+.result-line:last-child{border-bottom:0}
+@media(max-width:430px){
+  .task{border-radius:12px}
+  .head,.body{padding-left:11px;padding-right:11px}
+  .dashboard{grid-template-columns:1fr 1fr}
+  .options{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="task" id="localBrandTask">
+  <div class="progress"><div data-role="bar"></div></div>
+
+  <div class="head">
+    <div class="kicker">Бизнес-симулятор</div>
+    <h2>Из мастера в локальный бренд</h2>
+    <p class="lead">Увеличивайте доход не за счет бесконечного роста количества выездов.</p>
+  </div>
+
+  <div class="body">
+    <div class="meta">
+      <span class="badge" data-role="step">Решение 1 из 6</span>
+      <span class="score">Верных решений: <strong data-role="score">0</strong></span>
+    </div>
+
+    <div class="dashboard">
+      <div class="metric"><span>Заказы</span><strong data-role="orders">35</strong></div>
+      <div class="metric"><span>Средний чек</span><strong data-role="checkValue">4 500 ₽</strong></div>
+      <div class="metric"><span>Авито</span><strong data-role="avito">90%</strong></div>
+      <div class="metric"><span>Повторные</span><strong data-role="repeat">5%</strong></div>
+    </div>
+
+    <div class="case" data-role="case"></div>
+    <div class="question" data-role="question"></div>
+    <div class="options" data-role="options"></div>
+
+    <div class="result" data-role="result"></div>
+
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Сбросить</button>
+      <button type="button" class="primary" data-role="next" disabled>Принять решение</button>
+    </div>
+
+    <div class="feedback" data-role="fb"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const root=document.getElementById('localBrandTask');
+  if(!root)return;
+
+  const stages=[
+    {
+      label:'Сервис',
+      case:'После ремонта клиент говорит: «Спасибо, все работает. Если что — буду знать, кому звонить».',
+      question:'Как превратить хороший ремонт в будущую рекомендацию?',
+      correct:1,
+      options:[
+        {
+          text:'Просто оставить номер телефона',
+          delta:{repeat:1,brand:1},
+          feedback:'Контакт сохранен, но клиенту не дали понятного повода рекомендовать вас.'
+        },
+        {
+          text:'Показать результат, выдать гарантию и попросить честный отзыв',
+          delta:{repeat:5,brand:8},
+          feedback:'Вы закрепили качество ремонта документом и упростили клиенту рекомендацию.'
+        },
+        {
+          text:'Предложить деньги за пятизвездочный отзыв',
+          delta:{repeat:-2,brand:-7},
+          feedback:'Покупка отзывов подрывает доверие и делает рекомендацию неискренней.'
+        }
+      ]
+    },
+    {
+      label:'Контент',
+      case:'Вы хотите, чтобы клиенты видели вашу экспертность еще до первого звонка, но не готовы тратить часы на блог.',
+      question:'Какой контент встроить в рабочий день?',
+      correct:2,
+      options:[
+        {
+          text:'Снимать только постановочные ролики с оператором',
+          delta:{avito:0,brand:1},
+          feedback:'Такой формат требует много времени и плохо масштабируется для мастера-одиночки.'
+        },
+        {
+          text:'Копировать популярные чужие ролики',
+          delta:{avito:-2,brand:-5},
+          feedback:'Чужой контент не доказывает ваш опыт и может снижать доверие.'
+        },
+        {
+          text:'Снимать короткие «до / после», полезные советы и реальные этапы ремонта',
+          delta:{avito:-8,brand:10},
+          feedback:'Реальная работа создает отдельный канал доверия и снижает зависимость от одной площадки.'
+        }
+      ]
+    },
+    {
+      label:'Стандарт',
+      case:'Отзывы хорошие, но рекомендации пока появляются случайно.',
+      question:'Что превратить в обязательный стандарт сервиса?',
+      correct:0,
+      options:[
+        {
+          text:'Чистота после ремонта, понятные документы и короткая забота после выезда',
+          delta:{repeat:7,brand:10},
+          feedback:'Повторяемые детали сервиса помогают клиенту запомнить мастера и рекомендовать его.'
+        },
+        {
+          text:'Делать каждому клиенту дорогой подарок',
+          delta:{check:-300,brand:1},
+          feedback:'Сервис не должен съедать прибыль. Важнее полезные и воспроизводимые детали.'
+        },
+        {
+          text:'Работать дольше всех и всегда быть на связи ночью',
+          delta:{orders:2,brand:-4},
+          feedback:'Постоянная доступность увеличивает нагрузку, но не создает устойчивую систему.'
+        }
+      ]
+    },
+    {
+      label:'Цена',
+      case:'Профиль заполнен отзывами, заявки приходят на неделю вперед, а свободных окон почти нет.',
+      question:'Как реагировать на устойчивый избыток спроса?',
+      correct:2,
+      options:[
+        {
+          text:'Брать еще больше заказов и работать без выходных',
+          delta:{orders:7,brand:-8},
+          feedback:'Количество выездов растет, но бизнес остается ограничен вашими часами.'
+        },
+        {
+          text:'Оставить цену прежней, чтобы не потерять ни одного клиента',
+          delta:{orders:4,brand:0},
+          feedback:'При заполненном графике прежняя цена не отражает ограниченность времени мастера.'
+        },
+        {
+          text:'Постепенно повысить цены и следить за загрузкой и конверсией',
+          delta:{check:1100,orders:-3,brand:7},
+          feedback:'Постепенное повышение помогает проверить спрос и зарабатывать больше при меньшей загрузке.'
+        }
+      ]
+    },
+    {
+      label:'Делегирование',
+      case:'После повышения цены часть времени освободилась, но простые заявки продолжают поступать.',
+      question:'Что можно передавать другому мастеру первым?',
+      correct:1,
+      options:[
+        {
+          text:'Сложные ремонты незнакомому человеку без проверки',
+          delta:{brand:-12,repeat:-4},
+          feedback:'Передача сложных заказов без контроля ставит под угрозу вашу репутацию.'
+        },
+        {
+          text:'Стандартизированные простые работы проверенному мастеру с контролем качества',
+          delta:{orders:6,brand:8},
+          feedback:'Начинают с понятных услуг, критериев качества и прозрачной ответственности.'
+        },
+        {
+          text:'Все заявки сразу, оставив себе только процент',
+          delta:{orders:10,brand:-10},
+          feedback:'Резкое масштабирование без стандартов увеличивает риск срывов и жалоб.'
+        }
+      ]
+    },
+    {
+      label:'Система',
+      case:'Теперь заявки приходят с Авито, из рекомендаций и из контента. Часть простых заказов выполняет помощник.',
+      question:'Как закрепить переход к локальному бренду?',
+      correct:0,
+      options:[
+        {
+          text:'Зафиксировать стандарты сервиса, учет заявок, контроль качества и источников клиентов',
+          delta:{avito:-17,repeat:8,brand:12},
+          feedback:'Бренд становится системой: качество воспроизводится не только лично вами.'
+        },
+        {
+          text:'Полностью перестать контролировать работу помощников',
+          delta:{brand:-14,repeat:-5},
+          feedback:'Без контроля качество становится случайным, а репутационные риски остаются у владельца бренда.'
+        },
+        {
+          text:'Снова сосредоточиться только на Авито',
+          delta:{avito:8,brand:-6},
+          feedback:'Зависимость от одного канала делает бизнес уязвимым и ограничивает рост.'
+        }
+      ]
+    }
+  ];
+
+  let index=0;
+  let selected=null;
+  let score=0;
+  let metrics={orders:35,check:4500,avito:90,repeat:5,brand:0};
+  let awaitingNext=false;
+
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function clamp(value,min,max){return Math.max(min,Math.min(max,value));}
+
+  function updateMetrics(){
+    metrics.orders=Math.max(0,metrics.orders);
+    metrics.check=Math.max(0,metrics.check);
+    metrics.avito=clamp(metrics.avito,0,100);
+    metrics.repeat=clamp(metrics.repeat,0,100);
+    q('orders').textContent=metrics.orders;
+    q('checkValue').textContent=metrics.check.toLocaleString('ru-RU')+' ₽';
+    q('avito').textContent=metrics.avito+'%';
+    q('repeat').textContent=metrics.repeat+'%';
+    q('score').textContent=score;
+  }
+
+  function render(){
+    const stage=stages[index];
+    selected=null;
+    awaitingNext=false;
+
+    q('bar').style.width=`${index/stages.length*100}%`;
+    q('step').textContent=`Решение ${index+1} из ${stages.length}`;
+    q('case').innerHTML=`<strong>${stage.label}.</strong> ${stage.case}`;
+    q('question').textContent=stage.question;
+    q('options').style.display='grid';
+    q('options').innerHTML=stage.options
+      .map((option,i)=>`<button type="button" class="choice" data-option="${i}">${option.text}</button>`)
+      .join('');
+
+    q('options').querySelectorAll('[data-option]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        q('options').querySelectorAll('.choice').forEach(item=>item.classList.remove('selected'));
+        button.classList.add('selected');
+        selected=Number(button.dataset.option);
+        q('next').disabled=false;
+        q('fb').className='feedback';
+      });
+    });
+
+    q('next').disabled=true;
+    q('next').textContent='Принять решение';
+  }
+
+  q('next').addEventListener('click',()=>{
+    if(awaitingNext){
+      if(index<stages.length-1){
+        index+=1;
+        render();
+      }else{
+        finish();
+      }
+      return;
+    }
+
+    if(selected===null)return;
+
+    const stage=stages[index];
+    const option=stage.options[selected];
+    const isCorrect=selected===stage.correct;
+
+    if(isCorrect)score+=1;
+
+    Object.entries(option.delta).forEach(([key,value])=>{
+      metrics[key]=(metrics[key]||0)+value;
+    });
+    updateMetrics();
+
+    q('options').style.display='none';
+    q('fb').className=`feedback show ${isCorrect?'ok':option.delta.brand<=-7?'bad':'warn'}`;
+    q('fb').innerHTML=`<strong>${isCorrect?'Решение усиливает систему.':'Решение создает ограничение.'}</strong><br>${option.feedback}`;
+
+    awaitingNext=true;
+    q('next').disabled=false;
+    q('next').textContent=index===stages.length-1?'Показать результат':'Следующее решение';
+  });
+
+  function finish(){
+    q('bar').style.width='100%';
+    q('step').textContent='Симуляция завершена';
+    q('question').textContent='';
+    q('options').style.display='none';
+
+    const level=
+      metrics.brand>=45?'Локальный бренд сформирован':
+      metrics.brand>=25?'Система начала работать':
+      metrics.brand>=10?'Есть отдельные сильные решения':
+      'Бизнес остался зависим от личных выездов';
+
+    q('case').innerHTML=`<strong>${level}.</strong> Итог зависит не только от числа заказов, но и от повторных клиентов, среднего чека, стандартов и независимых источников заявок.`;
+
+    q('result').className='result show';
+    q('result').innerHTML=`
+      <div class="result-title">Итоговая модель</div>
+      <div class="result-line"><strong>Заказы:</strong> ${metrics.orders} в месяц</div>
+      <div class="result-line"><strong>Средний чек:</strong> ${metrics.check.toLocaleString('ru-RU')} ₽</div>
+      <div class="result-line"><strong>Доля Авито:</strong> ${metrics.avito}%</div>
+      <div class="result-line"><strong>Повторные и рекомендации:</strong> ${metrics.repeat}%</div>
+      <div class="result-line"><strong>Главный переход:</strong> контент и сервис создают доверие, цена отражает спрос, а простые процессы можно передавать по стандарту.</div>`;
+
+    q('fb').className=`feedback show ${score>=5?'ok':score>=3?'warn':'bad'}`;
+    q('fb').innerHTML=
+      score>=5
+        ?'<strong>Вы построили рост без бесконечного увеличения личной нагрузки.</strong>'
+        :score>=3
+          ?'<strong>Бизнес стал сильнее, но часть решений все еще зависит только от вашего времени.</strong>'
+          :'<strong>Заказов может стать больше, но система и локальный бренд пока не сформированы.</strong>';
+
+    q('next').disabled=true;
+    q('next').textContent='Готово';
+  }
+
+  q('reset').addEventListener('click',()=>{
+    index=0;
+    selected=null;
+    score=0;
+    metrics={orders:35,check:4500,avito:90,repeat:5,brand:0};
+    awaitingNext=false;
+    q('result').className='result';
+    q('fb').className='feedback';
+    updateMetrics();
+    render();
+  });
+
+  updateMetrics();
+  render();
+})();
+</script>
+</body>
+</html>
