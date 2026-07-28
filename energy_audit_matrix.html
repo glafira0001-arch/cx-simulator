@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Энергетический аудит</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.zone{min-height:88px;background:#fafbfc;cursor:pointer}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{border:1px solid var(--line);border-radius:10px;padding:7px;background:#fff;min-height:44px}
+.menu-grid{display:grid;grid-template-columns:82px 1fr;gap:7px}
+.menu-label{font-size:10px;font-weight:800;display:flex;align-items:center}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .menu-grid{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="auditTask">
+
+  <div class="head">
+    <div class="kicker">Энергетический аудит</div>
+    <h2>Разложите день по влиянию на ресурс</h2>
+    <p class="lead">Выберите карточку, затем поместите ее в одну из трех зон. После аудита соедините неизбежную «красную» активность с коротким восстановлением.</p>
+  </div>
+  <div class="body">
+    <div class="grid2" data-role="pool"></div>
+    <div class="grid3" style="margin-top:8px">
+      <div class="zone" data-zone="green">
+        <div class="zone-title">🔋 Дает ресурс</div>
+        <button type="button" class="answer-btn" data-drop="green">Поместить сюда</button>
+        <div class="zone-list" data-list="green" style="margin-top:5px"></div>
+      </div>
+      <div class="zone" data-zone="yellow">
+        <div class="zone-title">📦 Нейтрально</div>
+        <button type="button" class="answer-btn" data-drop="yellow">Поместить сюда</button>
+        <div class="zone-list" data-list="yellow" style="margin-top:5px"></div>
+      </div>
+      <div class="zone" data-zone="red">
+        <div class="zone-title">📉 Забирает ресурс</div>
+        <button type="button" class="answer-btn" data-drop="red">Поместить сюда</button>
+        <div class="zone-list" data-list="red" style="margin-top:5px"></div>
+      </div>
+    </div>
+    <div data-role="pairBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">После неизбежного напряженного созвона выберите восстановление на 10 минут</div>
+      <div class="grid2" data-role="recovery"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить аудит</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('auditTask');
+  if (!root) return;
+
+  const cards=[
+    {text:'Прогулка в спокойном темпе',correct:'green'},
+    {text:'Разговор с близким, после которого становится легче',correct:'green'},
+    {text:'Обычная дорога без спешки',correct:'yellow'},
+    {text:'Рутинный отчет с понятным шаблоном',correct:'yellow'},
+    {text:'Созвон без цели и повестки',correct:'red'},
+    {text:'Скроллинг, после которого трудно вернуться к работе',correct:'red'},
+    {text:'Хобби, которое действительно увлекает',correct:'green'},
+    {text:'Обычная уборка без сильного напряжения',correct:'yellow'},
+    {text:'Общение с постоянными уколами и обесцениванием',correct:'red'}
+  ];
+  const recovery=[
+    {text:'Короткая прогулка без телефона',correct:true},
+    {text:'Открыть ленту новостей',correct:false},
+    {text:'Начать еще один рабочий созвон',correct:false},
+    {text:'Продолжить сидеть и прокручивать разговор',correct:false}
+  ];
+  let placement=Array(cards.length).fill(null),selected=null,recoveryPick=null;
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+
+  function render(){
+    q('pool').innerHTML=cards.map((c,i)=>placement[i]===null
+      ?`<button type="button" class="tile ${selected===i?'selected':''}" data-card="${i}">${c.text}</button>`:'').join('');
+    q('pool').querySelectorAll('[data-card]').forEach(btn=>{
+      btn.addEventListener('click',()=>{selected=Number(btn.dataset.card);render();});
+    });
+
+    ['green','yellow','red'].forEach(zone=>{
+      const list=root.querySelector(`[data-list="${zone}"]`);
+      list.innerHTML=cards.map((c,i)=>placement[i]===zone?`<div class="chip" data-placed="${i}">${c.text}</div>`:'').join('');
+      list.querySelectorAll('[data-placed]').forEach(chip=>{
+        chip.addEventListener('click',e=>{
+          e.stopPropagation();selected=Number(chip.dataset.placed);placement[selected]=null;render();
+        });
+      });
+    });
+
+    const complete=placement.every(v=>v!==null);
+    q('pairBlock').classList.toggle('hidden',!complete);
+    q('check').disabled=!(complete&&recoveryPick!==null);
+  }
+
+  root.querySelectorAll('[data-drop]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      if(selected===null)return;
+      placement[selected]=button.dataset.drop;selected=null;q('fb').className='feedback';render();
+    });
+  });
+
+  q('recovery').innerHTML=recovery.map((x,i)=>`<button type="button" class="choice" data-recovery="${i}">${x.text}</button>`).join('');
+  q('recovery').querySelectorAll('[data-recovery]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('recovery').querySelectorAll('[data-recovery]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');recoveryPick=Number(btn.dataset.recovery);
+      q('check').disabled=placement.some(v=>v===null);
+    });
+  });
+
+  q('check').addEventListener('click',()=>{
+    let score=0;
+    placement.forEach((z,i)=>{if(z===cards[i].correct)score++;});
+    const recoveryOk=recoveryPick!==null&&recovery[recoveryPick].correct;
+    root.querySelectorAll('[data-zone]').forEach(zone=>{
+      const z=zone.dataset.zone;
+      const wrong=placement.some((p,i)=>p===z&&cards[i].correct!==z);
+      zone.classList.add(wrong?'bad':'good');
+    });
+    root.querySelectorAll('[data-drop]').forEach(button=>button.disabled=true);
+    q('recovery').querySelectorAll('[data-recovery]').forEach(btn=>{
+      const i=Number(btn.dataset.recovery);
+      if(recovery[i].correct)btn.classList.add('good');
+      else if(i===recoveryPick)btn.classList.add('bad');
+      btn.disabled=true;
+    });
+    const ok=score===cards.length&&recoveryOk;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Баланс дня виден.</strong><br>Вы отличили восстановление от стимуляции и добавили короткую зеленую активность после неизбежной нагрузки.'
+      : `<strong>Верно распределено: ${score} из ${cards.length} активностей.</strong><br>Оценивайте не ярлык занятия, а собственное состояние после него: одна и та же активность может влиять на людей по-разному.`;
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    placement=Array(cards.length).fill(null);selected=null;recoveryPick=null;
+    root.querySelectorAll('[data-zone]').forEach(x=>x.className='zone');
+    root.querySelectorAll('[data-drop]').forEach(x=>x.disabled=false);
+    q('recovery').querySelectorAll('button').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>

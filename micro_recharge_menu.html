@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ресурсное меню</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.zone{min-height:88px;background:#fafbfc;cursor:pointer}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{border:1px solid var(--line);border-radius:10px;padding:7px;background:#fff;min-height:44px}
+.menu-grid{display:grid;grid-template-columns:82px 1fr;gap:7px}
+.menu-label{font-size:10px;font-weight:800;display:flex;align-items:center}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .menu-grid{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="rechargeTask">
+
+  <div class="head">
+    <div class="kicker">Микро-подзарядка</div>
+    <h2>Соберите готовое меню на четыре контекста</h2>
+    <p class="lead">Выберите по одному пятиминутному ритуалу для офиса, дороги, дома и любого места. Затем соберите ритуал завершения рабочего дня.</p>
+  </div>
+  <div class="body">
+    <div data-role="menus"></div>
+    <div data-role="shutdownBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Выберите три шага завершения рабочего дня</div>
+      <div class="grid2" data-role="shutdown"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Сохранить меню</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('rechargeTask');
+  if (!root) return;
+
+  const contexts=[
+    {
+      name:'Офис',
+      options:[
+        {text:'Пройтись, сменить фокус зрения и выпить воды при жажде',correct:true},
+        {text:'Проверить новости и рабочие чаты',correct:false},
+        {text:'Продолжить сидеть до обеда без смены позы',correct:false}
+      ]
+    },
+    {
+      name:'Дорога',
+      options:[
+        {text:'На несколько минут выключить информационный поток и спокойно наблюдать окружение',correct:true},
+        {text:'Открыть несколько коротких видео',correct:false},
+        {text:'Продолжить рабочую переписку до двери дома',correct:false}
+      ]
+    },
+    {
+      name:'Дом',
+      options:[
+        {text:'Переодеться, сделать чай или воду и оставить телефон в стороне на пять минут',correct:true},
+        {text:'Сразу открыть рабочую почту на диване',correct:false},
+        {text:'Включить новости фоном во всех комнатах',correct:false}
+      ]
+    },
+    {
+      name:'Везде',
+      options:[
+        {text:'Сделать несколько спокойных выдохов и записать один завершенный результат',correct:true},
+        {text:'Пролистать ленту до появления бодрости',correct:false},
+        {text:'Обвинить себя в низкой продуктивности',correct:false}
+      ]
+    }
+  ];
+  const shutdown=[
+    {text:'Зафиксировать незавершенное и следующий шаг',good:true},
+    {text:'Закрыть рабочие вкладки и ноутбук',good:true},
+    {text:'Коротко обозначить переход: выдох, потянуться или пройтись',good:true},
+    {text:'Оставить почту открытой «на всякий случай»',good:false},
+    {text:'Продолжить мысленно решать все задачи по дороге домой',good:false},
+    {text:'Начать новый сложный проект за пять минут до ухода',good:false}
+  ];
+  let picks=Array(contexts.length).fill(null),shutdownPicks=new Set();
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+
+  function render(){
+    q('menus').innerHTML=contexts.map((c,i)=>`
+      <div class="row-card" data-context="${i}">
+        <div class="menu-grid">
+          <div class="menu-label">${c.name}</div>
+          <div class="grid2">
+            ${c.options.map((o,oi)=>`<button type="button" class="answer-btn ${picks[i]===oi?'selected':''}" data-option="${oi}">${o.text}</button>`).join('')}
+          </div>
+        </div>
+      </div>`).join('');
+    q('menus').querySelectorAll('[data-context]').forEach(row=>{
+      const i=Number(row.dataset.context);
+      row.querySelectorAll('[data-option]').forEach(btn=>{
+        btn.addEventListener('click',()=>{picks[i]=Number(btn.dataset.option);q('fb').className='feedback';render();});
+      });
+    });
+    const ready=picks.every(v=>v!==null);
+    q('shutdownBlock').classList.toggle('hidden',!ready);
+    q('check').disabled=!(ready&&shutdownPicks.size===3);
+  }
+
+  q('shutdown').innerHTML=shutdown.map((x,i)=>`<button type="button" class="tile" data-shutdown="${i}">${x.text}</button>`).join('');
+  q('shutdown').querySelectorAll('[data-shutdown]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const i=Number(btn.dataset.shutdown);
+      if(shutdownPicks.has(i)){shutdownPicks.delete(i);btn.classList.remove('selected');}
+      else if(shutdownPicks.size<3){shutdownPicks.add(i);btn.classList.add('selected');}
+      q('check').disabled=!(picks.every(v=>v!==null)&&shutdownPicks.size===3);
+    });
+  });
+
+  q('check').addEventListener('click',()=>{
+    let menuScore=0;
+    q('menus').querySelectorAll('[data-context]').forEach(row=>{
+      const i=Number(row.dataset.context);
+      row.querySelectorAll('[data-option]').forEach(btn=>{
+        const oi=Number(btn.dataset.option);
+        if(contexts[i].options[oi].correct)btn.classList.add('good');
+        else if(oi===picks[i])btn.classList.add('bad');
+        btn.disabled=true;
+      });
+      if(contexts[i].options[picks[i]].correct)menuScore++;
+    });
+    const shutdownOk=[...shutdownPicks].every(i=>shutdown[i].good);
+    q('shutdown').querySelectorAll('[data-shutdown]').forEach(btn=>{
+      const i=Number(btn.dataset.shutdown);
+      if(shutdown[i].good)btn.classList.add('good');
+      else if(shutdownPicks.has(i))btn.classList.add('bad');
+      btn.disabled=true;
+    });
+    const ok=menuScore===contexts.length&&shutdownOk;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Ресурсное меню готово.</strong><br>В нем есть движение, снижение входящего потока, смена роли и завершение открытых задач без попытки восстановиться скроллингом.'
+      : `<strong>Подходящих ритуалов: ${menuScore} из ${contexts.length}.</strong><br>Микро-пауза должна уменьшать нагрузку или менять тип активности, а не добавлять новый информационный поток.`;
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    picks=Array(contexts.length).fill(null);shutdownPicks=new Set();
+    q('shutdown').querySelectorAll('button').forEach(x=>{x.disabled=false;x.className='tile';});
+    q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>

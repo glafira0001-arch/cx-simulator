@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лаборатория мыслей</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.zone{min-height:88px;background:#fafbfc;cursor:pointer}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{border:1px solid var(--line);border-radius:10px;padding:7px;background:#fff;min-height:44px}
+.menu-grid{display:grid;grid-template-columns:82px 1fr;gap:7px}
+.menu-label{font-size:10px;font-weight:800;display:flex;align-items:center}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .menu-grid{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="thoughtTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Мысли и руминативный цикл</div>
+    <h2>Переведите внутреннего паникера на язык фактов</h2>
+    <p class="lead">Для каждой мысли выберите точную формулировку и действие, которое снижает перегрузку без обещаний мгновенно «выключить стресс».</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <span class="badge" data-role="step"></span>
+      <p data-role="thought" style="margin:7px 0 0;font-size:12px;line-height:1.4"></p>
+    </div>
+    <div class="small" style="margin:8px 0 5px">Переформулируйте в проверяемый факт</div>
+    <div class="grid2" data-role="reframes"></div>
+    <div data-role="actionBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Что сделать после записи факта?</div>
+      <div class="grid2" data-role="actions"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+    <div class="note">При боли в груди, выраженной одышке, обмороке или другом необычном физическом симптоме не используйте упражнение как замену медицинской помощи.</div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('thoughtTask');
+  if (!root) return;
+
+  const cases=[
+    {
+      thought:'«Я ничего не успеваю, все пропало».',
+      reframes:[
+        {text:'«У меня десять задач. Сейчас я выбираю первую и уточняю срок второй»',correct:true},
+        {text:'«Нужно просто работать быстрее и не останавливаться»',correct:false},
+        {text:'«Моя жизнь объективно разрушена»',correct:false}
+      ],
+      actions:[
+        {text:'Записать следующий шаг и на 2–3 минуты сменить позу или пройтись',correct:true},
+        {text:'Открыть несколько задач одновременно',correct:false},
+        {text:'Продолжать повторять исходную мысль, чтобы не потерять мотивацию',correct:false}
+      ]
+    },
+    {
+      thought:'«Если я ошибусь в презентации, карьера закончится».',
+      reframes:[
+        {text:'«Я могу ошибиться в одном ответе; подготовлю три вероятных вопроса и способ уточнить данные»',correct:true},
+        {text:'«Ошибки всегда уничтожают карьеру»',correct:false},
+        {text:'«Нужно гарантировать идеальное выступление»',correct:false}
+      ],
+      actions:[
+        {text:'Выписать риски, подготовить ответы и назначить время завершения подготовки',correct:true},
+        {text:'Проверять слайды всю ночь',correct:false},
+        {text:'Отменить выступление без оценки реального риска',correct:false}
+      ]
+    },
+    {
+      thought:'«После этого разговора обо мне все думают плохо».',
+      reframes:[
+        {text:'«Я не знаю, что думают все. Я могу уточнить обратную связь у одного участника»',correct:true},
+        {text:'«Мое ощущение точно передает мысли всей команды»',correct:false},
+        {text:'«Нужно мысленно повторить разговор еще двадцать раз»',correct:false}
+      ],
+      actions:[
+        {text:'Записать, что известно, что предполагается и какой один вопрос можно задать',correct:true},
+        {text:'Избегать команды несколько дней',correct:false},
+        {text:'Отправить длинное оправдание всем участникам',correct:false}
+      ]
+    }
+  ];
+  let index=0,reframePick=null,actionPick=null,checked=false,score=0;
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+
+  function render(){
+    const item=cases[index];reframePick=null;actionPick=null;checked=false;
+    q('bar').style.width=`${index/cases.length*100}%`;
+    q('step').textContent=`Мысль ${index+1} из ${cases.length}`;q('thought').textContent=item.thought;
+    q('reframes').innerHTML=item.reframes.map((x,i)=>`<button type="button" class="choice" data-reframe="${i}">${x.text}</button>`).join('');
+    q('reframes').querySelectorAll('[data-reframe]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('reframes').querySelectorAll('[data-reframe]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');reframePick=Number(btn.dataset.reframe);
+        q('actionBlock').classList.remove('hidden');q('next').disabled=actionPick===null;
+      });
+    });
+    q('actions').innerHTML=item.actions.map((x,i)=>`<button type="button" class="choice" data-action="${i}">${x.text}</button>`).join('');
+    q('actions').querySelectorAll('[data-action]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('actions').querySelectorAll('[data-action]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');actionPick=Number(btn.dataset.action);q('next').disabled=reframePick===null;
+      });
+    });
+    q('actionBlock').classList.add('hidden');q('next').disabled=true;q('next').textContent='Проверить';q('fb').className='feedback';
+  }
+
+  q('next').addEventListener('click',()=>{
+    const item=cases[index];
+    if(!checked){
+      const rOk=item.reframes[reframePick].correct,aOk=item.actions[actionPick].correct;
+      if(rOk&&aOk)score++;
+      q('reframes').querySelectorAll('[data-reframe]').forEach(btn=>{
+        const i=Number(btn.dataset.reframe);
+        if(item.reframes[i].correct)btn.classList.add('good');else if(i===reframePick)btn.classList.add('bad');btn.disabled=true;
+      });
+      q('actions').querySelectorAll('[data-action]').forEach(btn=>{
+        const i=Number(btn.dataset.action);
+        if(item.actions[i].correct)btn.classList.add('good');else if(i===actionPick)btn.classList.add('bad');btn.disabled=true;
+      });
+      q('fb').className=`feedback show ${rOk&&aOk?'ok':'warn'}`;
+      q('fb').innerHTML=rOk&&aOk
+        ? '<strong>Мысль стала конкретной и управляемой.</strong><br>Вы отделили прогноз от факта и выбрали действие, которое можно выполнить или проверить.'
+        : '<strong>В формулировке осталась катастрофа или избегание.</strong><br>Полезная версия содержит наблюдаемые данные, ограниченный риск и следующий шаг.';
+      checked=true;q('next').textContent=index===cases.length-1?'Показать результат':'Следующая мысль';return;
+    }
+    if(index<cases.length-1){index++;render();}
+    else{
+      q('bar').style.width='100%';q('reframes').classList.add('hidden');q('actionBlock').classList.add('hidden');
+      q('thought').innerHTML=`Точно переработано: <strong>${score} из ${cases.length}</strong> мыслей.`;
+      q('fb').className=`feedback show ${score===cases.length?'ok':'warn'}`;
+      q('fb').innerHTML='Цель не запретить тревожные мысли, а уменьшить обобщение, вынести их на бумагу и вернуть себе один управляемый шаг.';
+      q('next').disabled=true;q('next').textContent='Готово';
+    }
+  });
+
+  q('reset').addEventListener('click',()=>{
+    index=0;reframePick=null;actionPick=null;checked=false;score=0;
+    q('reframes').classList.remove('hidden');q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>

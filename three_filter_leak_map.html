@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Карта утечек</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.zone{min-height:88px;background:#fafbfc;cursor:pointer}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{border:1px solid var(--line);border-radius:10px;padding:7px;background:#fff;min-height:44px}
+.menu-grid{display:grid;grid-template-columns:82px 1fr;gap:7px}
+.menu-label{font-size:10px;font-weight:800;display:flex;align-items:center}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .menu-grid{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="leakMapTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Метод трех фильтров</div>
+    <h2>Найдите источник утечки, а не обвиняйте себя</h2>
+    <p class="lead">Для трех точек рабочего дня определите главный фильтр и действие, которое меняет условия.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <span class="badge" data-role="step"></span>
+      <p data-role="case" style="margin:7px 0 0;font-size:12px;line-height:1.4"></p>
+    </div>
+    <div class="small" style="margin:8px 0 5px">Какой фильтр показывает утечку?</div>
+    <div class="grid3" data-role="filters"></div>
+    <div data-role="actionBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Какое действие уменьшит утечку?</div>
+      <div class="grid2" data-role="options"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('leakMapTask');
+  if (!root) return;
+
+  const cases=[
+    {
+      time:'09:30',
+      text:'В открытом офисе громко говорят, мигает экран рядом, а вы перечитываете одну строку отчета.',
+      filter:'context',
+      actions:[
+        {text:'Перейти в более тихое место, убрать визуальные помехи или использовать доступную защиту от шума',correct:true},
+        {text:'Сильнее напрячься и игнорировать среду',correct:false},
+        {text:'Сразу решить, что вы потеряли профессиональные способности',correct:false},
+        {text:'Открыть новости, чтобы отвлечься от шума',correct:false}
+      ]
+    },
+    {
+      time:'12:30',
+      text:'Вам дали задачу «сделать красиво и стратегично», но критерии результата, срок и ваша роль не определены.',
+      filter:'resistance',
+      actions:[
+        {text:'Запросить результат, критерии, срок и границы ответственности до начала работы',correct:true},
+        {text:'Начать делать все возможные версии одновременно',correct:false},
+        {text:'Молча принять ответственность за весь проект',correct:false},
+        {text:'Ждать, пока смысл задачи станет понятен сам',correct:false}
+      ]
+    },
+    {
+      time:'15:30',
+      text:'После разговора с коллегой вы снова разбираете его срочную проблему, хотя не можете принять решение без его данных.',
+      filter:'communication',
+      actions:[
+        {text:'Вернуть владельцу сбор данных и договориться, что вы подключитесь после получения необходимой информации',correct:true},
+        {text:'Продолжить спасать задачу без полномочий и данных',correct:false},
+        {text:'Прекратить любое общение с коллегой',correct:false},
+        {text:'Обсуждать его поведение с другими вместо ясной договоренности',correct:false}
+      ]
+    }
+  ];
+  const filters=[
+    {value:'context',text:'Контекст'},
+    {value:'resistance',text:'Сопротивление'},
+    {value:'communication',text:'Коммуникация'}
+  ];
+  let index=0,filterPick=null,actionPick=null,checked=false,score=0;
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+
+  function render(){
+    const item=cases[index];
+    filterPick=null;actionPick=null;checked=false;
+    q('bar').style.width=`${index/cases.length*100}%`;
+    q('step').textContent=`${item.time} · ситуация ${index+1} из ${cases.length}`;
+    q('case').textContent=item.text;
+    q('filters').innerHTML=filters.map(f=>`<button type="button" class="choice" data-filter="${f.value}">${f.text}</button>`).join('');
+    q('filters').querySelectorAll('[data-filter]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('filters').querySelectorAll('[data-filter]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');filterPick=btn.dataset.filter;
+        q('actionBlock').classList.remove('hidden');q('next').disabled=actionPick===null;
+      });
+    });
+    q('options').innerHTML=item.actions.map((a,i)=>`<button type="button" class="choice" data-action="${i}">${a.text}</button>`).join('');
+    q('options').querySelectorAll('[data-action]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('options').querySelectorAll('[data-action]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');actionPick=Number(btn.dataset.action);
+        q('next').disabled=filterPick===null;
+      });
+    });
+    q('actionBlock').classList.add('hidden');
+    q('next').disabled=true;q('next').textContent='Проверить';q('fb').className='feedback';
+  }
+
+  q('next').addEventListener('click',()=>{
+    const item=cases[index];
+    if(!checked){
+      const filterOk=filterPick===item.filter;
+      const actionOk=item.actions[actionPick].correct;
+      if(filterOk&&actionOk)score++;
+      q('filters').querySelectorAll('[data-filter]').forEach(btn=>{
+        if(btn.dataset.filter===item.filter)btn.classList.add('good');
+        else if(btn.dataset.filter===filterPick)btn.classList.add('bad');
+        btn.disabled=true;
+      });
+      q('options').querySelectorAll('[data-action]').forEach(btn=>{
+        const i=Number(btn.dataset.action);
+        if(item.actions[i].correct)btn.classList.add('good');
+        else if(i===actionPick)btn.classList.add('bad');
+        btn.disabled=true;
+      });
+      q('fb').className=`feedback show ${filterOk&&actionOk?'ok':'warn'}`;
+      q('fb').innerHTML=filterOk&&actionOk
+        ? '<strong>Утечка переведена в изменение условий.</strong><br>Вы нашли источник и выбрали действие, которое уменьшает помеху, неясность или чужую ответственность.'
+        : '<strong>Источник или действие выбраны неточно.</strong><br>Фильтр нужен, чтобы не объяснять любой спад личной слабостью.';
+      checked=true;q('next').textContent=index===cases.length-1?'Показать карту':'Следующая точка';return;
+    }
+    if(index<cases.length-1){index++;render();}
+    else{
+      q('bar').style.width='100%';q('filters').classList.add('hidden');q('actionBlock').classList.add('hidden');
+      q('case').innerHTML=`Точно обработано: <strong>${score} из ${cases.length}</strong> утечек.`;
+      q('fb').className=`feedback show ${score===cases.length?'ok':'warn'}`;
+      q('fb').innerHTML='Карта утечек должна завершаться одним системным изменением: убрать помеху, прояснить задачу или вернуть ответственность владельцу.';
+      q('next').disabled=true;q('next').textContent='Готово';
+    }
+  });
+
+  q('reset').addEventListener('click',()=>{
+    index=0;filterPick=null;actionPick=null;checked=false;score=0;
+    q('filters').classList.remove('hidden');q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>
