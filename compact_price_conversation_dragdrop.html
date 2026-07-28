@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Соберите разговор о цене</title>
+<style>
+:root{
+  --ink:#152238;--muted:#667085;--line:#dbe2ea;--bg:#fff;
+  --accent:#2f6fd2;--accent2:#2558a8;--soft:#edf4ff;
+  --ok:#147552;--oksoft:#eaf8f1;--bad:#b42318;--badsoft:#fff0ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{
+  width:100%;max-width:560px;margin:0 auto;background:var(--bg);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 6px 18px rgba(30,55,90,.08)
+}
+.head{
+  padding:13px 15px 11px;
+  background:linear-gradient(135deg,var(--accent2),#347bdc);
+  color:#fff
+}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+h2{font-size:19px;line-height:1.15;margin:4px 0}
+.lead{font-size:12px;line-height:1.35;margin:0;opacity:.92}
+.body{padding:11px 14px 13px}
+.counter{
+  display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;
+  font-size:10px;color:var(--muted)
+}
+.bank{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px;
+  padding:7px;border:1px solid var(--line);border-radius:11px;background:#f8fafc
+}
+.card{
+  border:1px solid var(--line);border-radius:8px;background:#fff;
+  padding:7px 8px;font-size:10.7px;line-height:1.25;cursor:grab;
+  user-select:none;transition:.12s
+}
+.card:active{cursor:grabbing}
+.card.selected{border-color:var(--accent);background:var(--soft);box-shadow:0 0 0 1px var(--accent) inset}
+.card.dragging{opacity:.45}
+.sequence{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px
+}
+.slot{
+  min-height:49px;border:1px dashed #aebfda;border-radius:9px;
+  background:#fbfcfe;padding:5px;display:grid;grid-template-columns:23px 1fr;
+  gap:6px;align-items:center
+}
+.slot.over{border-color:var(--accent);background:var(--soft)}
+.num{
+  width:23px;height:23px;border-radius:50%;background:#eaf1fb;color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800
+}
+.placeholder{font-size:10px;color:#8a94a6}
+.slot .card{cursor:grab;padding:6px 7px;font-size:10.3px}
+.slot.good{border-color:var(--ok);background:var(--oksoft)}
+.slot.bad{border-color:var(--bad);background:var(--badsoft)}
+.actions{display:flex;gap:7px;margin-top:9px}
+.primary,.secondary{
+  border:0;border-radius:9px;padding:8px 10px;font-weight:800;
+  cursor:pointer;font-size:11.5px
+}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#eef1f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{
+  display:none;margin-top:8px;border-radius:9px;padding:8px 9px;
+  font-size:11.5px;line-height:1.35
+}
+.feedback.show{display:block}
+.feedback.ok{background:var(--oksoft);color:#0c5a3f}
+.feedback.warn{background:#fff5d6;color:#6e4900}
+.hint{margin-top:7px;font-size:9.8px;line-height:1.3;color:var(--muted)}
+@media(max-width:430px){
+  .task{border-radius:12px}
+  .head,.body{padding-left:11px;padding-right:11px}
+  .bank,.sequence{grid-template-columns:1fr 1fr}
+  .card{font-size:10.2px}
+  .slot{min-height:46px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="priceConversationTask">
+  <div class="head">
+    <div class="kicker">Практическое задание</div>
+    <h2>Соберите разговор о цене</h2>
+    <p class="lead">Перетащите шаги от демонстрации поломки до согласия на ремонт.</p>
+  </div>
+
+  <div class="body">
+    <div class="counter">
+      <span>Размещено: <strong data-role="placed">0</strong> из 6</span>
+      <span>Можно перетаскивать или нажимать</span>
+    </div>
+
+    <div class="bank" data-role="bank"></div>
+    <div class="sequence" data-role="sequence"></div>
+
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Сбросить</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить порядок</button>
+    </div>
+
+    <div class="feedback" data-role="fb"></div>
+    <div class="hint">На телефоне: нажмите карточку, затем нужный слот. Нажатие на заполненный слот возвращает карточку обратно.</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('priceConversationTask');
+  if (!root) return;
+
+  const cards = [
+    {
+      id: 'show',
+      text: 'Показать клиенту поломку и объяснить ее простыми словами',
+      order: 1
+    },
+    {
+      id: 'finish',
+      text: 'Завершить диагностику и отложить инструмент',
+      order: 0
+    },
+    {
+      id: 'cause',
+      text: 'Назвать точную причину неисправности',
+      order: 2
+    },
+    {
+      id: 'parts',
+      text: 'Отдельно назвать стоимость детали и работы',
+      order: 3
+    },
+    {
+      id: 'benefit',
+      text: 'Сформулировать итог и выгоду: техника снова работает сегодня',
+      order: 4
+    },
+    {
+      id: 'close',
+      text: 'Назвать срок ремонта и спросить: «Делаем?»',
+      order: 5
+    }
+  ];
+
+  const shuffled = ['benefit','show','close','finish','parts','cause'];
+  let placement = Array(cards.length).fill(null);
+  let selectedId = null;
+  let checked = false;
+
+  const q = role => root.querySelector(`[data-role="${role}"]`);
+  const byId = id => cards.find(card => card.id === id);
+
+  function render() {
+    const used = new Set(placement.filter(Boolean));
+
+    q('bank').innerHTML = shuffled
+      .filter(id => !used.has(id))
+      .map(id => {
+        const card = byId(id);
+        return `<div class="card ${selectedId === id ? 'selected' : ''}"
+          draggable="true" data-card="${id}">${card.text}</div>`;
+      })
+      .join('');
+
+    q('sequence').innerHTML = placement.map((id, index) => {
+      const card = id ? byId(id) : null;
+      return `<div class="slot" data-slot="${index}">
+        <div class="num">${index + 1}</div>
+        <div>
+          ${card
+            ? `<div class="card" draggable="true" data-card="${card.id}">${card.text}</div>`
+            : `<div class="placeholder">Перетащите шаг</div>`}
+        </div>
+      </div>`;
+    }).join('');
+
+    root.querySelectorAll('[data-card]').forEach(element => {
+      element.addEventListener('click', event => {
+        event.stopPropagation();
+        const id = element.dataset.card;
+        const currentSlot = placement.indexOf(id);
+
+        if (currentSlot >= 0) {
+          placement[currentSlot] = null;
+          selectedId = id;
+        } else {
+          selectedId = selectedId === id ? null : id;
+        }
+
+        checked = false;
+        q('fb').className = 'feedback';
+        render();
+      });
+
+      element.addEventListener('dragstart', event => {
+        event.dataTransfer.setData('text/plain', element.dataset.card);
+        element.classList.add('dragging');
+      });
+
+      element.addEventListener('dragend', () => {
+        element.classList.remove('dragging');
+      });
+    });
+
+    root.querySelectorAll('[data-slot]').forEach(slot => {
+      slot.addEventListener('click', () => {
+        const index = Number(slot.dataset.slot);
+
+        if (selectedId) {
+          const previous = placement.indexOf(selectedId);
+          if (previous >= 0) placement[previous] = null;
+
+          if (placement[index]) {
+            const displaced = placement[index];
+            placement[index] = selectedId;
+            selectedId = displaced;
+          } else {
+            placement[index] = selectedId;
+            selectedId = null;
+          }
+        } else if (placement[index]) {
+          selectedId = placement[index];
+          placement[index] = null;
+        }
+
+        checked = false;
+        q('fb').className = 'feedback';
+        render();
+      });
+
+      slot.addEventListener('dragover', event => {
+        event.preventDefault();
+        slot.classList.add('over');
+      });
+
+      slot.addEventListener('dragleave', () => {
+        slot.classList.remove('over');
+      });
+
+      slot.addEventListener('drop', event => {
+        event.preventDefault();
+        slot.classList.remove('over');
+
+        const id = event.dataTransfer.getData('text/plain');
+        const index = Number(slot.dataset.slot);
+        if (!id) return;
+
+        const previous = placement.indexOf(id);
+        if (previous >= 0) placement[previous] = null;
+
+        if (placement[index]) {
+          const displaced = placement[index];
+          placement[index] = id;
+          selectedId = displaced;
+        } else {
+          placement[index] = id;
+          selectedId = null;
+        }
+
+        checked = false;
+        q('fb').className = 'feedback';
+        render();
+      });
+    });
+
+    q('placed').textContent = placement.filter(Boolean).length;
+    q('check').disabled = placement.some(id => id === null);
+  }
+
+  q('check').addEventListener('click', () => {
+    checked = true;
+    let correct = 0;
+
+    root.querySelectorAll('[data-slot]').forEach(slot => {
+      const index = Number(slot.dataset.slot);
+      const id = placement[index];
+      const isCorrect = id && byId(id).order === index;
+
+      if (isCorrect) {
+        correct += 1;
+        slot.classList.add('good');
+      } else {
+        slot.classList.add('bad');
+      }
+    });
+
+    q('fb').className = `feedback show ${correct === cards.length ? 'ok' : 'warn'}`;
+    q('fb').innerHTML = correct === cards.length
+      ? '<strong>Разговор выстроен правильно.</strong><br>Сначала клиент понимает проблему, затем видит структуру цены и получает конкретное предложение.'
+      : `<strong>На своих местах: ${correct} из ${cards.length} шагов.</strong><br>Сначала завершите диагностику и покажите причину. Только после этого называйте составляющие цены и переходите к согласованию ремонта.`;
+  });
+
+  q('reset').addEventListener('click', () => {
+    placement = Array(cards.length).fill(null);
+    selectedId = null;
+    checked = false;
+    q('fb').className = 'feedback';
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
