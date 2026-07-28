@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Эффективность сна</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.slot{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+button,input{font:inherit}
+.choice,.tile,.answer-btn,.block-card{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover,.block-card:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.timeline{display:grid;grid-template-columns:70px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{min-height:44px;cursor:pointer;padding:7px}
+.slot-title{font-size:11px;font-weight:800}
+.slot-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:93%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.input-grid{display:grid;grid-template-columns:1fr 96px;gap:8px;align-items:center}
+input[type=number]{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px}
+.result-number{font-size:28px;font-weight:900;line-height:1;color:var(--accent)}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .input-grid{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="sleepDataTask">
+
+  <div class="head">
+    <div class="kicker">Контроль сна</div>
+    <h2>Рассчитайте эффективность и не попадите в ортосомнию</h2>
+    <p class="lead">Введите данные одной ночи, рассчитайте долю реального сна и выберите корректную интерпретацию.</p>
+  </div>
+  <div class="body">
+    <div class="row-card">
+      <div class="input-grid">
+        <label class="small">Время в постели, минут</label>
+        <input type="number" min="1" max="900" value="480" data-role="bed">
+      </div>
+    </div>
+    <div class="row-card">
+      <div class="input-grid">
+        <label class="small">Засыпание, минут</label>
+        <input type="number" min="0" max="300" value="30" data-role="latency">
+      </div>
+    </div>
+    <div class="row-card">
+      <div class="input-grid">
+        <label class="small">Ночные пробуждения, минут</label>
+        <input type="number" min="0" max="300" value="30" data-role="awake">
+      </div>
+    </div>
+    <div class="card" style="margin-top:8px">
+      <div class="metric"><span class="small">Эффективность сна</span><span class="result-number" data-role="result">87,5%</span></div>
+      <div class="small" data-role="slept" style="margin-top:4px">Реальный сон: 420 минут</div>
+    </div>
+    <div class="small" style="margin:8px 0 5px">Как интерпретировать одну ночь?</div>
+    <div class="grid2" data-role="interpretations"></div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить вывод</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('sleepDataTask');
+  if (!root) return;
+
+  const interpretations=[
+    {text:'Одна цифра ставит диагноз и определяет весь день',correct:false},
+    {text:'Смотреть на недельную динамику вместе с самочувствием и привычками',correct:true},
+    {text:'Верить фазам часов точнее, чем собственному состоянию',correct:false},
+    {text:'Проверять показатели в постели сразу после пробуждения',correct:false}
+  ];
+  let pick=null;
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function calculate(){
+    const bed=Number(q('bed').value);
+    const latency=Number(q('latency').value);
+    const awake=Number(q('awake').value);
+    if(!Number.isFinite(bed)||bed<=0||latency<0||awake<0||latency+awake>bed){
+      q('result').textContent='—';
+      q('slept').textContent='Проверьте значения';
+      q('check').disabled=true;
+      return;
+    }
+    const slept=bed-latency-awake;
+    const efficiency=slept/bed*100;
+    q('result').textContent=`${efficiency.toFixed(1).replace('.',',')}%`;
+    q('slept').textContent=`Реальный сон: ${slept} минут`;
+    q('check').disabled=pick===null;
+  }
+
+  ['bed','latency','awake'].forEach(role=>q(role).addEventListener('input',calculate));
+
+  q('interpretations').innerHTML=interpretations.map((x,i)=>`<button type="button" class="choice" data-pick="${i}">${x.text}</button>`).join('');
+  q('interpretations').querySelectorAll('[data-pick]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('interpretations').querySelectorAll('[data-pick]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');pick=Number(btn.dataset.pick);calculate();
+    });
+  });
+
+  q('check').addEventListener('click',()=>{
+    q('interpretations').querySelectorAll('[data-pick]').forEach(btn=>{
+      const i=Number(btn.dataset.pick);
+      if(interpretations[i].correct)btn.classList.add('good');else if(i===pick)btn.classList.add('bad');btn.disabled=true;
+    });
+    const ok=interpretations[pick].correct;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Данные используются как ориентир, а не приговор.</strong><br>Сопоставляйте тренд, дневник привычек и субъективное состояние. Носимые устройства не заменяют диагностику.'
+      : '<strong>Такой вывод усиливает тревогу вокруг сна.</strong><br>Одна ночь и автоматическое распознавание фаз недостаточны для диагноза или жестких решений.';
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    q('bed').value=480;q('latency').value=30;q('awake').value=30;pick=null;
+    q('interpretations').querySelectorAll('[data-pick]').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';calculate();
+  });
+
+  calculate();
+
+})();
+</script>
+</body>
+</html>
