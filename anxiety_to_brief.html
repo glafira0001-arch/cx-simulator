@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тревога в план</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.summary{font-size:12px;line-height:1.45}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:94%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.zone{min-height:82px;background:#fafbfc;cursor:pointer}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.scale{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:7px}
+.scale button{height:31px;border:1px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;font-size:11px}
+.scale button.selected{background:var(--accent-soft)}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .scale{grid-template-columns:repeat(5,1fr)}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="anxietyTask">
+
+  <div class="head">
+    <div class="kicker">Тревога и неопределенность</div>
+    <h2>Превратите тревогу в рабочий бриф</h2>
+    <p class="lead">Выберите три вопроса, которые уменьшают неопределенность, затем определите первый шаг по проекту.</p>
+  </div>
+  <div class="body">
+    <div class="statement">Вам поручили возглавить проект в новой области. Вы постоянно проверяете почту и откладываете начало.</div>
+    <div class="small" style="margin:8px 0 5px">Какие три вопроса задать руководителю или экспертам?</div>
+    <div class="grid2" data-role="questions"></div>
+    <div data-role="stepBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Какой минимальный следующий шаг?</div>
+      <div class="grid2" data-role="steps"></div>
+    </div>
+    <div data-role="reframeBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Как переосмыслить возбуждение перед выступлением?</div>
+      <div class="grid2" data-role="reframes"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить план</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('anxietyTask');
+  if (!root) return;
+
+  const questions=[
+    {text:'Как выглядит приемлемый результат первой версии?',good:true},
+    {text:'Кто принимает ключевые решения и у кого можно запросить экспертизу?',good:true},
+    {text:'Каковы ближайший срок и главные ограничения?',good:true},
+    {text:'Можете гарантировать, что меня не будут критиковать?',good:false},
+    {text:'Почему проект дали именно мне, если я могу провалиться?',good:false},
+    {text:'Можно ли сначала дождаться полной уверенности?',good:false}
+  ];
+  const steps=[
+    {text:'Провести короткий брифинг и после него собрать черновой план на одну страницу',correct:true},
+    {text:'Сначала изучить всю отрасль без ограничения по времени',correct:false},
+    {text:'Не начинать, пока тревога полностью не исчезнет',correct:false},
+    {text:'Проверять почту каждые пять минут',correct:false}
+  ];
+  const reframes=[
+    {text:'«Организм мобилизуется перед важной задачей; эту энергию можно направить в выступление»',correct:true},
+    {text:'«Я обязан немедленно стать абсолютно спокойным»',correct:false},
+    {text:'«Высокий пульс доказывает, что я не справлюсь»',correct:false},
+    {text:'«Нужно игнорировать любые реальные риски»',correct:false}
+  ];
+  let selected=new Set(),step=null,reframe=null;
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+
+  function render(){
+    q('questions').innerHTML=questions.map((x,i)=>`<button type="button" class="tile ${selected.has(i)?'selected':''}" data-question="${i}">${x.text}</button>`).join('');
+    q('questions').querySelectorAll('[data-question]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const i=Number(btn.dataset.question);
+        if(selected.has(i))selected.delete(i);else if(selected.size<3)selected.add(i);
+        q('fb').className='feedback';render();
+      });
+    });
+    const ready=selected.size===3;
+    q('stepBlock').classList.toggle('hidden',!ready);
+    q('reframeBlock').classList.toggle('hidden',step===null);
+    q('check').disabled=!(ready&&step!==null&&reframe!==null);
+  }
+
+  q('steps').innerHTML=steps.map((x,i)=>`<button type="button" class="choice" data-step="${i}">${x.text}</button>`).join('');
+  q('steps').querySelectorAll('[data-step]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('steps').querySelectorAll('[data-step]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');step=Number(btn.dataset.step);render();
+    });
+  });
+  q('reframes').innerHTML=reframes.map((x,i)=>`<button type="button" class="choice" data-reframe="${i}">${x.text}</button>`).join('');
+  q('reframes').querySelectorAll('[data-reframe]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('reframes').querySelectorAll('[data-reframe]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');reframe=Number(btn.dataset.reframe);render();
+    });
+  });
+
+  q('check').addEventListener('click',()=>{
+    const questionsOk=[...selected].every(i=>questions[i].good);
+    const stepOk=steps[step].correct,reframeOk=reframes[reframe].correct;
+    q('questions').querySelectorAll('[data-question]').forEach(btn=>{
+      const i=Number(btn.dataset.question);
+      if(questions[i].good)btn.classList.add('good');else if(selected.has(i))btn.classList.add('bad');btn.disabled=true;
+    });
+    q('steps').querySelectorAll('[data-step]').forEach(btn=>{
+      const i=Number(btn.dataset.step);if(steps[i].correct)btn.classList.add('good');else if(i===step)btn.classList.add('bad');btn.disabled=true;
+    });
+    q('reframes').querySelectorAll('[data-reframe]').forEach(btn=>{
+      const i=Number(btn.dataset.reframe);if(reframes[i].correct)btn.classList.add('good');else if(i===reframe)btn.classList.add('bad');btn.disabled=true;
+    });
+    const ok=questionsOk&&stepOk&&reframeOk;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Тревога переведена в информацию и действие.</strong><br>Вы уточнили критерии, роли и ограничения, а затем выбрали небольшой проверяемый шаг.'
+      : '<strong>В плане осталась попытка получить абсолютную гарантию.</strong><br>Тревога уменьшается не от полной уверенности, а от ясности, ресурсов и начала управляемого действия.';
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    selected=new Set();step=null;reframe=null;
+    q('steps').querySelectorAll('button').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('reframes').querySelectorAll('button').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>

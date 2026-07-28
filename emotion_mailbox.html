@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Почтовый ящик эмоций</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.zone{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.summary{font-size:12px;line-height:1.45}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:94%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.zone{min-height:82px;background:#fafbfc;cursor:pointer}
+.zone-title{font-size:10px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.zone-list{display:flex;flex-direction:column;gap:4px}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:#fff;font-size:10px;line-height:1.25;cursor:pointer}
+.scale{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:7px}
+.scale button{height:31px;border:1px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;font-size:11px}
+.scale button.selected{background:var(--accent-soft)}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .scale{grid-template-columns:repeat(5,1fr)}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="mailboxTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Техника «Почтовый ящик»</div>
+    <h2>Прочитайте сообщение эмоции до конца</h2>
+    <p class="lead">Для двух ситуаций соберите четыре элемента: имя чувства, телесный сигнал, возможную функцию и минимальное действие.</p>
+  </div>
+  <div class="body">
+    <div class="statement" data-role="case"></div>
+    <div class="small" data-role="prompt" style="margin:8px 0 5px"></div>
+    <div class="grid2" data-role="options"></div>
+    <div class="card hidden" data-role="mail" style="margin-top:8px">
+      <strong style="font-size:12px">Прочитанное сообщение</strong>
+      <div class="summary" data-role="message" style="margin-top:5px"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Продолжить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('mailboxTask');
+  if (!root) return;
+
+  const cases=[
+    {
+      situation:'Коллега третий раз прерывает вас во время сложного отчета. Возникают жар и раздражение.',
+      stages:[
+        {name:'Дать имя',options:[
+          {text:'Раздражение или гнев',correct:true},
+          {text:'«Я плохой человек»',correct:false},
+          {text:'Никакой эмоции нет',correct:false}
+        ]},
+        {name:'Найти в теле',options:[
+          {text:'Напряжение челюстей, плеч или учащенное сердцебиение',correct:true},
+          {text:'Сразу решить, что коллега не уважает вас',correct:false},
+          {text:'Оценить характер коллеги',correct:false}
+        ]},
+        {name:'Проверить функцию',options:[
+          {text:'Возможно, мне нужно защитить концентрацию и договориться о времени вопросов',correct:true},
+          {text:'Эмоция требует унизить коллегу',correct:false},
+          {text:'Нужно доказать, что вопросов быть не должно',correct:false}
+        ]},
+        {name:'Выбрать минимальное действие',options:[
+          {text:'«Я закончу блок через 40 минут и тогда отвечу на вопросы»',correct:true},
+          {text:'Игнорировать коллегу несколько дней',correct:false},
+          {text:'Ответить резко прямо сейчас',correct:false}
+        ]}
+      ]
+    },
+    {
+      situation:'Вы забыли отправить обещанный файл и чувствуете тяжесть и вину.',
+      stages:[
+        {name:'Дать имя',options:[
+          {text:'Вина',correct:true},
+          {text:'«Я никчемный человек»',correct:false},
+          {text:'Зависть',correct:false}
+        ]},
+        {name:'Найти в теле',options:[
+          {text:'Тяжесть в груди или животе, напряжение',correct:true},
+          {text:'Доказательство моральной неполноценности',correct:false},
+          {text:'Объективная оценка всей личности',correct:false}
+        ]},
+        {name:'Проверить функцию',options:[
+          {text:'Я нарушил свое обязательство и хочу восстановить надежность',correct:true},
+          {text:'Нужно бесконечно наказывать себя',correct:false},
+          {text:'Нужно скрыть ошибку',correct:false}
+        ]},
+        {name:'Выбрать минимальное действие',options:[
+          {text:'Признать задержку, отправить файл или назвать реальный новый срок',correct:true},
+          {text:'Долго объяснять, почему виноваты обстоятельства',correct:false},
+          {text:'Избегать человека',correct:false}
+        ]}
+      ]
+    }
+  ];
+  let caseIndex=0,stageIndex=0,selected=null,score=0,parts=[];
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+
+  function render(){
+    const item=cases[caseIndex],stage=item.stages[stageIndex];selected=null;
+    q('bar').style.width=`${((caseIndex*4)+stageIndex)/8*100}%`;
+    q('case').textContent=item.situation;
+    q('prompt').textContent=`Ситуация ${caseIndex+1} · шаг ${stageIndex+1}: ${stage.name}`;
+    q('options').classList.remove('hidden');q('mail').classList.add('hidden');
+    q('options').innerHTML=stage.options.map((o,i)=>`<button type="button" class="choice" data-option="${i}">${o.text}</button>`).join('');
+    q('options').querySelectorAll('[data-option]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('options').querySelectorAll('[data-option]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');selected=Number(btn.dataset.option);q('next').disabled=false;
+      });
+    });
+    q('next').disabled=true;q('next').textContent=stageIndex===3?'Прочитать сообщение':'Продолжить';q('fb').className='feedback';
+  }
+
+  q('next').addEventListener('click',()=>{
+    if(selected===null)return;
+    const option=cases[caseIndex].stages[stageIndex].options[selected];
+    if(option.correct)score++;
+    parts.push(option.text);
+
+    if(stageIndex<3){stageIndex++;render();return;}
+
+    q('bar').style.width=`${((caseIndex+1)*4)/8*100}%`;
+    q('options').classList.add('hidden');q('mail').classList.remove('hidden');
+    q('message').innerHTML=parts.map((x,i)=>`${i+1}. ${x}`).join('<br>');
+    const localCorrect=parts.length===4 && cases[caseIndex].stages.every((s,i)=>s.options.find(o=>o.text===parts[i])?.correct);
+    q('fb').className=`feedback show ${localCorrect?'ok':'warn'}`;
+    q('fb').innerHTML=localCorrect
+      ? '<strong>Сообщение прочитано без самообвинения.</strong><br>Вы отделили эмоцию и телесный сигнал от вывода о собственной личности и нашли минимальное действие.'
+      : '<strong>В цепочке есть оценка личности или импульсивное действие.</strong><br>Эмоцию нужно назвать, проверить ее функцию и выбрать небольшой поступок, а не выносить приговор себе или другому.';
+    q('next').disabled=false;
+    q('next').textContent=caseIndex===cases.length-1?'Показать результат':'Следующая ситуация';
+    q('next').onclick=()=>{
+      q('next').onclick=null;
+      if(caseIndex<cases.length-1){caseIndex++;stageIndex=0;selected=null;parts=[];render();}
+      else{
+        q('bar').style.width='100%';q('mail').classList.add('hidden');q('prompt').classList.add('hidden');
+        q('case').innerHTML=`Верных элементов: <strong>${score} из 8</strong>.`;
+        q('fb').className=`feedback show ${score===8?'ok':'warn'}`;
+        q('fb').innerHTML='Полный цикл выглядит так: назвать эмоцию → заметить телесные ощущения → предположить функцию → выбрать минимальное проверяемое действие.';
+        q('next').disabled=true;q('next').textContent='Готово';
+      }
+    };
+  });
+
+  q('reset').addEventListener('click',()=>{
+    caseIndex=0;stageIndex=0;selected=null;score=0;parts=[];
+    q('next').onclick=null;q('prompt').classList.remove('hidden');q('options').classList.remove('hidden');q('mail').classList.add('hidden');q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>
