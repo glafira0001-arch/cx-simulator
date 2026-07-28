@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Бюджет кофеина</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.slot{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+button,input{font:inherit}
+.choice,.tile,.answer-btn,.block-card{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover,.block-card:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{min-height:44px;cursor:pointer;padding:7px}
+.slot-title{font-size:11px;font-weight:800}
+.slot-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.bar{height:8px;border-radius:999px;background:#e8ebf3;overflow:hidden}
+.bar>div{height:100%;background:var(--accent);transition:.2s}
+.input-row{display:grid;grid-template-columns:1fr 88px;gap:8px;align-items:center}
+input[type=number]{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px}
+.score-big{font-size:27px;font-weight:900;color:var(--accent)}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .input-row{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="caffeineTask">
+
+  <div class="head">
+    <div class="kicker">Кофеин</div>
+    <h2>Посчитайте дневной бюджет кофеина</h2>
+    <p class="lead">Введите количество напитков с указанным содержанием кофеина и выберите корректную интерпретацию результата.</p>
+  </div>
+  <div class="body">
+    <div class="row-card">
+      <div class="input-row"><label class="small">Кофе, 120 мг</label><input type="number" min="0" max="10" value="2" data-role="coffee"></div>
+    </div>
+    <div class="row-card">
+      <div class="input-row"><label class="small">Чай, 40 мг</label><input type="number" min="0" max="10" value="1" data-role="tea"></div>
+    </div>
+    <div class="row-card">
+      <div class="input-row"><label class="small">Энергетик, 160 мг</label><input type="number" min="0" max="10" value="0" data-role="energy"></div>
+    </div>
+    <div class="card" style="margin-top:8px">
+      <div class="metric"><span class="small">Всего за день</span><span class="score-big" data-role="total">280 мг</span></div>
+      <div class="bar" style="margin-top:6px"><div data-role="bar"></div></div>
+    </div>
+    <div class="small" style="margin:8px 0 5px">Как использовать результат?</div>
+    <div class="grid2" data-role="rules"></div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить вывод</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+    <div class="note">Содержание кофеина в реальных напитках сильно различается. При беременности, заболеваниях, приеме лекарств или высокой чувствительности безопасный предел обсуждают с врачом.</div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('caffeineTask');
+  if (!root) return;
+
+  const rules=[
+    {text:'Учитывать все источники, индивидуальную чувствительность и влияние на сон',correct:true},
+    {text:'400 мг — обязательная цель на каждый день',correct:false},
+    {text:'Кофе нельзя пить раньше чем через 90 минут после пробуждения',correct:false},
+    {text:'Чай полностью нейтрализует нежелательные эффекты кофе',correct:false}
+  ];
+  let pick=null,total=0;
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+  function calc(){
+    total=Number(q('coffee').value)*120+Number(q('tea').value)*40+Number(q('energy').value)*160;
+    q('total').textContent=`${total} мг`;q('bar').style.width=`${Math.min(100,total/400*100)}%`;
+    q('check').disabled=pick===null;
+  }
+  ['coffee','tea','energy'].forEach(r=>q(r).addEventListener('input',calc));
+  q('rules').innerHTML=rules.map((x,i)=>`<button type="button" class="choice" data-rule="${i}">${x.text}</button>`).join('');
+  q('rules').querySelectorAll('[data-rule]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('rules').querySelectorAll('[data-rule]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');pick=Number(btn.dataset.rule);calc();
+    });
+  });
+  q('check').addEventListener('click',()=>{
+    q('rules').querySelectorAll('[data-rule]').forEach(btn=>{
+      const i=Number(btn.dataset.rule);
+      if(rules[i].correct)btn.classList.add('good');else if(i===pick)btn.classList.add('bad');btn.disabled=true;
+    });
+    const ok=rules[pick].correct&&total<=400;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    if(total>400){
+      q('fb').innerHTML='<strong>Сумма выше ориентира для большинства здоровых взрослых.</strong><br>Сократите источники кофеина и оцените сон, тревожность, сердцебиение и другие симптомы.';
+    }else if(ok){
+      q('fb').innerHTML='<strong>Бюджет рассчитан без догматичных правил.</strong><br>Даже при умеренной сумме ориентируйтесь на сон и самочувствие: чувствительность различается.';
+    }else{
+      q('fb').innerHTML='<strong>Вывод слишком жесткий или обещает универсальный эффект.</strong><br>Время первой чашки и реакция на чай индивидуальны; важнее общая доза и влияние на сон.';
+    }
+    q('check').disabled=true;
+  });
+  q('reset').addEventListener('click',()=>{
+    q('coffee').value=2;q('tea').value=1;q('energy').value=0;pick=null;
+    q('rules').querySelectorAll('[data-rule]').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';calc();
+  });
+  calc();
+
+})();
+</script>
+</body>
+</html>

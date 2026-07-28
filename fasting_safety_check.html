@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Безопасность голодания</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card,.slot{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+button,input{font:inherit}
+.choice,.tile,.answer-btn,.block-card{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover,.block-card:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.timeline{display:grid;grid-template-columns:68px 1fr;gap:6px}
+.time{font-size:10px;color:var(--muted);display:flex;align-items:center}
+.slot{min-height:44px;cursor:pointer;padding:7px}
+.slot-title{font-size:11px;font-weight:800}
+.slot-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.bar{height:8px;border-radius:999px;background:#e8ebf3;overflow:hidden}
+.bar>div{height:100%;background:var(--accent);transition:.2s}
+.input-row{display:grid;grid-template-columns:1fr 88px;gap:8px;align-items:center}
+input[type=number]{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px}
+.score-big{font-size:27px;font-weight:900;color:var(--accent)}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+@media(max-width:430px){
+  .grid2,.grid3,.inline-choices{grid-template-columns:1fr}
+  .input-row{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="fastingTask">
+
+  <div class="head">
+    <div class="kicker">Интервальное голодание</div>
+    <h2>Проверьте, кому эксперимент не подходит без врача</h2>
+    <p class="lead">Классифицируйте ситуации, затем выберите корректный вывод об аутофагии и окнах питания.</p>
+  </div>
+  <div class="body">
+    <div data-role="items"></div>
+    <div data-role="claimBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">Какой вывод корректен?</div>
+      <div class="grid2" data-role="claims"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить безопасность</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('fastingTask');
+  if (!root) return;
+
+  const items=[
+    {text:'Здоровый взрослый хочет попробовать спокойный 12-часовой ночной перерыв',correct:'may'},
+    {text:'Беременность или грудное вскармливание',correct:'doctor'},
+    {text:'История расстройства пищевого поведения',correct:'avoid'},
+    {text:'Диабет и препараты, которые могут снижать глюкозу',correct:'doctor'},
+    {text:'Ребенок или подросток',correct:'doctor'},
+    {text:'Человек с дефицитом массы и выраженной слабостью',correct:'avoid'}
+  ];
+  const labels=[
+    {value:'may',text:'Можно рассмотреть'},
+    {value:'doctor',text:'Только после консультации'},
+    {value:'avoid',text:'Не экспериментировать'}
+  ];
+  const claims=[
+    {text:'16 часов гарантированно запускают клинически значимую аутофагию у каждого',correct:false},
+    {text:'Польза и переносимость различаются; качество рациона и безопасность важнее цифры окна',correct:true},
+    {text:'Любая калория полностью отменяет все восстановительные процессы',correct:false},
+    {text:'Во время болезни нужно продолжать голодание ради дисциплины',correct:false}
+  ];
+  let answers=Array(items.length).fill(null),pick=null;
+  const q=r=>root.querySelector(`[data-role="${r}"]`);
+  function render(){
+    q('items').innerHTML=items.map((x,i)=>`
+      <div class="row-card" data-row="${i}">
+        <div style="font-size:12px;line-height:1.35">${x.text}</div>
+        <div class="grid3" style="margin-top:6px">
+          ${labels.map(l=>`<button type="button" class="answer-btn ${answers[i]===l.value?'selected':''}" data-value="${l.value}">${l.text}</button>`).join('')}
+        </div>
+      </div>`).join('');
+    q('items').querySelectorAll('[data-row]').forEach(row=>{
+      const i=Number(row.dataset.row);
+      row.querySelectorAll('[data-value]').forEach(btn=>btn.addEventListener('click',()=>{answers[i]=btn.dataset.value;q('fb').className='feedback';render();}));
+    });
+    const ready=answers.every(v=>v!==null);q('claimBlock').classList.toggle('hidden',!ready);q('check').disabled=!(ready&&pick!==null);
+  }
+  q('claims').innerHTML=claims.map((x,i)=>`<button type="button" class="choice" data-pick="${i}">${x.text}</button>`).join('');
+  q('claims').querySelectorAll('[data-pick]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('claims').querySelectorAll('[data-pick]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');pick=Number(btn.dataset.pick);q('check').disabled=!answers.every(v=>v!==null);
+    });
+  });
+  q('check').addEventListener('click',()=>{
+    let score=0;
+    q('items').querySelectorAll('[data-row]').forEach(row=>{
+      const i=Number(row.dataset.row);
+      row.querySelectorAll('[data-value]').forEach(btn=>{
+        const v=btn.dataset.value;
+        if(v===items[i].correct)btn.classList.add('good');else if(v===answers[i])btn.classList.add('bad');btn.disabled=true;
+      });
+      if(answers[i]===items[i].correct)score++;
+    });
+    q('claims').querySelectorAll('[data-pick]').forEach(btn=>{
+      const i=Number(btn.dataset.pick);
+      if(claims[i].correct)btn.classList.add('good');else if(i===pick)btn.classList.add('bad');btn.disabled=true;
+    });
+    const ok=score===items.length&&claims[pick].correct;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Безопасность поставлена выше обещаний аутофагии.</strong><br>Интервальное питание подходит не всем, а точный человеческий «порог очистки» нельзя свести к одной цифре.'
+      : `<strong>Верно классифицировано: ${score} из ${items.length} ситуаций.</strong><br>Беременность, лекарства, возраст, масса тела и история РПП меняют допустимость голодания.`;
+    q('check').disabled=true;
+  });
+  q('reset').addEventListener('click',()=>{
+    answers=Array(items.length).fill(null);pick=null;
+    q('claims').querySelectorAll('[data-pick]').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';render();
+  });
+  render();
+
+})();
+</script>
+</body>
+</html>
