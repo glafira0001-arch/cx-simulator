@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Копилка микро-нет</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:93%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.pause{height:7px;border-radius:999px;background:#e8ebf3;overflow:hidden;margin-top:6px}
+.pause>div{height:100%;width:0;background:var(--accent);transition:width .1s linear}
+.coins{display:flex;gap:6px;margin-top:7px}
+.coin{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#eef1ff;border:1px solid #cbd2ff;font-size:16px}
+.coin.filled{background:#eaf8f1;border-color:#98d7bd}
+.range-row{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center}
+input[type="range"]{width:100%}
+@media(max-width:430px){
+  .grid2,.inline-choices{grid-template-columns:1fr}
+  .range-row{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="microNoTask">
+
+  <div class="head">
+    <div class="kicker">Микро-победы</div>
+    <h2>Соберите три маленьких «нет»</h2>
+    <p class="lead">Выберите три безопасные тренировки, оцените послевкусие и назначьте небольшую награду за верность себе.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="metric"><span class="small">Копилка</span><span class="badge" data-role="count">0 из 3</span></div>
+      <div class="coins" data-role="coins"></div>
+    </div>
+    <div class="grid2" data-role="wins" style="margin-top:8px"></div>
+    <div data-role="reflection" class="hidden">
+      <div class="row-card" style="margin-top:8px">
+        <div class="range-row">
+          <div>
+            <strong style="font-size:12px">Вина сразу после отказа</strong>
+            <div class="small">0 — нет вины, 10 — очень сильная</div>
+          </div>
+          <input type="range" min="0" max="10" value="5" data-role="guilt">
+        </div>
+      </div>
+      <div class="row-card">
+        <div class="range-row">
+          <div>
+            <strong style="font-size:12px">Свобода через 10 минут</strong>
+            <div class="small">0 — не почувствовал, 10 — сильное облегчение</div>
+          </div>
+          <input type="range" min="0" max="10" value="5" data-role="freedom">
+        </div>
+      </div>
+      <div class="small" style="margin:8px 0 5px">Награда за целостность</div>
+      <div class="grid2" data-role="rewards"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Положить в копилку</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('microNoTask');
+  if (!root) return;
+
+  const wins=[
+    {text:'Не брать ненужный пакет на кассе',good:true},
+    {text:'Отписаться от бесполезной рассылки',good:true},
+    {text:'Не пить кофе только за компанию',good:true},
+    {text:'Отказать человеку грубо, чтобы почувствовать силу',good:false},
+    {text:'Игнорировать важное сообщение вместо ответа',good:false},
+    {text:'Отказаться от запланированного сна ради работы',good:false}
+  ];
+  const rewards=[
+    {text:'Послушать любимую песню',correct:true},
+    {text:'Пять минут посидеть в тишине',correct:true},
+    {text:'Купить любимый чай',correct:true},
+    {text:'Наказать себя новой задачей',correct:false}
+  ];
+  let selected=new Set(),reward=null;
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function render(){
+    q('count').textContent=`${selected.size} из 3`;
+    q('coins').innerHTML=Array.from({length:3},(_,i)=>`<div class="coin ${i<selected.size?'filled':''}">${i<selected.size?'✓':'○'}</div>`).join('');
+
+    q('wins').innerHTML=wins.map((w,i)=>
+      `<button type="button" class="tile ${selected.has(i)?'selected':''}" data-win="${i}">${w.text}</button>`
+    ).join('');
+
+    q('wins').querySelectorAll('[data-win]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const i=Number(btn.dataset.win);
+        if(selected.has(i))selected.delete(i);
+        else if(selected.size<3)selected.add(i);
+        q('fb').className='feedback';
+        render();
+      });
+    });
+
+    const ready=selected.size===3;
+    q('reflection').classList.toggle('hidden',!ready);
+    q('check').disabled=!(ready&&reward!==null);
+  }
+
+  q('rewards').innerHTML=rewards.map((r,i)=>
+    `<button type="button" class="choice" data-reward="${i}">${r.text}</button>`
+  ).join('');
+
+  q('rewards').querySelectorAll('[data-reward]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q('rewards').querySelectorAll('[data-reward]').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      reward=Number(btn.dataset.reward);
+      q('check').disabled=selected.size!==3;
+    });
+  });
+
+  q('check').addEventListener('click',()=>{
+    const choicesOk=selected.size===3&&[...selected].every(i=>wins[i].good);
+    const rewardOk=reward!==null&&rewards[reward].correct;
+    const guilt=Number(q('guilt').value);
+    const freedom=Number(q('freedom').value);
+
+    q('wins').querySelectorAll('[data-win]').forEach(btn=>{
+      const i=Number(btn.dataset.win);
+      if(wins[i].good)btn.classList.add('good');
+      else if(selected.has(i))btn.classList.add('bad');
+      btn.disabled=true;
+    });
+
+    q('rewards').querySelectorAll('[data-reward]').forEach(btn=>{
+      const i=Number(btn.dataset.reward);
+      if(rewards[i].correct)btn.classList.add('good');
+      else if(i===reward)btn.classList.add('bad');
+      btn.disabled=true;
+    });
+
+    const ok=choicesOk&&rewardOk;
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? `<strong>Три микро-победы собраны.</strong><br>Вина: ${guilt}/10. Свобода через 10 минут: ${freedom}/10. Маленькая награда помогает мозгу связать границы с безопасностью, а не с наказанием.`
+      : '<strong>Не каждый отказ тренирует здоровую границу.</strong><br>Микро-«нет» должно защищать ваш выбор, а не превращаться в грубость, избегание ответственности или отказ от восстановления.';
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    selected=new Set();
+    reward=null;
+    q('guilt').value=5;
+    q('freedom').value=5;
+    q('rewards').querySelectorAll('[data-reward]').forEach(x=>{x.disabled=false;x.className='choice';});
+    q('fb').className='feedback';
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>

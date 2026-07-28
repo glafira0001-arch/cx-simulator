@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Честный сброс</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.row-card+.row-card{margin-top:7px}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+button{font:inherit}
+.choice,.tile,.answer-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.answer-btn:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+.inline-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:93%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.pause{height:7px;border-radius:999px;background:#e8ebf3;overflow:hidden;margin-top:6px}
+.pause>div{height:100%;width:0;background:var(--accent);transition:width .1s linear}
+.coins{display:flex;gap:6px;margin-top:7px}
+.coin{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#eef1ff;border:1px solid #cbd2ff;font-size:16px}
+.coin.filled{background:#eaf8f1;border-color:#98d7bd}
+.range-row{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center}
+input[type="range"]{width:100%}
+@media(max-width:430px){
+  .grid2,.inline-choices{grid-template-columns:1fr}
+  .range-row{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="honestResetTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Честный сброс</div>
+    <h2>Объявите новый стандарт и удержите его</h2>
+    <p class="lead">Соберите сообщение, затем пройдите проверку границы в первые 48 часов.</p>
+  </div>
+  <div class="body">
+    <div class="statement">Коллега привык присылать рабочие вопросы поздно вечером, а вы раньше всегда отвечали.</div>
+    <div class="small" data-role="prompt" style="margin:8px 0 5px"></div>
+    <div class="grid2" data-role="options"></div>
+    <div class="card hidden" data-role="messageBlock" style="margin-top:8px">
+      <strong style="font-size:12px">Ваше сообщение</strong>
+      <div class="summary" data-role="message" style="margin-top:5px"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Продолжить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('honestResetTask');
+  if (!root) return;
+
+  const buildStages=[
+    {
+      name:'Признание своей части',
+      options:[
+        {text:'«Я заметил, что раньше сам отвечал на рабочие сообщения в любое время».',correct:true},
+        {text:'«Ты постоянно нарушаешь мои границы».',correct:false},
+        {text:'«Прости, что вообще поднимаю эту тему».',correct:false}
+      ]
+    },
+    {
+      name:'Новый стандарт',
+      options:[
+        {text:'«Можно я теперь буду отвечать только утром?»',correct:false},
+        {text:'«С сегодняшнего дня после 18:00 я не отвечаю на рабочие запросы и возвращаюсь к ним утром».',correct:true},
+        {text:'«Постараюсь реже отвечать вечером».',correct:false}
+      ]
+    },
+    {
+      name:'Благодарность за принятие правила',
+      options:[
+        {text:'«Спасибо, что учитываешь мой график — для меня это важно».',correct:true},
+        {text:'«Надеюсь, ты не обидишься».',correct:false},
+        {text:'«Но в экстренных случаях можешь писать всегда».',correct:false}
+      ]
+    }
+  ];
+  const tests=[
+    {
+      incoming:'В 21:15 приходит: «Там маленький вопрос на две минуты».',
+      options:[
+        {text:'Ответить один раз, чтобы не показаться жестким',correct:false},
+        {text:'Утром повторить: «После 18:00 я не отвечаю на рабочие запросы. Вернусь к вопросу сейчас».',correct:true},
+        {text:'Написать длинное объяснение, почему вы устали',correct:false}
+      ]
+    },
+    {
+      incoming:'Коллега соблюдает правило и пишет утром.',
+      options:[
+        {text:'Ничего не отмечать: это его обязанность',correct:false},
+        {text:'«Спасибо, что написал утром и учел мой график».',correct:true},
+        {text:'Сразу разрешить снова писать вечером',correct:false}
+      ]
+    }
+  ];
+  let phase='build',stageIndex=0,testIndex=0,selected=null,score=0,parts=[];
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function current(){
+    return phase==='build' ? buildStages[stageIndex] : tests[testIndex];
+  }
+
+  function render(){
+    const item=current();
+    selected=null;
+    const totalDone=phase==='build' ? stageIndex : buildStages.length+testIndex;
+    const total=buildStages.length+tests.length;
+    q('bar').style.width=`${totalDone/total*100}%`;
+
+    if(phase==='build'){
+      q('prompt').textContent=`Шаг ${stageIndex+1}: ${item.name}`;
+    }else{
+      q('prompt').textContent=`Проверка ${testIndex+1}: ${item.incoming}`;
+    }
+
+    q('options').classList.remove('hidden');
+    q('options').innerHTML=item.options.map((o,i)=>
+      `<button type="button" class="choice" data-option="${i}">${o.text}</button>`
+    ).join('');
+
+    q('options').querySelectorAll('[data-option]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('options').querySelectorAll('[data-option]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        selected=Number(btn.dataset.option);
+        q('next').disabled=false;
+      });
+    });
+
+    q('next').disabled=true;
+    if(phase==='build'){
+      q('next').textContent=stageIndex===buildStages.length-1?'Объявить границу':'Продолжить';
+    }else{
+      q('next').textContent=testIndex===tests.length-1?'Показать результат':'Следующая проверка';
+    }
+    q('fb').className='feedback';
+  }
+
+  q('next').addEventListener('click',()=>{
+    if(selected===null)return;
+    const item=current();
+    const option=item.options[selected];
+    if(option.correct)score++;
+
+    if(phase==='build'){
+      parts.push(option.text);
+      if(stageIndex<buildStages.length-1){
+        stageIndex++;
+        render();
+      }else{
+        q('messageBlock').classList.remove('hidden');
+        q('message').textContent=parts.join(' ');
+        phase='test';
+        testIndex=0;
+        render();
+      }
+      return;
+    }
+
+    if(testIndex<tests.length-1){
+      testIndex++;
+      render();
+    }else{
+      q('bar').style.width='100%';
+      q('options').classList.add('hidden');
+      q('prompt').classList.add('hidden');
+      q('fb').className=`feedback show ${score===5?'ok':'warn'}`;
+      q('fb').innerHTML=score===5
+        ? '<strong>Новый стандарт выдержал проверку.</strong><br>Вы не просили разрешения, не сделали раннее исключение и подкрепили принятие правила благодарностью.'
+        : `<strong>Устойчивых решений: ${score} из 5.</strong><br>Граница умирает, если сразу сделать исключение. В первые дни повторяйте правило без новых объяснений.`;
+      q('next').disabled=true;
+      q('next').textContent='Готово';
+    }
+  });
+
+  q('reset').addEventListener('click',()=>{
+    phase='build';stageIndex=0;testIndex=0;selected=null;score=0;parts=[];
+    q('options').classList.remove('hidden');
+    q('prompt').classList.remove('hidden');
+    q('messageBlock').classList.add('hidden');
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>
