@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Восстановление после конфликта</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+button{font:inherit}
+.choice,.tile,.message{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover,.message:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f6f7fa;font-size:10px;line-height:1.35;color:#586174}
+.chat{display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:92%;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.35}
+.them{align-self:flex-start;background:#f0f2f6;border-bottom-left-radius:4px}
+.me{align-self:flex-end;background:var(--accent-soft);border-bottom-right-radius:4px}
+.history{max-height:132px;overflow:auto;padding-right:2px}
+.summary{font-size:12px;line-height:1.45}
+.sequence{font-size:11px;line-height:1.45;color:#475467;margin-top:6px}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="recoveryTask">
+
+  <div class="head">
+    <div class="kicker">Восстановление после конфликта</div>
+    <h2>Соберите короткий алгоритм</h2>
+    <p class="lead">Выберите четыре действия в правильном порядке. Повторное нажатие убирает действие.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="metric"><span>Ваш алгоритм</span><span class="badge" data-role="count">0 из 4</span></div>
+      <div class="sequence" data-role="protocol">Шаги еще не выбраны.</div>
+    </div>
+    <div class="grid2" data-role="steps" style="margin-top:7px"></div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="check" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+    <div class="note">При боли в груди, выраженной одышке или предобморочном состоянии нужна медицинская помощь.</div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('recoveryTask');
+  if (!root) return;
+
+  const steps=[
+    {id:'retell',text:'Подробно пересказать конфликт коллегам'},
+    {id:'leave',text:'Сменить обстановку и выйти из места конфликта'},
+    {id:'coffee',text:'Выпить кофе и сразу вернуться к сложной задаче'},
+    {id:'ground',text:'Почувствовать опору, выпить воды и выровнять дыхание'},
+    {id:'ruminate',text:'Прокрутить более удачные ответы'},
+    {id:'move',text:'Немного пройтись или стряхнуть напряжение'},
+    {id:'eat',text:'Заесть раздражение сладким'},
+    {id:'simple',text:'Вернуться через простую механическую задачу'}
+  ];
+  const correct=['leave','ground','move','simple'];
+  let sequence=[];
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function render(){
+    q('steps').innerHTML=steps.map((s,i)=>
+      `<button type="button" class="tile ${sequence.includes(i)?'selected':''}" data-step="${i}">${s.text}</button>`
+    ).join('');
+    q('steps').querySelectorAll('[data-step]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const i=Number(btn.dataset.step);
+        if(sequence.includes(i))sequence=sequence.filter(x=>x!==i);
+        else if(sequence.length<4)sequence.push(i);
+        q('fb').className='feedback';
+        render();
+      });
+    });
+    q('count').textContent=`${sequence.length} из 4`;
+    q('protocol').innerHTML=sequence.length
+      ?sequence.map((i,n)=>`${n+1}. ${steps[i].text}`).join('<br>')
+      :'Шаги еще не выбраны.';
+    q('check').disabled=sequence.length!==4;
+  }
+
+  q('check').addEventListener('click',()=>{
+    const ids=sequence.map(i=>steps[i].id);
+    const ok=ids.length===correct.length&&ids.every((id,i)=>id===correct[i]);
+    q('steps').querySelectorAll('[data-step]').forEach(btn=>{
+      const i=Number(btn.dataset.step);
+      if(correct.includes(steps[i].id))btn.classList.add('good');
+      if(sequence.includes(i)&&!correct.includes(steps[i].id))btn.classList.add('bad');
+      btn.disabled=true;
+    });
+    q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+    q('fb').innerHTML=ok
+      ? '<strong>Алгоритм собран.</strong><br>Сначала завершите контакт телом, затем верните опору и движение, и только потом входите в работу.'
+      : '<strong>Есть лишнее действие или нарушен порядок.</strong><br>Правильная логика: сменить место → вернуть опору → подвигаться → начать с простой задачи.';
+    q('check').disabled=true;
+  });
+
+  q('reset').addEventListener('click',()=>{
+    sequence=[];
+    q('fb').className='feedback';
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>
