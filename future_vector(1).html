@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Управляемый вектор</title>
+<style>
+:root{
+  --ink:#172033;--muted:#667085;--line:#d9e0e8;--card:#fff;
+  --accent:#4658d6;--accent-soft:#eef1ff;
+  --ok:#147552;--ok-soft:#eaf8f1;
+  --bad:#b42318;--bad-soft:#fff0ee;
+  --warn:#936500;--warn-soft:#fff7dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{width:100%;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;overflow:hidden;box-shadow:0 5px 16px rgba(16,24,40,.07)}
+.head{padding:14px 15px 11px;background:linear-gradient(135deg,#fafbff,#eef1ff)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:18px;line-height:1.2;margin:4px 0 5px}
+.lead{font-size:13px;line-height:1.38;color:var(--muted);margin:0}
+.body{padding:12px 15px 14px}
+.card,.row-card{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.small{font-size:11px;line-height:1.35;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+button{font:inherit}
+.choice,.tile{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px 9px;text-align:left;cursor:pointer;transition:.12s;font-size:12px;line-height:1.3}
+.choice:hover,.tile:hover{border-color:#a6b0ed}
+.selected{border-color:var(--accent)!important;background:var(--accent-soft)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.good{border-color:var(--ok)!important;background:var(--ok-soft)!important}
+.bad{border-color:var(--bad)!important;background:var(--bad-soft)!important}
+.actions{display:flex;gap:7px;margin-top:11px}
+.primary,.secondary{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;font-size:12px}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#edf0f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:9px 10px;font-size:12px;line-height:1.4}
+.feedback.show{display:block}.feedback.ok{background:var(--ok-soft);color:#0c5a3f}
+.feedback.warn{background:var(--warn-soft);color:#704d00}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;background:#eef1f6;
+  color:#475467;font-size:10px;font-weight:800}
+.metric{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress{height:4px;background:#e8ebf3}.progress>div{height:100%;background:var(--accent);width:0;transition:.2s}
+.hidden{display:none!important}
+.statement{font-size:12px;line-height:1.4;padding:9px;border-radius:10px;background:#f8f9fb;border:1px solid var(--line)}
+.summary{font-size:12px;line-height:1.45}
+@media(max-width:430px){
+  .grid2{grid-template-columns:1fr}
+  .task{border-radius:12px}
+  .head,.body{padding-left:12px;padding-right:12px}
+}
+</style>
+</head>
+<body>
+<div class="task" id="futureVectorTask">
+
+  <div class="progress"><div data-role="bar"></div></div>
+  <div class="head">
+    <div class="kicker">Гибкое планирование будущего</div>
+    <h2>Переведите цель в управляемый вектор</h2>
+    <p class="lead">Выберите регулярное действие и реалистичный план Б.</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <span class="badge" data-role="step"></span>
+      <p data-role="goal" style="margin:7px 0 0;font-size:12px;line-height:1.4"></p>
+    </div>
+    <div class="small" style="margin:8px 0 5px">Управляемый вектор</div>
+    <div class="grid2" data-role="vectors"></div>
+    <div data-role="planBlock" class="hidden">
+      <div class="small" style="margin:8px 0 5px">План Б</div>
+      <div class="grid2" data-role="plans"></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Начать заново</button>
+      <button type="button" class="primary" data-role="next" disabled>Проверить</button>
+    </div>
+    <div class="feedback" data-role="fb"></div>
+  </div>
+
+</div>
+<script>
+(() => {
+  const root = document.getElementById('futureVectorTask');
+  if (!root) return;
+
+  const cases=[
+    {
+      goal:'«Через пять лет купить квартиру».',
+      vectors:[
+        {text:'Гарантировать, что цены не вырастут', correct:false},
+        {text:'Ждать идеального момента для покупки', correct:false},
+        {text:'Ежемесячно переводить фиксированную долю дохода на накопительный счет', correct:true},
+        {text:'Каждый день представлять готовую квартиру', correct:false}
+      ],
+      plans:[
+        {text:'Если доход снизится, уменьшить сумму, но сохранить регулярность', correct:true},
+        {text:'Если план нарушится, отказаться от цели', correct:false},
+        {text:'Не рассматривать отклонения от плана', correct:false},
+        {text:'Занять деньги любой ценой', correct:false}
+      ]
+    },
+    {
+      goal:'«Сохранить хорошее здоровье в зрелом возрасте».',
+      vectors:[
+        {text:'Поддерживать движение, сон и профилактические обследования', correct:true},
+        {text:'Запланировать никогда не болеть', correct:false},
+        {text:'Сравнивать себя с самыми спортивными знакомыми', correct:false},
+        {text:'Рассчитывать только на будущую медицину', correct:false}
+      ],
+      plans:[
+        {text:'Следовать одному плану независимо от состояния', correct:false},
+        {text:'При первом пропуске прекратить программу', correct:false},
+        {text:'При снижении ресурса перейти на более мягкий, но регулярный режим', correct:true},
+        {text:'Удвоить нагрузку после перерыва', correct:false}
+      ]
+    },
+    {
+      goal:'«Через год свободно говорить на иностранном языке».',
+      vectors:[
+        {text:'Купить дорогой курс и ждать результата', correct:false},
+        {text:'Заниматься по 20 минут четыре раза в неделю и практиковать речь', correct:true},
+        {text:'Сравнивать начало с уровнем преподавателя', correct:false},
+        {text:'Запланировать чувствовать уверенность на каждом занятии', correct:false}
+      ],
+      plans:[
+        {text:'Если пропущена неделя, начать со следующего года', correct:false},
+        {text:'Компенсировать пропуск ночными занятиями', correct:false},
+        {text:'Отказаться до появления идеального графика', correct:false},
+        {text:'В загруженные недели сохранить хотя бы два коротких занятия', correct:true}
+      ]
+    }
+  ];
+  let index=0, vector=null, plan=null, checked=false, score=0;
+  const q=role=>root.querySelector(`[data-role="${role}"]`);
+
+  function render(){
+    const item=cases[index];
+    vector=null;plan=null;checked=false;
+    q('step').textContent=`Цель ${index+1} из ${cases.length}`;
+    q('goal').textContent=item.goal;
+    q('bar').style.width=`${index/cases.length*100}%`;
+    q('vectors').classList.remove('hidden');
+    q('vectors').innerHTML=item.vectors.map((o,i)=>
+      `<button type="button" class="choice" data-vector="${i}">${o.text}</button>`
+    ).join('');
+    q('plans').innerHTML=item.plans.map((o,i)=>
+      `<button type="button" class="choice" data-plan="${i}">${o.text}</button>`
+    ).join('');
+    q('vectors').querySelectorAll('[data-vector]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('vectors').querySelectorAll('[data-vector]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        vector=Number(btn.dataset.vector);
+        q('planBlock').classList.remove('hidden');
+        q('next').disabled=plan===null;
+      });
+    });
+    q('plans').querySelectorAll('[data-plan]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        q('plans').querySelectorAll('[data-plan]').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        plan=Number(btn.dataset.plan);
+        q('next').disabled=vector===null;
+      });
+    });
+    q('planBlock').classList.add('hidden');
+    q('next').disabled=true;
+    q('next').textContent='Проверить';
+    q('fb').className='feedback';
+  }
+
+  q('next').addEventListener('click',()=>{
+    const item=cases[index];
+    if(!checked){
+      if(vector===null||plan===null)return;
+      const ok=item.vectors[vector].correct&&item.plans[plan].correct;
+      if(ok)score++;
+      q('vectors').querySelectorAll('[data-vector]').forEach(btn=>{
+        const i=Number(btn.dataset.vector);
+        if(item.vectors[i].correct)btn.classList.add('good');
+        else if(i===vector)btn.classList.add('bad');
+        btn.disabled=true;
+      });
+      q('plans').querySelectorAll('[data-plan]').forEach(btn=>{
+        const i=Number(btn.dataset.plan);
+        if(item.plans[i].correct)btn.classList.add('good');
+        else if(i===plan)btn.classList.add('bad');
+        btn.disabled=true;
+      });
+      q('fb').className=`feedback show ${ok?'ok':'warn'}`;
+      q('fb').innerHTML=ok
+        ? '<strong>План остается управляемым.</strong><br>Вы выбрали регулярный процесс и адаптацию, которая сохраняет направление.'
+        : '<strong>В плане слишком много контроля над результатом или мало гибкости.</strong><br>Выбирайте действие, зависящее от вас, и уменьшайте темп без отказа от курса.';
+      checked=true;
+      q('next').textContent=index===cases.length-1?'Показать результат':'Следующая цель';
+      return;
+    }
+    if(index<cases.length-1){index++;render();}
+    else{
+      q('bar').style.width='100%';
+      q('vectors').classList.add('hidden');
+      q('planBlock').classList.add('hidden');
+      q('goal').innerHTML=`Точных решений: <strong>${score} из ${cases.length}</strong>.`;
+      q('fb').className=`feedback show ${score===cases.length?'ok':'warn'}`;
+      q('fb').innerHTML='Устойчивый план задает направление и заранее допускает изменение темпа без отказа от цели.';
+      q('next').disabled=true;
+      q('next').textContent='Готово';
+    }
+  });
+
+  q('reset').addEventListener('click',()=>{
+    index=0;vector=null;plan=null;checked=false;score=0;
+    render();
+  });
+
+  render();
+
+})();
+</script>
+</body>
+</html>
