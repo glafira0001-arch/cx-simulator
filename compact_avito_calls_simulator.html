@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Авито: почему у конкурента больше звонков?</title>
+<style>
+:root{
+  --ink:#152238;--muted:#667085;--line:#dbe2ea;--bg:#fff;
+  --accent:#2f6fd2;--accent2:#2558a8;--soft:#edf4ff;
+  --ok:#147552;--oksoft:#eaf8f1;--warn:#8a5a00;--warnsoft:#fff5d6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+.task{
+  width:100%;max-width:560px;margin:0 auto;background:var(--bg);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 6px 18px rgba(30,55,90,.08)
+}
+.progress{height:4px;background:#e8edf5}
+.progress>div{height:100%;background:#77a8f3;width:0;transition:.25s}
+.head{
+  padding:13px 15px 11px;
+  background:linear-gradient(135deg,var(--accent2),#347bdc);
+  color:#fff
+}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+h2{font-size:18px;line-height:1.15;margin:4px 0}
+.lead{font-size:12px;line-height:1.35;margin:0;opacity:.92}
+.body{padding:11px 14px 13px}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;
+  background:#eef2f7;color:#475467;font-size:10px;font-weight:800
+}
+.score{font-size:10px;color:var(--muted)}
+.dashboard{
+  border:1px solid var(--line);border-radius:10px;padding:8px 9px;
+  background:#f8fafc
+}
+.dashboard-title{font-size:11px;font-weight:800;margin-bottom:5px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.metric{
+  border:1px solid #e2e7ee;border-radius:8px;background:#fff;padding:6px 7px
+}
+.metric strong{display:block;font-size:11px;line-height:1.25}
+.metric span{font-size:9.8px;color:var(--muted);line-height:1.25}
+.question{font-size:13px;font-weight:800;line-height:1.3;margin:9px 0 6px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.choice{
+  width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:8px;text-align:left;cursor:pointer;
+  font-size:11.2px;line-height:1.28;transition:.12s
+}
+.choice:hover{border-color:#9db8e5}
+.choice.selected{border-color:var(--accent);background:var(--soft);box-shadow:0 0 0 1px var(--accent) inset}
+.actions{display:flex;gap:7px;margin-top:9px}
+.primary,.secondary{
+  border:0;border-radius:9px;padding:8px 10px;font-weight:800;
+  cursor:pointer;font-size:11.5px
+}
+.primary{background:var(--accent);color:#fff;flex:1}
+.secondary{background:#eef1f5;color:var(--ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.feedback{
+  display:none;margin-top:8px;border-radius:9px;padding:8px 9px;
+  font-size:11.2px;line-height:1.35
+}
+.feedback.show{display:block}
+.feedback.ok{background:var(--oksoft);color:#0c5a3f}
+.feedback.warn{background:var(--warnsoft);color:#6e4900}
+.result{
+  display:none;border:1px solid var(--line);border-radius:10px;
+  padding:9px;background:#fafcff;margin-top:8px
+}
+.result.show{display:block}
+.result-title{font-size:11px;font-weight:800;margin-bottom:5px}
+.result-line{font-size:10.8px;line-height:1.34;padding:4px 0;border-bottom:1px dashed #e0e5ec}
+.result-line:last-child{border-bottom:0}
+@media(max-width:430px){
+  .task{border-radius:12px}
+  .head,.body{padding-left:11px;padding-right:11px}
+  .options{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="task" id="avitoCallsTask">
+  <div class="progress"><div data-role="bar"></div></div>
+
+  <div class="head">
+    <div class="kicker">Симулятор кабинета</div>
+    <h2>Авито: почему у конкурента больше звонков?</h2>
+    <p class="lead">Проанализируйте объявление и используйте бюджет только после исправления слабых мест.</p>
+  </div>
+
+  <div class="body">
+    <div class="topline">
+      <span class="badge" data-role="step">Этап 1 из 4</span>
+      <span class="score">Верных решений: <strong data-role="score">0</strong></span>
+    </div>
+
+    <div class="dashboard" data-role="dashboard"></div>
+    <div class="question" data-role="question"></div>
+    <div class="options" data-role="options"></div>
+
+    <div class="result" data-role="result"></div>
+
+    <div class="actions">
+      <button type="button" class="secondary" data-role="reset">Сбросить</button>
+      <button type="button" class="primary" data-role="next" disabled>Продолжить</button>
+    </div>
+
+    <div class="feedback" data-role="fb"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('avitoCallsTask');
+  if (!root) return;
+
+  const stages = [
+    {
+      title: 'Анализ кабинета',
+      dashboard: `
+        <div class="dashboard-title">Ваше объявление и конкурент</div>
+        <div class="metrics">
+          <div class="metric">
+            <strong>Ваше: 1840 показов</strong>
+            <span>210 просмотров · 1 звонок</span>
+          </div>
+          <div class="metric">
+            <strong>Конкурент: 900 показов</strong>
+            <span>190 просмотров · 17 звонков</span>
+          </div>
+        </div>`,
+      question: 'Какой вывод сделать первым?',
+      correct: 1,
+      options: [
+        'Нужно сразу увеличить рекламный бюджет',
+        'Объявление получает показы, но плохо превращает просмотры в звонки',
+        'У конкурента просто случайно больше звонков',
+        'Нужно удалить объявление и создать такое же'
+      ],
+      feedback: 'Проблема не в количестве показов: ваше объявление уже видят, но оно плохо убеждает позвонить.'
+    },
+    {
+      title: 'Заголовок',
+      dashboard: `
+        <div class="dashboard-title">Текущий заголовок</div>
+        <div class="metric">
+          <strong>«Ремонт бытовой техники быстро и недорого»</strong>
+          <span>Общая формулировка без конкретной услуги</span>
+        </div>`,
+      question: 'Какой заголовок точнее отвечает поисковому запросу?',
+      correct: 2,
+      options: [
+        'Лучший мастер в вашем городе',
+        'Починю все быстро и качественно',
+        'Ремонт стиральных машин на дому',
+        'Скидки на ремонт техники'
+      ],
+      feedback: 'Конкретный заголовок сразу показывает, какую технику вы ремонтируете и соответствует прямому запросу клиента.'
+    },
+    {
+      title: 'Текст и география',
+      dashboard: `
+        <div class="dashboard-title">Настройка объявления</div>
+        <div class="metrics">
+          <div class="metric">
+            <strong>Текст</strong>
+            <span>Нет конкретных поломок и услуг</span>
+          </div>
+          <div class="metric">
+            <strong>География</strong>
+            <span>Указан весь город без районов</span>
+          </div>
+        </div>`,
+      question: 'Что исправить перед продвижением?',
+      correct: 0,
+      options: [
+        'Добавить конкретные услуги, запросы клиентов и районы быстрого выезда',
+        'Повторить слово «ремонт» как можно больше раз',
+        'Оставить текст как есть и увеличить цену',
+        'Указать, что вы работаете по всей стране'
+      ],
+      feedback: 'Объявление должно объяснять конкретную услугу и показывать клиенту, что мастер находится рядом.'
+    },
+    {
+      title: 'Продвижение',
+      dashboard: `
+        <div class="dashboard-title">Объявление исправлено</div>
+        <div class="metrics">
+          <div class="metric">
+            <strong>Заголовок конкретный</strong>
+            <span>Услуга понятна из выдачи</span>
+          </div>
+          <div class="metric">
+            <strong>Профиль готов принимать заказы</strong>
+            <span>Вы можете обработать несколько новых звонков</span>
+          </div>
+        </div>`,
+      question: 'Как использовать рекламный бюджет?',
+      correct: 3,
+      options: [
+        'Сразу оплатить максимальное продвижение на месяц',
+        'Продвигать объявление, даже если вы не можете отвечать на звонки',
+        'Не смотреть статистику после запуска',
+        'Запустить небольшой тест в период, когда вы готовы принимать звонки, и сравнить результат'
+      ],
+      feedback: 'Сначала проверяют исправленное объявление на небольшом бюджете, затем оценивают просмотры и звонки.'
+    }
+  ];
+
+  let index = 0;
+  let selected = null;
+  let score = 0;
+  const decisions = [];
+
+  const q = role => root.querySelector(`[data-role="${role}"]`);
+
+  function render() {
+    const stage = stages[index];
+    selected = null;
+
+    q('bar').style.width = `${index / stages.length * 100}%`;
+    q('step').textContent = `Этап ${index + 1} из ${stages.length}`;
+    q('dashboard').innerHTML = stage.dashboard;
+    q('question').textContent = stage.question;
+    q('options').style.display = 'grid';
+    q('options').innerHTML = stage.options
+      .map((text, i) => `<button type="button" class="choice" data-option="${i}">${text}</button>`)
+      .join('');
+
+    q('options').querySelectorAll('[data-option]').forEach(button => {
+      button.addEventListener('click', () => {
+        q('options').querySelectorAll('.choice').forEach(item => item.classList.remove('selected'));
+        button.classList.add('selected');
+        selected = Number(button.dataset.option);
+        q('next').disabled = false;
+      });
+    });
+
+    q('next').disabled = true;
+    q('next').textContent = index === stages.length - 1 ? 'Показать результат' : 'Продолжить';
+    q('fb').className = 'feedback';
+    q('result').className = 'result';
+  }
+
+  q('next').addEventListener('click', () => {
+    const stage = stages[index];
+    const isCorrect = selected === stage.correct;
+
+    if (isCorrect) score += 1;
+    q('score').textContent = score;
+
+    decisions.push({
+      title: stage.title,
+      answer: stage.options[selected]
+    });
+
+    if (index < stages.length - 1) {
+      q('fb').className = `feedback show ${isCorrect ? 'ok' : 'warn'}`;
+      q('fb').innerHTML = `<strong>${isCorrect ? 'Верное решение.' : 'Решение требует корректировки.'}</strong><br>${stage.feedback}`;
+
+      window.setTimeout(() => {
+        index += 1;
+        render();
+      }, 1200);
+      return;
+    }
+
+    q('bar').style.width = '100%';
+    q('dashboard').innerHTML = `
+      <div class="dashboard-title">Результат симуляции</div>
+      <div class="metrics">
+        <div class="metric">
+          <strong>${score} из ${stages.length}</strong>
+          <span>верных управленческих решений</span>
+        </div>
+        <div class="metric">
+          <strong>${score === stages.length ? 'Объявление готово' : 'Нужна доработка'}</strong>
+          <span>перед увеличением рекламного бюджета</span>
+        </div>
+      </div>`;
+    q('question').textContent = '';
+    q('options').style.display = 'none';
+
+    q('result').className = 'result show';
+    q('result').innerHTML =
+      '<div class="result-title">Что влияет на звонки</div>' +
+      '<div class="result-line"><strong>1.</strong> Конкретный заголовок под прямой запрос клиента.</div>' +
+      '<div class="result-line"><strong>2.</strong> Понятные услуги, поломки и география выезда.</div>' +
+      '<div class="result-line"><strong>3.</strong> Продвижение только после исправления конверсии объявления.</div>' +
+      '<div class="result-line"><strong>4.</strong> Небольшой тест и сравнение статистики до масштабирования.</div>';
+
+    q('fb').className = `feedback show ${score === stages.length ? 'ok' : 'warn'}`;
+    q('fb').innerHTML = score === stages.length
+      ? '<strong>Вы нашли причину низкой эффективности.</strong><br>Сначала улучшили объявление, затем приняли обоснованное решение по бюджету.'
+      : '<strong>Не спешите покупать больше показов.</strong><br>Сначала исправьте заголовок, содержание и локальность объявления.';
+
+    q('next').disabled = true;
+    q('next').textContent = 'Готово';
+  });
+
+  q('reset').addEventListener('click', () => {
+    index = 0;
+    selected = null;
+    score = 0;
+    decisions.length = 0;
+    q('score').textContent = '0';
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
