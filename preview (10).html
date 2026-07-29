@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<style>
+body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif}
+.widget{width:560px;max-width:95%;margin:15px auto}
+.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item{border:1px solid #ddd;border-radius:12px;padding:10px;font-size:12px}
+.choice{display:inline-block;background:#f3f4f6;border-radius:8px;padding:4px 7px;margin-top:8px;cursor:pointer}
+.choice.active{border:1px solid #9ca3af;background:#fff}
+.row{display:flex;gap:8px}
+button{border:0;border-radius:10px;padding:10px;background:#2563eb;color:#fff;flex:1;cursor:pointer}
+.reset{flex:0 0 40px;background:#e5e7eb;color:#111}
+.result,.feedback{display:none}
+</style>
+</head>
+<body>
+<div class="widget">
+
+<div class="card">
+🎯 Вы хотите сократить расходы на маркетинг, но сохранить объем и качество работы.<br>
+Пересоберите модель команды после внедрения ИИ.
+</div>
+
+<div class="card">
+<b>Было:</b><br><br>
+👥 3 маркетолога-универсала<br>
+💰 600 000 ₽ / месяц<br><br>
+Функции: тексты, макеты, анализ, маркетинговые решения
+</div>
+
+<div class="card">
+<b>Какие функции изменятся?</b>
+<div class="grid">
+<div class="item" data-answer="ai">🔍 Анализ конкурентов<br><span class="choice" data-value="ai">🤖 ИИ</span> <span class="choice" data-value="human">👤 Человек</span></div>
+<div class="item" data-answer="ai">📊 Анализ рынка<br><span class="choice" data-value="ai">🤖 ИИ</span> <span class="choice" data-value="human">👤 Человек</span></div>
+<div class="item" data-answer="ai">✍️ Создание текстов<br><span class="choice" data-value="ai">🤖 ИИ</span> <span class="choice" data-value="human">👤 Человек</span></div>
+<div class="item" data-answer="ai">🎨 Создание макетов<br><span class="choice" data-value="ai">🤖 ИИ</span> <span class="choice" data-value="human">👤 Человек</span></div>
+<div class="item" data-answer="human">🎯 Выбор приоритетов маркетинга<br><span class="choice" data-value="ai">🤖 ИИ</span> <span class="choice" data-value="human">👤 Человек</span></div>
+<div class="item" data-answer="human">✅ Контроль качества<br><span class="choice" data-value="ai">🤖 ИИ</span> <span class="choice" data-value="human">👤 Человек</span></div>
+</div>
+</div>
+
+<div class="row">
+<button onclick="check()">📊 Посмотреть новую модель</button>
+<button class="reset" onclick="resetTask()">↻</button>
+</div>
+
+<div class="card feedback" id="feedback"></div>
+
+<div class="card result" id="result">
+<b>Стало: новая модель маркетинга</b><br><br>
+👤 1 маркетолог + 🤖 AI-инструменты<br>
+💰 210–230 тыс. ₽ / месяц<br>
+📉 Экономия: до 390 тыс. ₽ / месяц<br><br>
+Функции: постановка задач, контроль качества, работа с ИИ и принятие решений.<br><br>
+<b>Аналитика ИИ:</b><br>
+Основной объем ручной работы приходился на анализ и подготовку материалов — эти процессы можно ускорить с помощью ИИ.<br><br>
+<b>Вывод:</b><br>
+ИИ снижает рутинную нагрузку, а человек сохраняет контроль над решениями.
+</div>
+
+</div>
+
+<script>
+document.querySelectorAll('.item').forEach(item=>{
+ item.querySelectorAll('.choice').forEach(c=>{
+  c.onclick=()=>{
+   item.querySelectorAll('.choice').forEach(x=>x.classList.remove('active'));
+   c.classList.add('active');
+   document.getElementById('feedback').style.display='none';
+  }
+ })
+});
+
+function check(){
+ let correct=0,total=0;
+ document.querySelectorAll('.item').forEach(item=>{
+  let selected=item.querySelector('.choice.active');
+  if(selected){
+   total++;
+   if(selected.dataset.value===item.dataset.answer) correct++;
+  }
+ });
+ let feedback=document.getElementById('feedback');
+ feedback.style.display='block';
+
+ if(total<6){
+  feedback.innerHTML='Выберите вариант для всех функций, чтобы увидеть новую модель.';
+  return;
+ }
+
+ feedback.innerHTML='Результат: '+correct+' из 6 решений соответствуют новой модели работы.';
+ document.getElementById('result').style.display='block';
+}
+
+function resetTask(){
+ document.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+ document.getElementById('feedback').style.display='none';
+ document.getElementById('result').style.display='none';
+}
+</script>
+
+</body>
+</html>
