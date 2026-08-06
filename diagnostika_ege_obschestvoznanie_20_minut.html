@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Стартовая диагностика ЕГЭ по обществознанию</title>
+<style>
+:root {
+  --bg:#f4f5f8; --card:#fff; --ink:#192033; --muted:#667085; --line:#d9dee8;
+  --accent:#4656c9; --accent-soft:#eef0ff; --ok:#18794e; --ok-soft:#eaf7f0;
+  --warn:#9a6700; --warn-soft:#fff6dd; --bad:#b42318; --bad-soft:#fff0ef;
+  --dark:#252b42; --shadow:0 18px 46px rgba(32,42,75,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(70,86,201,.14),transparent 26rem),
+    linear-gradient(180deg,#f7f8ff 0,#f4f5f8 28rem);
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:24px 0 60px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:900;margin:2px 0 20px}
+.mark{width:40px;height:40px;border-radius:13px;background:var(--dark);color:white;display:grid;place-items:center}
+.card{background:var(--card);border:1px solid rgba(217,222,232,.9);border-radius:24px;box-shadow:var(--shadow)}
+.intro{padding:32px}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--accent);font-weight:900}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.05;margin:10px 0 14px}
+.lead{font-size:18px;line-height:1.58;color:var(--muted);max-width:780px}
+.note{margin:22px 0;padding:16px 18px;border:1px solid #cfd5ff;border-radius:16px;background:var(--accent-soft);line-height:1.52}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-size:13px;font-weight:800;color:#475467}
+.field input,.field select,.field textarea{
+  width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:white;color:var(--ink);outline:none
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(70,86,201,.12)}
+.checkrow{margin-top:16px;display:flex;gap:10px;align-items:flex-start;color:#475467;line-height:1.45}
+.checkrow input{margin-top:4px;accent-color:var(--accent)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{border:0;border-radius:13px;padding:12px 18px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);color:white}
+.btn.secondary{background:#eef0f4;color:var(--ink)}
+.btn.ghost{background:white;border:1px solid var(--line);color:var(--ink)}
+.btn.good{background:var(--ok);color:white}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+
+.test{overflow:hidden}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:18px 24px;border-bottom:1px solid var(--line);background:#fbfcfe}
+.testtitle{font-weight:900;font-size:18px}
+.small{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.timer{font-variant-numeric:tabular-nums;font-weight:950;font-size:18px;padding:9px 12px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
+.timer.warn{background:var(--warn-soft);color:var(--warn)}
+.timer.bad{background:var(--bad-soft);color:var(--bad)}
+.progressbox{padding:13px 24px 0}
+.progressmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+.progress{height:8px;background:#edf0f5;border-radius:999px;overflow:hidden}
+.progress>div{height:100%;background:var(--accent);transition:.2s}
+.qarea{padding:25px}
+.tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.tag{font-size:11px;font-weight:850;background:#f0f2f6;color:#475467;padding:5px 9px;border-radius:999px}
+.qtitle{font-size:22px;line-height:1.42;margin:0 0 18px}
+.source{padding:15px 17px;border-left:4px solid var(--accent);border-radius:0 13px 13px 0;background:#f7f8ff;line-height:1.57;margin:0 0 18px;color:#344054}
+.visual{max-width:680px;margin:0 auto 20px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:12px;text-align:center}
+.visual img{max-width:100%;height:auto;display:block;margin:0 auto}
+.visual.map img{width:min(100%,645px)}
+.visual.ill img{width:min(100%,340px)}
+.sourcecaption{font-size:11px;color:var(--muted);margin-top:9px}
+
+.match{display:grid;gap:10px}
+.matchrow{display:grid;grid-template-columns:minmax(230px,1.35fr) minmax(240px,1fr);gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+.matchrow .label{font-weight:750;line-height:1.4}
+.matchrow select{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;min-width:0}
+.orderitems{display:grid;gap:9px;margin-bottom:14px}
+.orderitem{padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:#fff;display:flex;gap:11px;align-items:flex-start}
+.orderitem b{width:25px;height:25px;min-width:25px;border-radius:8px;background:#eef0f4;display:grid;place-items:center}
+.sequence{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:13px;background:#f7f8fb;border:1px dashed #bac2d0;border-radius:13px}
+.sequence button{width:42px;height:42px;border:1px solid var(--line);border-radius:11px;background:white;font-weight:900}
+.sequence button.active{background:var(--accent);color:white;border-color:var(--accent)}
+.seqanswer{font-weight:900;color:var(--accent);min-width:90px}
+.options{display:grid;gap:10px}
+.option{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start;background:white;transition:.15s}
+.option:hover{border-color:#aeb8de;background:#fafbff}
+.option.selected{border-color:var(--accent);background:var(--accent-soft)}
+.option input{margin-top:4px;accent-color:var(--accent)}
+.num{width:25px;height:25px;min-width:25px;border-radius:8px;background:#eef0f4;display:grid;place-items:center;font-size:12px;font-weight:900}
+.option.selected .num{background:var(--accent);color:white}
+.openbox textarea{min-height:120px;resize:vertical;line-height:1.55}
+.subanswers{display:grid;gap:12px}
+.subanswer{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fbfcfe}
+.subanswer strong{display:block;margin-bottom:8px}
+.subanswer textarea{min-height:85px;resize:vertical}
+.confidence{margin-top:20px;padding-top:17px;border-top:1px dashed var(--line)}
+.confidence strong{display:block;font-size:13px;margin-bottom:9px;color:#475467}
+.confbuttons{display:flex;gap:8px;flex-wrap:wrap}
+.confbtn{border:1px solid var(--line);border-radius:11px;background:white;padding:9px 12px;font-size:13px;font-weight:800;color:#475467}
+.confbtn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.qfooter{padding:16px 24px;border-top:1px solid var(--line);background:#fbfcfe;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.feedback{margin-top:21px;border-radius:18px;border:1px solid var(--line);overflow:hidden}
+.feedbackhead{padding:14px 16px;font-weight:900}
+.feedback.ok .feedbackhead{background:var(--ok-soft);color:var(--ok)}
+.feedback.warn .feedbackhead{background:var(--warn-soft);color:var(--warn)}
+.feedback.bad .feedbackhead{background:var(--bad-soft);color:var(--bad)}
+.feedbackbody{padding:16px;line-height:1.55}
+.correctbox{padding:13px 14px;border-radius:13px;background:#f5f7fa;margin-bottom:12px}
+.teacher{margin-top:13px;border:1px dashed #aeb6c5;border-radius:13px;background:#fff}
+.teacher summary{padding:12px 14px;font-weight:900;cursor:pointer}
+.teacherbody{padding:0 14px 14px;line-height:1.53;color:#344054}
+.teacherbody ul{margin:8px 0 0;padding-left:20px}
+.teacherbody li{margin:5px 0}
+.rubric{margin-top:14px;padding:14px;border:1px solid #c9d0dc;border-radius:13px;background:#fbfcfe}
+.scorebuttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.scorebtn{border:1px solid var(--line);border-radius:10px;background:white;padding:8px 11px;font-weight:850}
+.scorebtn.active{background:var(--dark);color:white;border-color:var(--dark)}
+
+.report{padding:30px}
+.report h1{font-size:36px;margin:0 0 8px}
+.reportlead{color:var(--muted);line-height:1.5;margin-bottom:20px}
+.summarygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.summarycard{border:1px solid var(--line);border-radius:17px;padding:18px;background:#fbfcfe}
+.summarycard strong{display:block;font-size:28px;margin-bottom:3px}
+.summarycard span{font-size:12px;color:var(--muted)}
+.section{margin-top:26px}
+.section h2{font-size:22px;margin:0 0 13px}
+.matrix{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.matrix>div{border-radius:15px;padding:15px;border:1px solid var(--line)}
+.matrix strong{font-size:25px;display:block}
+.matrix span{font-size:11px;color:var(--muted)}
+.mgood{background:var(--ok-soft);border-color:#bce1cc!important}
+.mwarn{background:var(--warn-soft);border-color:#ead59b!important}
+.mbad{background:var(--bad-soft);border-color:#efc1bd!important}
+.mneutral{background:#f1f3f6}
+.skilllist{display:grid;gap:11px}
+.skillrow{display:grid;grid-template-columns:minmax(190px,1fr) 2.2fr 58px;gap:12px;align-items:center}
+.skillname{font-size:14px;font-weight:800}
+.bar{height:9px;border-radius:999px;background:#edf0f5;overflow:hidden}
+.bar div{height:100%;background:var(--accent)}
+.pct{font-size:13px;text-align:right;font-weight:900}
+.priority{border:1px solid #ccd3ff;background:#f7f8ff;border-radius:17px;padding:17px 19px;line-height:1.55}
+.priority ol{margin:8px 0 0;padding-left:22px}
+.priority li{margin:6px 0}
+.detail{border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:9px}
+.detail summary{list-style:none;padding:13px 15px;font-weight:900;background:#fbfcfe;cursor:pointer}
+.detail summary::-webkit-details-marker{display:none}
+.detailbody{padding:15px;border-top:1px solid var(--line);line-height:1.5}
+.status{display:inline-flex;margin-left:7px;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900}
+.sgood{background:var(--ok-soft);color:var(--ok)}
+.swarn{background:var(--warn-soft);color:var(--warn)}
+.sbad{background:var(--bad-soft);color:var(--bad)}
+.sneutral{background:#edf0f4;color:#475467}
+.mini{font-size:12px;color:var(--muted);margin-top:8px}
+.reportactions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.footer{margin-top:20px;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:720px){
+  .grid2,.summarygrid{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr 1fr}
+  .matchrow{grid-template-columns:1fr}
+  .skillrow{grid-template-columns:1fr}
+  .pct{text-align:left}
+  .qarea{padding:20px 16px}
+  .topbar,.qfooter{padding-left:16px;padding-right:16px}
+  .intro,.report{padding:22px}
+}
+@media print{
+  body{background:white}
+  .wrap{width:100%;padding:0}
+  .brand,.reportactions{display:none!important}
+  .card{border:0;box-shadow:none}
+  details .detailbody{display:block}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="mark">О</div><div>Диагностика ЕГЭ по обществознанию</div></div>
+
+  <section id="intro" class="card intro">
+    <div class="eyebrow">Стартовый срез перед 10 классом</div>
+    <h1>Какие понятия ученица знает и умеет применять</h1>
+    <p class="lead">Диагностика проверяет знания по основным блокам обществознания, умение классифицировать понятия, анализировать социальные ситуации, работать с текстом и формулировать развернутые ответы. Время активной работы — 20 минут. Во время разбора ответа таймер останавливается.</p>
+    <div class="note"><strong>Это не пробник ЕГЭ и не прогноз тестового балла.</strong> Результат показывает стартовую базу и помогает составить план подготовки.</div>
+    <div class="grid2">
+      <div class="field"><label for="student">Имя ученицы</label><input id="student" placeholder="Например, Анна"></div>
+      <div class="field"><label for="target">Цель подготовки</label>
+        <select id="target"><option>90+ баллов</option><option>80+ баллов</option><option>Сначала определить реалистичную цель</option></select>
+      </div>
+    </div>
+    <label class="checkrow"><input id="teacherMode" type="checkbox"><span><strong>Сразу раскрывать комментарий репетитора.</strong> Если экран видит ученица, оставьте флажок выключенным и открывайте комментарий вручную.</span></label>
+    <div class="actions"><button class="btn primary" onclick="startTest()">Начать диагностику</button></div>
+  </section>
+
+  <section id="test" class="card test hidden">
+    <div class="topbar">
+      <div><div class="testtitle">Человек и общество, экономика, социальные отношения, политика и право</div><div class="small">После проверки ответ изменить нельзя. Выберите степень уверенности — она влияет на диагностический вывод.</div></div>
+      <div id="timer" class="timer">20:00</div>
+    </div>
+    <div class="progressbox">
+      <div class="progressmeta"><span id="counter"></span><span id="timeNote">Таймер идет</span></div>
+      <div class="progress"><div id="progressBar"></div></div>
+    </div>
+    <div id="qarea" class="qarea"></div>
+    <div class="qfooter">
+      <span class="small" id="sourceId"></span>
+      <div>
+        <button id="checkBtn" class="btn primary" onclick="checkAnswer()">Проверить ответ</button>
+        <button id="nextBtn" class="btn good hidden" onclick="nextQuestion()">Следующее задание</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="report" class="card report hidden"></section>
+</div>
+
+<script>
+const MAP_SRC="";
+const ILL_SRC="";
+
+const Q = [
+{
+ id:"S1", source:"Тип 2 № 616", title:"Найдите в приведённом списке особенности, отличающие научное познание от других видов познания человеком мира.",
+ skill:"Научное познание", era:"Человек и общество", type:"multi",
+ options:[
+  "Теоретическое обобщение фактов.",
+  "Констатация протекания отдельных событий.",
+  "Образность и оригинальность отражения объективной реальности.",
+  "Стремление к достоверному, обоснованному и объективному знанию.",
+  "Изучение процессов и явлений со стороны закономерностей и причин."
+ ],
+ answer:[0,3,4],
+ explanation:"Научное познание обобщает факты на теоретическом уровне, стремится к достоверному и объективному знанию, изучает закономерности и причины. Констатация отдельных событий характерна для обыденного познания, а образность — для художественного.",
+ statementNotes:[
+  "Если ученица не выбирает пункт 1, она не узнаёт теоретический уровень научного познания и может сводить науку только к наблюдению фактов.",
+  "Если ученица выбирает пункт 2, она смешивает научное и обыденное познание: простая фиксация события ещё не создаёт научного знания.",
+  "Если ученица выбирает пункт 3, она переносит признаки художественного познания на научное.",
+  "Если ученица не выбирает пункт 4, она не удерживает ключевые требования к научному знанию: объективность, доказательность и обоснованность.",
+  "Если ученица не выбирает пункт 5, ей трудно отличать научное объяснение от простого описания."
+ ]
+},
+{
+ id:"S2", source:"Тип 3 № 615", title:"Установите соответствие между главными социальными институтами и сферами жизни общества.",
+ skill:"Сферы общества и социальные институты", era:"Человек и общество", type:"match",
+ left:["Государство","Религия","Образование","Производство","Семья"],
+ right:["Экономика","Политика","Духовная культура","Социальные отношения"],
+ answer:[1,2,2,0,3],
+ explanation:"Государство относится к политической сфере; религия и образование — к духовной; производство — к экономической; семья — к социальной сфере.",
+ comments:[
+  {"item":0,"right":1,"wrong":{0:"Государство влияет на экономику, но как социальный институт относится прежде всего к политической сфере.",2:"Государство не является институтом духовной культуры.",3:"Государство регулирует социальные отношения, но относится к политической сфере."}},
+  {"item":1,"right":2,"wrong":{0:"Религия может влиять на хозяйственное поведение, но относится к духовной сфере.",1:"Религия взаимодействует с политикой, но не является политическим институтом.",3:"Религия влияет на группы и отношения, но относится к духовной культуре."}},
+  {"item":2,"right":2,"wrong":{0:"Образование готовит работников, но как институт относится к духовной сфере.",1:"Государство управляет образованием, однако само образование не относится к политической сфере.",3:"Школа участвует в социализации, но образование как институт относится к духовной сфере."}},
+  {"item":3,"right":0,"wrong":{1:"Производство может регулироваться государством, но относится к экономической сфере.",2:"Производство создаёт материальные, а не духовные блага.",3:"Производство связано с трудовыми группами, но относится к экономике."}},
+  {"item":4,"right":3,"wrong":{0:"Семья ведёт хозяйство, но в классификации сфер общества относится к социальной сфере.",1:"Семья регулируется государством, однако не является политическим институтом.",2:"Семья участвует в воспитании, но относится прежде всего к социальной сфере."}}
+ ]
+},
+{
+ id:"S3", source:"Тип 7 № 1137", title:"Рынок спортивной одежды области Z поделён между четырьмя крупными компаниями-операторами, другие производители не представлены. Выберите характеристики данного рынка.",
+ skill:"Рынок и конкуренция", era:"Экономика", type:"multi",
+ options:[
+  "Рынок услуг.",
+  "Совершенная конкуренция.",
+  "Региональный рынок.",
+  "Рынок товаров.",
+  "Олигополия.",
+  "Рыночный дефицит."
+ ],
+ answer:[2,3,4],
+ explanation:"Рынок действует в пределах области, поэтому он региональный. Спортивная одежда является товаром. Несколько крупных продавцов при отсутствии других производителей образуют олигополию.",
+ statementNotes:[
+  "Если ученица выбирает пункт 1, она не различает рынок товаров и рынок услуг.",
+  "Если ученица выбирает пункт 2, она не учитывает число продавцов: четыре крупные компании не образуют совершенную конкуренцию.",
+  "Если ученица не выбирает пункт 3, она не использует пространственный маркер «область».",
+  "Если ученица не выбирает пункт 4, она не распознаёт объект купли-продажи как товар.",
+  "Если ученица не выбирает пункт 5, ей трудно определять тип конкуренции по количеству крупных производителей.",
+  "Если ученица выбирает пункт 6, она делает вывод о дефиците без данных о нехватке товара."
+ ]
+},
+{
+ id:"S4", source:"Тип 8 № 471", title:"Студент работает над рефератом о вертикальной социальной мобильности. Какие примеры он может использовать?",
+ skill:"Социальная мобильность", era:"Социальные отношения", type:"multi",
+ options:[
+  "Переход человека с должности рядового школьного учителя на должность директора школы.",
+  "Переход человека из квалифицированных рабочих в представители среднего класса.",
+  "Смена профессии на другую без улучшения или ухудшения социально-экономического статуса.",
+  "Отток рабочей силы из производства в сферу обслуживания.",
+  "Рост числа людей, работающих в нескольких местах.",
+  "Достижение человеком высокого положения в обществе благодаря службе в армии."
+ ],
+ answer:[0,1,5],
+ explanation:"Вертикальная мобильность связана с повышением или понижением социального статуса. Повышение в должности, переход в более высокий социальный слой и достижение высокого положения через социальный лифт являются вертикальными перемещениями.",
+ statementNotes:[
+  "Если ученица не выбирает пункт 1, она не распознаёт должностное повышение как восходящую мобильность.",
+  "Если ученица не выбирает пункт 2, она не видит переход между социальными слоями.",
+  "Если ученица выбирает пункт 3, она смешивает вертикальную и горизонтальную мобильность.",
+  "Если ученица выбирает пункт 4, она принимает структурное перемещение рабочей силы за изменение статуса конкретного человека.",
+  "Если ученица выбирает пункт 5, она считает любое изменение занятости социальной мобильностью.",
+  "Если ученица не выбирает пункт 6, она не узнаёт армию как канал вертикальной мобильности."
+ ]
+},
+{
+ id:"S5", source:"Тип 10 № 2564", title:"Выберите проявления деятельности институтов гражданского общества.",
+ skill:"Гражданское общество", era:"Политика", type:"multi",
+ options:[
+  "Межрегиональный профсоюз водителей обратился с инициативой изменения расположения складов и стоянок.",
+  "Министерство объявило конкурс на производство серии художественных фильмов.",
+  "Правозащитная организация выступила в поддержку журналистов и предложила принять законы для защиты их деятельности.",
+  "Ассоциация творческих учителей начала консультировать молодых педагогов на своём портале.",
+  "Следственный комитет принял к рассмотрению дело о нападении на журналиста.",
+  "Президент инициировал создание нового научного центра."
+ ],
+ answer:[0,2,3],
+ explanation:"Институты гражданского общества возникают по инициативе граждан и действуют независимо от органов государственной власти. Профсоюз, правозащитная организация и профессиональная ассоциация соответствуют этим признакам.",
+ statementNotes:[
+  "Если ученица не выбирает пункт 1, она не распознаёт профсоюз как добровольное негосударственное объединение.",
+  "Если ученица выбирает пункт 2, она относит орган исполнительной власти к гражданскому обществу.",
+  "Если ученица не выбирает пункт 3, она не узнаёт правозащитную организацию как институт гражданского общества.",
+  "Если ученица не выбирает пункт 4, она не видит профессиональную ассоциацию как форму самоорганизации граждан.",
+  "Если ученица выбирает пункт 5, она смешивает государственный правоохранительный орган и гражданское общество.",
+  "Если ученица выбирает пункт 6, она принимает инициативу главы государства за негосударственную общественную деятельность."
+ ]
+},
+{
+ id:"S6", source:"Тип 13 № 23", title:"Установите соответствие между функциями и государственными институтами или должностным лицом Российской Федерации, которые их исполняют.",
+ skill:"Органы государственной власти РФ", era:"Политика и право", type:"match",
+ left:[
+  "Назначает выборы Президента РФ",
+  "Издаёт указы и распоряжения",
+  "Решает вопрос о доверии Правительству",
+  "Возглавляет государство",
+  "Представляет государство в международных отношениях"
+ ],
+ right:["Президент РФ","Совет Федерации","Государственная Дума РФ"],
+ answer:[1,0,2,0,0],
+ explanation:"Совет Федерации назначает выборы Президента РФ. Президент издаёт указы и распоряжения, возглавляет государство и представляет его в международных отношениях. Государственная Дума решает вопрос о доверии Правительству.",
+ comments:[
+  {"item":0,"right":1,"wrong":{0:"Президент участвует в политическом процессе, но выборы Президента назначает Совет Федерации.",2:"Государственная Дума не назначает выборы Президента РФ."}},
+  {"item":1,"right":0,"wrong":{1:"Совет Федерации принимает постановления, но указы и распоряжения издаёт Президент.",2:"Государственная Дума принимает законы и постановления, а не президентские указы."}},
+  {"item":2,"right":2,"wrong":{0:"Президент взаимодействует с Правительством, но вопрос о доверии решает Государственная Дума.",1:"Совет Федерации не решает вопрос о доверии Правительству."}},
+  {"item":3,"right":0,"wrong":{1:"Совет Федерации является палатой парламента и не возглавляет государство.",2:"Государственная Дума является палатой парламента и не является главой государства."}},
+  {"item":4,"right":0,"wrong":{1:"Совет Федерации участвует в международной деятельности, но государство официально представляет Президент.",2:"Государственная Дума не выполняет функцию главы государства во внешних отношениях."}}
+ ]
+},
+{
+ id:"S7", source:"Тип 16 № 1248", title:"Гражданин Р. постоянно паркует автомобиль на газоне возле дома. Сотрудники ДПС привлекли его к юридической ответственности. Выберите позиции, связанные с правовой оценкой ситуации.",
+ skill:"Правонарушение и юридическая ответственность", era:"Право", type:"multi",
+ options:[
+  "Трудовое право.",
+  "Административный проступок.",
+  "Дисциплинарная ответственность.",
+  "Административный штраф.",
+  "Конституционное право.",
+  "Судимость."
+ ],
+ answer:[1,3],
+ explanation:"Парковка на газоне относится к административному проступку. Возможная санкция — административный штраф. Она не образует судимость и не относится к трудовой или дисциплинарной ответственности.",
+ statementNotes:[
+  "Если ученица выбирает пункт 1, она не определяет отрасль права по характеру отношения.",
+  "Если ученица не выбирает пункт 2, она не распознаёт административный проступок по нарушению общеобязательных правил.",
+  "Если ученица выбирает пункт 3, она смешивает нарушение общественного порядка с нарушением трудовой дисциплины.",
+  "Если ученица не выбирает пункт 4, она не связывает административный проступок с типичной санкцией.",
+  "Если ученица выбирает пункт 5, она относит конкретное административное нарушение к конституционному праву.",
+  "Если ученица выбирает пункт 6, она смешивает административную и уголовную ответственность."
+ ]
+},
+{
+ id:"S8", source:"Тип 22 № 17565", title:"Проанализируйте экономическую ситуацию в стране Z и ответьте на четыре вопроса.",
+ skill:"Анализ экономической ситуации", era:"Экономика", type:"open",
+ sourceText:"В стране Z экономика основана на многообразии форм собственности на факторы производства при приоритете частной собственности. В течение последних пяти лет растёт численность трудоспособного населения, не имеющего работы и постоянного заработка. Одновременно устойчиво растут цены на товары без изменения их качества.",
+ fields:[
+  "1. Какие два экономических процесса иллюстрирует ситуация?",
+  "2. Укажите по одной мере борьбы с каждым процессом.",
+  "3. К какому типу относится экономическая система страны Z?",
+  "4. Назовите один признак этой системы, не указанный в условии."
+ ],
+ model:[
+  "Безработица и инфляция.",
+  "Например: организация общественных работ для снижения безработицы; регулирование ключевой ставки Центрального банка для борьбы с инфляцией.",
+  "Рыночная или смешанная экономическая система.",
+  "Например: свободная конкуренция производителей."
+ ],
+ max:4,
+ explanation:"Рост числа людей без работы указывает на безработицу, а устойчивый рост общего уровня цен — на инфляцию. Приоритет частной собственности и многообразие её форм характерны для рыночной или смешанной системы.",
+ rubric:[
+  "4 балла: правильно названы оба процесса, две подходящие меры, тип системы и дополнительный признак.",
+  "3 балла: допущен один содержательный пропуск или одна неточность.",
+  "2 балла: верно выполнена примерно половина элементов.",
+  "1 балл: распознан только один процесс или дан один корректный элемент без связного решения.",
+  "0 баллов: ключевые процессы и тип системы не распознаны."
+ ],
+ manualComments:[
+  "Ответ показывает, что ученица пока не извлекает экономические признаки из условия и не связывает их с теорией.",
+  "Есть единичное узнавание термина, но экономическая ситуация не разобрана как система взаимосвязанных признаков.",
+  "Базовые понятия частично знакомы, однако применение знаний и подбор мер государственной политики вызывают сложности.",
+  "Экономическая логика в целом сформирована, но один элемент требует уточнения или более точной формулировки.",
+  "Сильный прикладной ответ: ученица распознаёт процессы, предлагает меры и классифицирует экономическую систему."
+ ]
+},
+{
+ id:"S9", source:"Тип 18 № 54525", title:"Используя текст и обществоведческие знания, назовите не менее трёх признаков социальной нормы и объясните связь ценностей с возникновением социальных норм.",
+ skill:"Анализ обществоведческого текста", era:"Социальные отношения", type:"open",
+ sourceText:"Одним из компонентов социокультурных форм выступают ценности. На основе ценностей формируются критерии оценок, регулирующих отношение людей к объектам удовлетворения человеческих потребностей. Ценности могут быть индивидуальными, групповыми, общечеловеческими. В отличие от социальных ценностей, социальные нормы имеют чёткую формулировку и существуют не на уровне идей, эмоций или ощущений. Воспринятые и закрепившиеся обществом ценности превращаются в социальные нормы, с помощью которых поддерживаются, воспроизводятся и регулируются формы деятельности людей. Таким образом, ценности выступают фактором возникновения социальных норм.",
+ fields:[
+  "1. Не менее трёх признаков понятия «социальная норма»",
+  "2. Объяснение связи ценностей и социальных норм"
+ ],
+ model:[
+  "Например: не имеют конкретного адресата; регулируют общественные отношения; рассчитаны на многократное применение; закрепляют образцы допустимого поведения; поддерживаются социальным контролем.",
+  "Принятые и закрепившиеся в обществе ценности становятся основой социальных норм: нормы переводят представления о желательном и значимом в конкретные правила поведения."
+ ],
+ max:4,
+ explanation:"Социальная норма является общим правилом поведения, регулирует общественные отношения и рассчитана на повторное применение. Автор показывает причинную связь: общество принимает ценности, закрепляет их, после чего они получают форму правил поведения.",
+ rubric:[
+  "4 балла: названы не менее трёх корректных признаков и дано полное причинно-следственное объяснение связи.",
+  "3 балла: признаки названы верно, но объяснение неполное, либо один признак сформулирован неточно.",
+  "2 балла: названы два корректных признака и показана общая связь ценностей с нормами.",
+  "1 балл: есть один корректный признак или общее рассуждение без объяснения механизма связи.",
+  "0 баллов: признаки и связь раскрыты неверно."
+ ],
+ manualComments:[
+  "Ученица не владеет понятийной рамкой и не умеет строить ответ по обществоведческому тексту.",
+  "Есть отдельное узнавание темы, но ответ остаётся бытовым и не раскрывает признаки понятия.",
+  "Базовый смысл понятен, однако не хватает точной терминологии или причинно-следственной связи.",
+  "Ответ почти полный: требуется уточнить один признак или усилить объяснение.",
+  "Сильный ответ: ученица извлекает идею текста, использует терминологию и объясняет функциональную связь."
+ ]
+}
+];
+
+const state={
+ idx:0, answers:{}, locked:{}, confidence:{}, scores:{}, started:null,
+ remaining:1200, timer:null, running:false, qStart:null, times:{}, student:"",target:"",teacherMode:false
+};
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[x]));}
+function show(id){["intro","test","report"].forEach(x=>$(x).classList.toggle("hidden",x!==id));}
+function startTest(){
+  const name=$("student").value.trim();
+  if(!name){alert("Введите имя ученицы.");return;}
+  state.student=name; state.target=$("target").value; state.teacherMode=$("teacherMode").checked;
+  state.started=new Date(); state.qStart=Date.now(); show("test"); render(); resumeTimer();
+}
+function resumeTimer(){
+  clearInterval(state.timer); state.running=true; $("timeNote").textContent="Таймер идет";
+  state.timer=setInterval(()=>{state.remaining--; updateTimer(); if(state.remaining<=0){clearInterval(state.timer);state.running=false;alert("20 минут активной работы закончились. Переходим к результатам.");finish();}},1000);
+  updateTimer();
+}
+function pauseTimer(){
+  clearInterval(state.timer); state.running=false; $("timeNote").textContent="Таймер остановлен на разбор";
+}
+function updateTimer(){
+  const s=Math.max(0,state.remaining),m=String(Math.floor(s/60)).padStart(2,"0"),r=String(s%60).padStart(2,"0");
+  const el=$("timer"); el.textContent=`${m}:${r}`; el.className="timer"+(s<=120?" bad":s<=300?" warn":"");
+}
+function render(){
+  const q=Q[state.idx], locked=state.locked[q.id];
+  $("counter").textContent=`Задание ${state.idx+1} из ${Q.length}`;
+  $("progressBar").style.width=`${(state.idx/Q.length)*100}%`;
+  $("sourceId").textContent=`Источник задания: РЕШУ ЕГЭ — ${q.source}`;
+  $("checkBtn").classList.toggle("hidden",!!locked);
+  $("nextBtn").classList.toggle("hidden",!locked);
+  $("nextBtn").textContent=state.idx===Q.length-1?"Показать результаты":"Следующее задание";
+  let h=`<div class="tags"><span class="tag">${esc(q.skill)}</span><span class="tag">${esc(q.era)}</span></div><h2 class="qtitle">${esc(q.title)}</h2>`;
+  if(q.sourceText) h+=`<div class="source">${esc(q.sourceText)}</div>`;
+  if(q.visual==="map") h+=`<div class="visual map"><img src="${MAP_SRC}" alt="Карта похода Батыя на Северо-Восточную Русь"><div class="sourcecaption">Карта перенесена из файла с заданием без перерисовки.</div></div>`;
+  if(q.visual==="ill") h+=`<div class="visual ill"><img src="${ILL_SRC}" alt="Историческая карикатура о нарушении советско-германского договора"><div class="sourcecaption">Иллюстрация перенесена из файла с заданием без изменения.</div></div>`;
+  h+=renderInput(q,locked);
+  if(!locked) h+=renderConfidence(q);
+  else h+=renderFeedback(q);
+  $("qarea").innerHTML=h;
+  if(state.teacherMode && locked){const d=document.querySelector(".teacher");if(d)d.open=true;}
+}
+function renderInput(q,locked){
+  const a=state.answers[q.id];
+  if(q.type==="match"){
+    return `<div class="match">${q.left.map((x,i)=>`<div class="matchrow"><div class="label">${String.fromCharCode(1040+i)}) ${esc(x)}</div><select ${locked?"disabled":""} onchange="setMatch('${q.id}',${i},this.value)"><option value="">Выберите...</option>${q.right.map((y,j)=>`<option value="${j}" ${a&&a[i]===j?"selected":""}>${j+1}. ${esc(y)}</option>`).join("")}</select></div>`).join("")}</div>`;
+  }
+  if(q.type==="order"){
+    const seq=a||[];
+    return `<div class="orderitems">${q.items.map((x,i)=>`<div class="orderitem"><b>${i+1}</b><span>${esc(x)}</span></div>`).join("")}</div>
+      <div class="sequence"><span class="small">Нажимайте цифры по порядку:</span>${[1,2,3].map(n=>`<button ${locked?"disabled":""} class="${seq.includes(n)?"active":""}" onclick="addOrder(${n})">${n}</button>`).join("")}<span class="seqanswer">${seq.join(" → ")||"—"}</span>${!locked?`<button class="btn ghost" style="width:auto;height:auto" onclick="resetOrder()">Сбросить</button>`:""}</div>`;
+  }
+  if(q.type==="multi"){
+    const vals=a||[];
+    return `<div class="options">${q.options.map((x,i)=>`<label class="option ${vals.includes(i)?"selected":""}"><input type="checkbox" ${vals.includes(i)?"checked":""} ${locked?"disabled":""} onchange="toggleMulti('${q.id}',${i})"><span class="num">${i+1}</span><span>${esc(x)}</span></label>`).join("")}</div>`;
+  }
+  if(q.type==="open"){
+    const vals=a||q.fields.map(()=> "");
+    return `<div class="subanswers">${q.fields.map((f,i)=>`<div class="subanswer"><strong>${esc(f)}</strong><textarea ${locked?"disabled":""} oninput="setOpen('${q.id}',${i},this.value)" placeholder="Запишите ответ своими словами...">${esc(vals[i]||"")}</textarea></div>`).join("")}</div>`;
+  }
+}
+function renderConfidence(q){
+  const c=state.confidence[q.id]||"";
+  return `<div class="confidence"><strong>Насколько вы уверены в ответе?</strong><div class="confbuttons">${[["sure","Уверена"],["unsure","Сомневаюсь"],["guess","Скорее угадываю"]].map(([v,t])=>`<button class="confbtn ${c===v?"active":""}" onclick="setConf('${q.id}','${v}')">${t}</button>`).join("")}</div></div>`;
+}
+function setMatch(id,i,v){if(!state.answers[id])state.answers[id]=[];state.answers[id][i]=v===""?null:Number(v);}
+function addOrder(n){const q=Q[state.idx];if(!state.answers[q.id])state.answers[q.id]=[];if(!state.answers[q.id].includes(n))state.answers[q.id].push(n);render();}
+function resetOrder(){state.answers[Q[state.idx].id]=[];render();}
+function toggleMulti(id,i){if(!state.answers[id])state.answers[id]=[];const a=state.answers[id];state.answers[id]=a.includes(i)?a.filter(x=>x!==i):[...a,i].sort((x,y)=>x-y);render();}
+function setOpen(id,i,v){if(!state.answers[id])state.answers[id]=Q.find(x=>x.id===id).fields.map(()=> "");state.answers[id][i]=v;}
+function setConf(id,v){state.confidence[id]=v;render();}
+function valid(q){
+  const a=state.answers[q.id];
+  if(!state.confidence[q.id])return false;
+  if(q.type==="match")return Array.isArray(a)&&a.length===q.left.length&&a.every(x=>Number.isInteger(x));
+  if(q.type==="order")return Array.isArray(a)&&a.length===q.items.length;
+  if(q.type==="multi")return Array.isArray(a)&&a.length>0;
+  if(q.type==="open")return Array.isArray(a)&&a.every(x=>String(x).trim().length>0);
+  return false;
+}
+function checkAnswer(){
+  const q=Q[state.idx];
+  if(!valid(q)){alert("Заполните все части ответа и укажите степень уверенности.");return;}
+  state.times[q.id]=Math.round((Date.now()-state.qStart)/1000);
+  state.locked[q.id]=true;
+  if(q.type!=="open")state.scores[q.id]=scoreAuto(q);
+  pauseTimer();render();window.scrollTo({top:0,behavior:"smooth"});
+}
+function scoreAuto(q){
+  const a=state.answers[q.id];
+  if(q.type==="match")return a.reduce((s,v,i)=>s+(v===q.answer[i]?1:0),0);
+  if(q.type==="order")return JSON.stringify(a)===JSON.stringify(q.answer)?1:0;
+  if(q.type==="multi")return JSON.stringify([...a].sort())===JSON.stringify([...q.answer].sort())?1:0;
+  return 0;
+}
+function maxScore(q){if(q.type==="match")return q.answer.length;if(q.type==="open")return q.max;return 1;}
+function status(q){
+  if(q.type==="open" && state.scores[q.id]===undefined)return "manual";
+  const r=(state.scores[q.id]||0)/maxScore(q),c=state.confidence[q.id];
+  if(r===1&&c==="sure")return "strong";
+  if(r>=.75)return "fragile";
+  if(r<.75&&c==="sure")return "misconception";
+  return "gap";
+}
+function feedbackClass(q){
+  if(q.type==="open"&&state.scores[q.id]===undefined)return "warn";
+  const r=(state.scores[q.id]||0)/maxScore(q);return r===1?"ok":r>0?"warn":"bad";
+}
+function answerLabel(q){
+  if(q.type==="match")return q.answer.map((v,i)=>`${String.fromCharCode(1040+i)}–${v+1}`).join(", ");
+  if(q.type==="order")return q.answer.join("");
+  if(q.type==="multi")return q.answer.map(x=>x+1).join(", ");
+  return q.model.map((x,i)=>`${q.fields[i]}: ${x}`).join("\n");
+}
+function renderFeedback(q){
+  const fc=feedbackClass(q), score=state.scores[q.id];
+  const head=q.type==="open"&&score===undefined?"Сверьте ответ и выставьте оценку":score===maxScore(q)?"Ответ верный":score>0?"Ответ частично верный":"В ответе есть ошибки";
+  let h=`<div class="feedback ${fc}"><div class="feedbackhead">${head}</div><div class="feedbackbody"><div class="correctbox"><strong>Верный ответ</strong><br>${answerLabel(q).split("\n").map(esc).join("<br>")}</div><p><strong>Пояснение.</strong> ${esc(q.explanation||"Сверьте каждую часть ответа с моделью и критериями.")}</p>`;
+  if(q.type==="open"){
+    const cur=state.scores[q.id];
+    h+=`<div class="rubric"><strong>Оценка репетитора</strong><ul>${q.rubric.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="scorebuttons">${Array.from({length:q.max+1},(_,i)=>`<button class="scorebtn ${cur===i?"active":""}" onclick="setManual('${q.id}',${i})">${i} из ${q.max}</button>`).join("")}</div></div>`;
+  }
+  h+=teacherDetails(q);
+  h+=`</div></div>`;
+  return h;
+}
+function teacherDetails(q){
+  const st=status(q),a=state.answers[q.id],time=state.times[q.id]||0,c=state.confidence[q.id];
+  let notes=[];
+  if(q.type==="match"){
+    q.answer.forEach((right,i)=>{if(a[i]!==right){const conf=q.comments?.find(x=>x.item===i);notes.push(conf?.wrong?.[a[i]]||`Ошибка в позиции ${String.fromCharCode(1040+i)}.`);}});
+  } else if(q.type==="order"){
+    if(JSON.stringify(a)!==JSON.stringify(q.answer)){
+      for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const pair=`${a[i]}-${a[j]}`;if(q.orderNotes[pair])notes.push(q.orderNotes[pair]);}
+      if(!notes.length)notes.push("Ученица не удерживает логическую последовательность элементов ответа.");
+    }
+  } else if(q.type==="multi"){
+    q.options.forEach((_,i)=>{const should=q.answer.includes(i),did=a.includes(i);if(should!==did)notes.push(q.statementNotes[i]);});
+  } else if(q.type==="open"){
+    if(state.scores[q.id]===undefined)notes.push("После сверки выберите количество баллов. Тогда вывод попадёт в итоговый профиль.");
+    else notes.push(q.manualComments[state.scores[q.id]]);
+  }
+  let profile="";
+  if(st==="strong")profile="Устойчивое знание: ответ полностью верный и выбран уверенно.";
+  if(st==="fragile")profile="Знание нестабильно: ответ верный или почти верный, но ученица сомневалась либо допустила отдельную ошибку.";
+  if(st==="misconception")profile="Уверенная ошибка: ученица опирается на неверную схему. Эту тему нужно разобрать раньше обычных пробелов.";
+  if(st==="gap")profile="Пробел или слабая опора: ученица не уверена и допускает существенные ошибки.";
+  if(st==="manual")profile="Для развернутого ответа нужен ручной балл.";
+  const speed=time<=60?"Ответ дан быстро.":time>=180?"На ответ ушло много времени: даже при верном результате навык пока не автоматизирован.":"Темп ответа рабочий.";
+  return `<details class="teacher"><summary>Комментарий для репетитора</summary><div class="teacherbody"><p><strong>${profile}</strong> ${speed}</p>${notes.length?`<ul>${notes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}<p class="mini">Уверенность: ${c==="sure"?"уверена":c==="unsure"?"сомневается":"угадывает"} · время ответа: ${time} сек.</p></div></details>`;
+}
+function setManual(id,v){state.scores[id]=v;render();}
+function nextQuestion(){
+  const q=Q[state.idx];
+  if(q.type==="open"&&state.scores[q.id]===undefined){if(!confirm("Ручная оценка не выставлена. Перейти дальше?"))return;}
+  if(state.idx===Q.length-1){finish();return;}
+  state.idx++;state.qStart=Date.now();render();resumeTimer();window.scrollTo({top:0,behavior:"smooth"});
+}
+function taskMaxTotal(){return Q.reduce((s,q)=>s+maxScore(q),0);}
+function taskScoreTotal(){return Q.reduce((s,q)=>s+(state.scores[q.id]||0),0);}
+function skillStats(){
+  const o={};
+  Q.forEach(q=>{if(!o[q.skill])o[q.skill]={score:0,max:0};o[q.skill].score+=state.scores[q.id]||0;o[q.skill].max+=maxScore(q);});
+  return Object.entries(o).map(([name,v])=>({name,...v,p:v.max?v.score/v.max:0})).sort((a,b)=>a.p-b.p);
+}
+function statusCounts(){
+  const o={strong:0,fragile:0,misconception:0,gap:0,manual:0};
+  Q.forEach(q=>o[status(q)]++);return o;
+}
+function plan(){
+  const s=skillStats(),weak=s.filter(x=>x.p<.7).slice(0,5).map(x=>x.name);
+  const items=[];
+  if(weak.includes("Научное познание"))items.push("Начать с блока «Человек и общество»: развести научное, обыденное и художественное познание, затем закрепить признаки на коротких классификациях.");
+  if(weak.includes("Сферы общества и социальные институты"))items.push("Собрать карту четырёх сфер общества и социальных институтов. Отрабатывать не заучивание списков, а объяснение, почему институт относится к конкретной сфере.");
+  if(weak.includes("Рынок и конкуренция"))items.push("Повторить классификации рынков и типы конкуренции. Решать задачи по алгоритму: территория → объект продажи → число продавцов → наличие барьеров.");
+  if(weak.includes("Социальная мобильность"))items.push("Развести вертикальную и горизонтальную мобильность, восходящее и нисходящее перемещение, каналы мобильности. Закреплять на жизненных ситуациях.");
+  if(weak.includes("Гражданское общество"))items.push("Сравнить государственные органы и институты гражданского общества по трём признакам: источник инициативы, правовой статус и полномочия.");
+  if(weak.includes("Органы государственной власти РФ"))items.push("Составить таблицу полномочий Президента, Правительства, Государственной Думы и Совета Федерации. Каждое занятие начинать с пяти коротких соответствий.");
+  if(weak.includes("Правонарушение и юридическая ответственность"))items.push("Выстроить схему «отрасль права → вид правонарушения → вид ответственности → санкция» и отрабатывать её на правовых кейсах.");
+  if(weak.includes("Анализ экономической ситуации"))items.push("Тренировать задания-кейсы: выделять маркеры из условия, называть понятие, затем подбирать меру государственной политики и объяснять её механизм.");
+  if(weak.includes("Анализ обществоведческого текста"))items.push("Освоить структуру развернутого ответа: термин → три точных признака → причинно-следственная связь. Отдельно работать над заменой бытовых формулировок обществоведческими.");
+  if(!items.length)items.push("Стартовая база сильная. Переходить к смешанным вариантам, заданиям 18 и 22, а затем постепенно подключать сложный план и задание 25.");
+  return items.slice(0,6);
+}
+function statusMeta(st){
+ return {
+  strong:["sgood","Устойчиво"],fragile:["swarn","Нестабильно"],misconception:["sbad","Уверенная ошибка"],gap:["sneutral","Пробел"],manual:["sneutral","Без оценки"]
+ }[st];
+}
+function answerSummary(q){
+ const a=state.answers[q.id];
+ if(q.type==="match")return a.map((v,i)=>`${String.fromCharCode(1040+i)}–${v+1}`).join(", ");
+ if(q.type==="order")return a.join("");
+ if(q.type==="multi")return a.map(x=>x+1).join(", ");
+ return a.map((x,i)=>`${q.fields[i]}: ${x}`).join(" | ");
+}
+function finish(){
+ clearInterval(state.timer);state.running=false;
+ show("report");
+ const total=taskScoreTotal(),max=taskMaxTotal(),cnt=statusCounts(),skills=skillStats();
+ const elapsed=1200-state.remaining;
+ $("report").innerHTML=`<h1>Результаты диагностики</h1><div class="reportlead"><strong>${esc(state.student)}</strong> · цель: ${esc(state.target)} · активное время: ${Math.floor(elapsed/60)} мин ${elapsed%60} сек</div>
+ <div class="note"><strong>Баллы диагностические.</strong> Они показывают качество стартовой базы и не переводятся в тестовый балл ЕГЭ.</div>
+ <div class="summarygrid">
+  <div class="summarycard"><strong>${total}/${max}</strong><span>элементов выполнено</span></div>
+  <div class="summarycard"><strong>${cnt.strong}</strong><span>устойчивых результатов</span></div>
+  <div class="summarycard"><strong>${cnt.misconception}</strong><span>уверенных ошибок</span></div>
+ </div>
+ <div class="section"><h2>Профиль уверенности</h2><div class="matrix">
+  <div class="mgood"><strong>${cnt.strong}</strong><span>верно и уверенно</span></div>
+  <div class="mwarn"><strong>${cnt.fragile}</strong><span>верно неустойчиво или частично</span></div>
+  <div class="mbad"><strong>${cnt.misconception}</strong><span>ошибочно, но уверенно</span></div>
+  <div class="mneutral"><strong>${cnt.gap+cnt.manual}</strong><span>пробелы или ответы без оценки</span></div>
+ </div></div>
+ <div class="section"><h2>Навыки</h2><div class="skilllist">${skills.map(x=>`<div class="skillrow"><div class="skillname">${esc(x.name)}</div><div class="bar"><div style="width:${Math.round(x.p*100)}%"></div></div><div class="pct">${Math.round(x.p*100)}%</div></div>`).join("")}</div></div>
+ <div class="section"><h2>Предварительный план занятий</h2><div class="priority"><ol>${plan().map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div></div>
+ <div class="section"><h2>Ответы и диагностические выводы</h2>${Q.map(q=>{const st=status(q),m=statusMeta(st);return `<details class="detail"><summary>${q.id}. ${esc(q.skill)} <span class="status ${m[0]}">${m[1]}</span></summary><div class="detailbody"><p><strong>Ответ ученицы:</strong> ${esc(answerSummary(q))}</p><p><strong>Верный ответ:</strong> ${esc(answerLabel(q)).replace(/\n/g,"<br>")}</p><p><strong>Результат:</strong> ${state.scores[q.id]===undefined?"не оценено":state.scores[q.id]+" из "+maxScore(q)}</p>${teacherDetails(q).replace('<details class="teacher">','<details class="teacher" open>')}</div></details>`;}).join("")}</div>
+ <div class="reportactions"><button class="btn primary" onclick="window.print()">Сохранить отчет в PDF</button><button class="btn secondary" onclick="downloadReport()">Скачать текстовый отчет</button><button class="btn ghost" onclick="location.reload()">Пройти заново</button></div>
+ <div class="footer">Формулировки, ответы, модели и пояснения собраны из файлов банка заданий «РЕШУ ЕГЭ», которые предоставил пользователь. Диагностические комментарии добавлены для планирования занятий.</div>`;
+ window.scrollTo({top:0});
+}
+function textReport(){
+ const lines=[`ДИАГНОСТИКА ЕГЭ ПО ОБЩЕСТВОЗНАНИЮ`,`Ученица: ${state.student}`,`Цель: ${state.target}`,`Результат: ${taskScoreTotal()}/${taskMaxTotal()}`];
+ lines.push("\nНАВЫКИ");skillStats().forEach(x=>lines.push(`- ${x.name}: ${Math.round(x.p*100)}%`));
+ lines.push("\nПЛАН");plan().forEach((x,i)=>lines.push(`${i+1}. ${x}`));
+ lines.push("\nОТВЕТЫ");
+ Q.forEach(q=>{lines.push(`\n${q.id}. ${q.title}`);lines.push(`Ответ: ${answerSummary(q)}`);lines.push(`Верный ответ: ${answerLabel(q)}`);lines.push(`Баллы: ${state.scores[q.id]===undefined?"не оценено":state.scores[q.id]+"/"+maxScore(q)}`);lines.push(`Уверенность: ${state.confidence[q.id]}`);});
+ return lines.join("\n");
+}
+function downloadReport(){
+ const blob=new Blob([textReport()],{type:"text/plain;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=`diagnostika_obschestvoznanie_${state.student.replace(/\s+/g,"_")}.txt`;a.click();URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
