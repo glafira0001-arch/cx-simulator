@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif}
+.widget{width:520px;max-width:calc(100vw - 20px);margin:15px auto}
+.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:12px;margin-bottom:10px}
+.intro{font-size:13px;line-height:1.4}
+.answer{font-size:12px;line-height:1.4}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.option{border:1px solid #d7dce3;border-radius:10px;padding:8px;font-size:11.5px;cursor:pointer;background:#fff}
+.option.selected{border-color:#9ca3af;background:#f3f4f6}
+.actions{display:flex;gap:8px;margin-top:10px}
+button{border:0;border-radius:10px;padding:9px 12px;cursor:pointer}
+.main{flex:1;background:#2563eb;color:#fff}
+.reset{width:72px;background:#e5e7eb;color:#111}
+.feedback,.result{display:none}
+</style>
+</head>
+<body>
+<div class="widget">
+
+<div class="card intro">
+Вы использовали ИИ, чтобы сформулировать УТП компании. Посмотрите на первый вариант и оцените, насколько он отражает специфику бизнеса.
+</div>
+
+<div class="card answer">
+<b>Первый результат ИИ:</b><br>
+«Мы помогаем компаниям повышать эффективность процессов с помощью инновационных технологий».
+</div>
+
+<div class="card" id="assessment">
+<b>Как оцените первый результат?</b>
+<div class="options" style="margin-top:8px">
+<div class="option assess" data-value="ok">Подходит как первый вариант, но требует доработки</div>
+<div class="option assess" data-value="weak">Слишком общий и не отражает специфику компании</div>
+</div>
+</div>
+
+<div class="card" id="contextBlock" style="display:none">
+<b>Что добавить в контекст ИИ?</b>
+<div class="options" style="margin-top:8px">
+<div class="option ctx" data-ok="1">Реальные кейсы компании</div>
+<div class="option ctx" data-ok="0">Только данные о количестве подписчиков</div>
+<div class="option ctx" data-ok="0">Отзывы без контекста и деталей</div>
+<div class="option ctx" data-ok="1">Профиль клиентов и их задачи</div>
+<div class="option ctx" data-ok="1">Термины и язык отрасли</div>
+<div class="option ctx" data-ok="0">Награды компании без описания проектов</div>
+<div class="option ctx" data-ok="0">Общие новости рынка без связи с продуктом</div>
+<div class="option ctx" data-ok="1">Примеры точных формулировок о продукте</div>
+</div>
+
+<div class="actions">
+<button class="main" onclick="check()">Улучшить ответ</button>
+<button class="reset" onclick="resetTask()">Сбросить</button>
+</div>
+</div>
+
+<div class="card feedback" id="feedback"></div>
+
+<div class="card result" id="result">
+<b>Улучшенный результат ИИ:</b><br><br>
+«Помогаем компаниям повышать эффективность процессов за счет решений, адаптированных под отраслевую специфику, задачи клиентов и реальные сценарии использования».<br><br>
+
+<b>Аналитика ИИ:</b><br>
+Чем точнее контекст о клиентах, кейсах и языке отрасли, тем меньше в ответе общих формулировок.<br><br>
+
+<b>Вывод:</b><br>
+Качество ответа ИИ напрямую зависит от качества исходного контекста.
+</div>
+
+</div>
+
+<script>
+let assessment=null;
+
+document.querySelectorAll('.assess').forEach(o=>{
+  o.onclick=()=>{
+    document.querySelectorAll('.assess').forEach(x=>x.classList.remove('selected'));
+    o.classList.add('selected');
+    assessment=o.dataset.value;
+    document.getElementById('contextBlock').style.display='block';
+    document.getElementById('feedback').style.display='none';
+  };
+});
+
+document.querySelectorAll('.ctx').forEach(o=>{
+  o.onclick=()=>o.classList.toggle('selected');
+});
+
+function check(){
+  const selected=[...document.querySelectorAll('.ctx.selected')];
+  const correct=selected.filter(o=>o.dataset.ok==='1').length;
+  const wrong=selected.filter(o=>o.dataset.ok==='0').length;
+
+  const feedback=document.getElementById('feedback');
+  feedback.style.display='block';
+
+  if(selected.length===0){
+    feedback.textContent='Выберите данные, которые стоит добавить в контекст ИИ.';
+    document.getElementById('result').style.display='none';
+    return;
+  }
+
+  feedback.textContent='Результат: '+correct+' из 4 полезных типов данных выбраны.';
+  document.getElementById('result').style.display='block';
+}
+
+function resetTask(){
+  assessment=null;
+  document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('contextBlock').style.display='none';
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('result').style.display='none';
+}
+</script>
+</body>
+</html>
