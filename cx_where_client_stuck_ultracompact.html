@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Где клиент застрял?</title><style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:11.8px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.choice{min-height:38px;border:1px solid #d8d3cb;border-radius:10px;padding:8px 9px;background:var(--soft);color:#173250;font-size:12.1px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.choice.center{text-align:center;font-weight:700}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.chip{padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.chip strong{display:block;color:var(--navy);font-size:11.8px;margin-bottom:3px}
+.chip span{display:block;font-size:11px;color:#5a697a;line-height:1.28}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.metric{padding:10px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.metric strong{display:block;color:var(--navy);font-size:24px;line-height:1;margin-bottom:4px}
+.metric span{display:block;font-size:11px;line-height:1.3;color:#586b7e}
+.badge-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.badge{padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-size:10px;font-weight:800}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .summary,.metric-grid{grid-template-columns:1fr}
+}
+</style></head>
+<body><div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · пульт директора</div>
+  <h1>Где клиент застрял?</h1>
+  <p>Используйте показатели переходов, чтобы найти слабое место CJM и выбрать решение, которое бьет именно в разрыв, а не в общий фон «мотивации клиентов».</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="metric-grid">
+    <div class="metric"><strong>34%</strong><span>заявка → покупка карты</span></div>
+    <div class="metric"><strong>52%</strong><span>покупка → стартовая тренировка</span></div>
+    <div class="metric"><strong>61%</strong><span>старт → регулярность 1 месяц</span></div>
+    <div class="metric"><strong>39%</strong><span>регулярность → продление</span></div>
+  </div>
+
+  <div class="status"><div class="counter" id="counter"></div><div class="progress"><div id="progress"></div></div></div>
+  <div class="kicker" id="kicker"></div>
+  <div class="stage-title">Какое решение лучше соответствует данным карты?</div>
+  <div class="card">
+    <h3 id="caseTitle"></h3>
+    <p id="caseDesc"></p>
+    <div class="options" id="options"></div>
+  </div>
+  <div class="actions">
+    <button class="btn secondary" id="back">Назад</button>
+    <button class="btn primary" id="next" disabled>Дальше</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result"><h2 id="resultTitle"></h2><p id="resultText"></p><div class="mini" id="resultMini"></div></div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+<script>
+const cases = [
+  {
+    title:"1. Покупка есть, стартовая тренировка проваливается",
+    desc:"Из 100 клиентов, купивших карту, только 52 доходят до стартовой тренировки. Остальные формально в базе, но не вошли в продукт.",
+    correct:1,
+    opts:[
+      "Увеличить рекламу. Привлечь больше новых заявок, чтобы компенсировать потери.",
+      "Закрепить сервис за доведением до стартовой тренировки. Заранее связаться, записать, встретить и контролировать приход.",
+      "Настроить ранний сигнал снижения активности. Сообщение после паузы, звонок после длительного отсутствия, помощь с возвращением.",
+      "Дать скидку на продление. Снять ценовое возражение в конце периода."
+    ]
+  },
+  {
+    title:"2. После старта клиент не входит в регулярность",
+    desc:"К стартовой тренировке доходят 52%, но в регулярность первого месяца переходят лишь 61% из них. Значит, разовый запуск не становится привычкой.",
+    correct:2,
+    opts:[
+      "Снизить цену на первую покупку.",
+      "Показать результат за год перед продлением.",
+      "Настроить сопровождение первого месяца: маршрут, напоминания, поддержка тренера и видимый прогресс.",
+      "Переписать рекламу на сайте."
+    ]
+  },
+  {
+    title:"3. Регулярность есть, продление слабое",
+    desc:"До регулярности доходят многие, но к продлению переходят только 39%. Значит, клуб не переводит накопленную ценность в решение остаться.",
+    correct:0,
+    opts:[
+      "Показывать клиенту накопленную ценность за период: прогресс, привычку, результат, участие клуба и персональное предложение на продолжение.",
+      "Усилить сопровождение до стартовой тренировки.",
+      "Добавить скидку всем новым клиентам.",
+      "Вернуть этапу покупки больше рекламного бюджета."
+    ]
+  },
+  {
+    title:"4. Заявка плохо превращается в покупку",
+    desc:"Только 34% заявок доходят до покупки карты. Здесь проблема находится в моменте выбора и объяснения ценности клуба до оплаты.",
+    correct:3,
+    opts:[
+      "Настроить реактивацию тех, кто перестал ходить.",
+      "Показать прогресс текущим клиентам перед продлением.",
+      "Назначить отдельного координатора первого месяца.",
+      "Усилить этап выбора: объяснение формата карты, отличий клуба и понятный сценарий покупки."
+    ]
+  }
+];
+let i=0, answers=new Array(cases.length).fill(null);
+const $=id=>document.getElementById(id);
+function render(){
+  const x=cases[i];
+  $("counter").textContent=`${i+1} / ${cases.length}`;
+  $("progress").style.width=(answers.filter(v=>v!==null).length/cases.length*100)+"%";
+  $("kicker").textContent=`Ситуация ${i+1} из ${cases.length}`;
+  $("caseTitle").textContent=x.title;
+  $("caseDesc").textContent=x.desc;
+  const box=$("options"); box.innerHTML="";
+  x.opts.forEach((t,idx)=>{
+    const b=document.createElement("button");
+    b.className="choice"+(answers[i]===idx?" selected":"");
+    b.textContent=t;
+    b.onclick=()=>{answers[i]=idx; render();};
+    box.appendChild(b);
+  });
+  $("back").disabled=i===0;
+  $("next").disabled=answers[i]===null;
+  $("next").textContent=i===cases.length-1?"Результат":"Дальше";
+}
+$("back").onclick=()=>{if(i>0){i--; render();}};
+$("next").onclick=()=>{
+  if(i<cases.length-1){i++; render(); return;}
+  const total = answers.reduce((s,v,idx)=>s+(v===cases[idx].correct?1:0),0);
+  document.querySelector(".metric-grid").classList.add("hidden");
+  document.querySelector(".kicker").classList.add("hidden");
+  document.querySelector(".stage-title").classList.add("hidden");
+  document.querySelector(".card").classList.add("hidden");
+  document.querySelector(".actions").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("progress").style.width="100%";
+  $("counter").textContent=`${total} / ${cases.length}`;
+  if(total<=1){
+    $("resultTitle").textContent="Пока решения выбираются слишком общо";
+    $("resultText").textContent="Часть ответов не связана с конкретным разрывом в переходе. В результате решение направлено в общий фон, а не в место потери клиента.";
+    $("resultMini").textContent="Смотрите на самый слабый переход и выбирайте действие, которое улучшает именно его, а не весь путь сразу.";
+  }else if(total<=3){
+    $("resultTitle").textContent="Вы уже видите часть слабых мест карты";
+    $("resultText").textContent="В большинстве кейсов вы находите правильный фокус решения, но один из переходов еще можно читать точнее.";
+    $("resultMini").textContent="Логика директора: слабый переход → причина на этом этапе → действие именно в эту точку.";
+  }else{
+    $("resultTitle").textContent="Вы хорошо читаете разрывы CJM";
+    $("resultText").textContent="Вы связываете цифры переходов с конкретной точкой пути и выбираете решение, которое устраняет именно этот провал.";
+    $("resultMini").textContent="Такой подход помогает управлять не абстрактной «лояльностью», а конкретными переходами к старту, регулярности и продлению.";
+  }
+};
+$("start").onclick=()=>{$("intro").classList.add("hidden"); $("work").classList.remove("hidden"); render();};
+$("restart").onclick=()=>location.reload();
+</script></body></html>

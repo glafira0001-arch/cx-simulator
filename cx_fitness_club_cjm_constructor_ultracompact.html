@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Соберите CJM глазами клиента</title><style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:11.8px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.choice{min-height:38px;border:1px solid #d8d3cb;border-radius:10px;padding:8px 9px;background:var(--soft);color:#173250;font-size:12.1px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.choice.center{text-align:center;font-weight:700}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.chip{padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.chip strong{display:block;color:var(--navy);font-size:11.8px;margin-bottom:3px}
+.chip span{display:block;font-size:11px;color:#5a697a;line-height:1.28}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.metric{padding:10px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.metric strong{display:block;color:var(--navy);font-size:24px;line-height:1;margin-bottom:4px}
+.metric span{display:block;font-size:11px;line-height:1.3;color:#586b7e}
+.badge-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.badge{padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-size:10px;font-weight:800}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .summary,.metric-grid{grid-template-columns:1fr}
+}
+</style></head>
+<body><div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · CJM фитнес-клуба</div>
+  <h1>Соберите CJM глазами клиента</h1>
+  <p>Для каждого этапа пути выберите элементы карты: действие клиента, боль, ценность, риск и показатель перехода. Важно смотреть не изнутри отдела, а глазами клиента.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status"><div class="counter" id="counter"></div><div class="progress"><div id="progress"></div></div></div>
+  <div class="summary" id="summary"></div>
+  <div class="badge-row">
+    <div class="badge" id="stageBadge"></div>
+    <div class="badge" id="fieldBadge"></div>
+  </div>
+  <div class="stage-title" id="fieldTitle"></div>
+  <div class="card">
+    <h3 id="stageTitle"></h3>
+    <p id="stageDesc"></p>
+    <div class="options" id="options"></div>
+  </div>
+  <div class="actions">
+    <button class="btn secondary" id="back">Назад</button>
+    <button class="btn primary" id="next" disabled>Дальше</button>
+  </div>
+  <div id="result" class="hidden">
+    <div class="result"><h2 id="resultTitle"></h2><p id="resultText"></p><div class="mini" id="resultMini"></div></div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+<script>
+const fields = [
+  {key:"action", title:"Что делает клиент?", short:"Действие"},
+  {key:"pain", title:"Какая здесь главная боль?", short:"Боль"},
+  {key:"value", title:"Какую ценность клиент хочет получить?", short:"Ценность"},
+  {key:"risk", title:"Какой риск для клиента и бизнеса здесь возникает?", short:"Риск"},
+  {key:"metric", title:"Какой показатель перехода отслеживает этот этап?", short:"Показатель"}
+];
+const stages = [
+  {
+    title:"Интерес и выбор клуба",
+    desc:"Человек сравнивает варианты и решает, оставлять ли заявку.",
+    action:{correct:0, opts:["Смотрит сайт, условия и формат клуба","Ждет в зоне раздевалки","Продлевает карту"]},
+    pain:{correct:1, opts:["Не хватает места на парковке","Не понимает, чем клуб отличается и что входит в карту","Не может перенести тренировку"]},
+    value:{correct:2, opts:["Чтобы тренер помнил его имя","Понять детали заморозки","Понять, подходит ли ему клуб и стоит ли идти дальше"]},
+    risk:{correct:0, opts:["Уходит без заявки, потому что ценность клуба неясна","Пропускает тренировку из-за болезни","Не продлевает из-за усталости от программы"]},
+    metric:{correct:1, opts:["Регулярность → продление","Заявка → покупка карты","Первый визит → регулярность"]}
+  },
+  {
+    title:"Покупка карты",
+    desc:"Клиент уже согласен купить, но должен ясно понимать следующий шаг.",
+    action:{correct:1, opts:["Сравнивает расписание с коллегами","Оплачивает карту и ждет понятного старта","Оставляет отзыв о клубе"]},
+    pain:{correct:0, opts:["После оплаты неясно, что делать дальше и как начать","Не хватает мест на групповой тренировке","Тренер слишком быстро меняет программу"]},
+    value:{correct:2, opts:["Получить скидку на кафе","Быстро получить справку","Понять маршрут старта: запись, первый визит, вводная тренировка"]},
+    risk:{correct:1, opts:["Клиент путается в тарифах и не оставляет заявку","Карта куплена, но старт откладывается и интерес остывает","Клиент не хочет продлевать через год"]},
+    metric:{correct:0, opts:["Покупка карты → стартовая тренировка","Регулярность 1 месяц → продление","Заявка → покупка карты"]}
+  },
+  {
+    title:"Первый визит и стартовая тренировка",
+    desc:"Клиент впервые приходит в клуб и должен быстро почувствовать ориентир и уверенность.",
+    action:{correct:2, opts:["Сравнивает цены с конкурентами","Решает, продлевать ли абонемент","Приходит в клуб, проходит маршрут и начинает первую тренировку"]},
+    pain:{correct:1, opts:["Не хватает бонусов по реферальной программе","Неясна навигация, страшно выглядеть неловко и трудно начать","Слишком долго идет продление"]},
+    value:{correct:0, opts:["Почувствовать, что здесь все понятно, безопасно и меня доведут до первого результата","Получить подарок ко дню рождения","Записаться на следующий год заранее"]},
+    risk:{correct:2, opts:["Человек не оставляет заявку","Клиент перестает рекомендовать клуб коллегам","Не доходит до реального старта и формально остается в базе без использования"]},
+    metric:{correct:1, opts:["Заявка → покупка карты","Покупка карты → стартовая тренировка","Регулярность 1 месяц → продление"]}
+  },
+  {
+    title:"Регулярное использование",
+    desc:"Нужно превратить разовый старт в устойчивую привычку.",
+    action:{correct:0, opts:["Пытается встроить тренировки в реальную неделю","Уточняет, как купить карту","Сдает карту в архив"]},
+    pain:{correct:2, opts:["Не понимает тарифы клуба","Не может найти шкафчик","После старта нет ритма, поддержки и заметного прогресса"]},
+    value:{correct:1, opts:["Быстро оформить возврат","Удержать привычку и видеть, что занятия реально работают","Разобраться в парковке"]},
+    risk:{correct:0, opts:["Клиент начинает выпадать из ритма и теряет активность задолго до продления","Клиент не находит цену карты","Клиент путает график офиса клуба"]},
+    metric:{correct:2, opts:["Покупка карты → стартовая тренировка","Заявка → покупка карты","Старт → регулярность 1 месяц"]}
+  },
+  {
+    title:"Поддержка и спорные ситуации",
+    desc:"Когда что-то идет не по плану, клуб должен быстро вернуть ясность и доверие.",
+    action:{correct:1, opts:["Выбирает новый тариф","Обращается с вопросом, проблемой или претензией","Продлевает карту на следующий год"]},
+    pain:{correct:0, opts:["Нужно заново объяснять проблему, а решение затягивается","Неясно, как выглядит тренер","Клиент редко читает новости клуба"]},
+    value:{correct:2, opts:["Получить еще одну пробную тренировку","Узнать часы работы ресепшн","Быстрое понятное решение и ощущение, что клуб держит ситуацию под контролем"]},
+    risk:{correct:1, opts:["Клиент не доходит до покупки","Один спорный эпизод подрывает доверие и ускоряет уход из активной базы","Клиент не понимает тариф до покупки"]},
+    metric:{correct:0, opts:["Доля решенных обращений без повторного контакта","Регулярность 1 месяц → продление","Заявка → покупка карты"]}
+  },
+  {
+    title:"Продление",
+    desc:"К моменту продления клиент уже должен видеть ценность и результат.",
+    action:{correct:2, opts:["Только выбирает клуб впервые","Ищет шкафчик в раздевалке","Оценивает, стоит ли продолжать отношения с клубом"]},
+    pain:{correct:1, opts:["Не может оплатить вводную тренировку","Не видит накопленной ценности и не понимает, зачем оставаться","Неясно, где взять инструкцию по старту"]},
+    value:{correct:0, opts:["Понять свой прогресс, привычку и результат за период","Получить карту гостя на один день","Найти тариф в первый раз"]},
+    risk:{correct:2, opts:["Не оставляет заявку на сайте","Теряет интерес еще до старта","Регулярность не превращается в продление, потому что клуб не показал результат владения"]},
+    metric:{correct:1, opts:["Старт → регулярность 1 месяц","Регулярность → продление","Заявка → покупка карты"]}
+  }
+];
+let stageIndex=0, fieldIndex=0;
+let answers = stages.map(()=>({action:null,pain:null,value:null,risk:null,metric:null}));
+const $=id=>document.getElementById(id);
+
+function answeredCount(){ return answers.reduce((s,a)=>s+Object.values(a).filter(v=>v!==null).length,0); }
+function renderSummary(){
+  const a = stages.filter((_,i)=>answers[i].action!==null).length;
+  const p = stages.filter((_,i)=>answers[i].pain!==null).length;
+  const v = stages.filter((_,i)=>answers[i].value!==null).length;
+  const r = stages.filter((_,i)=>answers[i].risk!==null).length;
+  const m = stages.filter((_,i)=>answers[i].metric!==null).length;
+  $("summary").innerHTML = `
+    <div class="chip"><strong>Этапов пройдено</strong><span>${stages.filter((_,i)=>Object.values(answers[i]).every(v=>v!==null)).length} из ${stages.length}</span></div>
+    <div class="chip"><strong>Поля</strong><span>Действие ${a}, боль ${p}, ценность ${v}, риск ${r}, показатель ${m}</span></div>
+  `;
+}
+function render(){
+  renderSummary();
+  const stage = stages[stageIndex];
+  const field = fields[fieldIndex];
+  $("counter").textContent = `${answeredCount()} / ${stages.length * fields.length}`;
+  $("progress").style.width = (answeredCount()/(stages.length*fields.length)*100)+"%";
+  $("stageBadge").textContent = `Этап ${stageIndex+1} из ${stages.length}`;
+  $("fieldBadge").textContent = `${field.short} ${fieldIndex+1} из ${fields.length}`;
+  $("fieldTitle").textContent = field.title;
+  $("stageTitle").textContent = stage.title;
+  $("stageDesc").textContent = stage.desc;
+  const box = $("options"); box.innerHTML = "";
+  stage[field.key].opts.forEach((t, idx)=>{
+    const b = document.createElement("button");
+    b.className = "choice" + (answers[stageIndex][field.key]===idx ? " selected" : "");
+    b.textContent = t;
+    b.onclick = ()=>{ answers[stageIndex][field.key]=idx; render(); };
+    box.appendChild(b);
+  });
+  $("back").disabled = stageIndex===0 && fieldIndex===0;
+  $("next").disabled = answers[stageIndex][field.key]===null;
+  $("next").textContent = (stageIndex===stages.length-1 && fieldIndex===fields.length-1) ? "Результат" : "Дальше";
+}
+function moveForward(){
+  if(fieldIndex < fields.length-1){ fieldIndex++; }
+  else if(stageIndex < stages.length-1){ stageIndex++; fieldIndex=0; }
+  else showResult();
+}
+function moveBack(){
+  if(fieldIndex > 0){ fieldIndex--; }
+  else if(stageIndex > 0){ stageIndex--; fieldIndex = fields.length-1; }
+}
+function showResult(){
+  const total = stages.reduce((sum,stage,si)=>{
+    return sum + fields.reduce((s,f)=>s + (answers[si][f.key]===stage[f.key].correct ? 1 : 0),0);
+  },0);
+  document.querySelector(".badge-row").classList.add("hidden");
+  document.querySelector(".stage-title").classList.add("hidden");
+  document.querySelector(".card").classList.add("hidden");
+  document.querySelector(".actions").classList.add("hidden");
+  $("summary").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("progress").style.width = "100%";
+  $("counter").textContent = `${total} / ${stages.length * fields.length}`;
+  if(total <= 10){
+    $("resultTitle").textContent = "Карта пока собирается скорее изнутри компании";
+    $("resultText").textContent = "Часть этапов еще описана не глазами клиента: путаются действие, боль, ценность и риск, из-за чего карта теряет управленческий смысл.";
+    $("resultMini").textContent = "Хорошая CJM-карта показывает маршрут клиента, его препятствия и показатель перехода к следующему этапу, а не внутренние процессы клуба.";
+  }else if(total <= 20){
+    $("resultTitle").textContent = "Вы уже видите основную логику CJM";
+    $("resultText").textContent = "Большая часть этапов собрана правильно: видно, как клиент движется к результату и где клуб рискует потерять активность.";
+    $("resultMini").textContent = "Следующий шаг — использовать карту для управленческих решений по старту, регулярности и продлению.";
+  }else{
+    $("resultTitle").textContent = "Вы хорошо собираете CJM глазами клиента";
+    $("resultText").textContent = "Вы связываете этап пути, реальное действие клиента, его боль, ценность, риск и показатель перехода. Карта уже пригодна для управленческой работы.";
+    $("resultMini").textContent = "Именно такая логика помогает директору видеть не процессы отдела, а места потери активности и продления.";
+  }
+}
+$("back").onclick = ()=>{ moveBack(); render(); };
+$("next").onclick = ()=>{ if(stageIndex===stages.length-1 && fieldIndex===fields.length-1) showResult(); else { moveForward(); render(); } };
+$("start").onclick = ()=>{ $("intro").classList.add("hidden"); $("work").classList.remove("hidden"); render(); };
+$("restart").onclick = ()=>location.reload();
+</script></body></html>
