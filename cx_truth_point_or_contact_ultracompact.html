@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Точка контакта или точка истины?</title>
+<style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button,select{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.steps{display:flex;gap:5px;margin-bottom:8px}
+.step{flex:1;border-radius:999px;background:#efebe6;color:#657180;padding:5px 6px;text-align:center;font-size:10.5px;font-weight:800;white-space:nowrap}
+.step.active{background:var(--blue);color:var(--navy);outline:1px solid #bfd2ef}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:16px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:12px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.options.two{grid-template-columns:1fr 1fr}
+.choice{min-height:37px;border:1px solid #d8d3cb;border-radius:10px;padding:7px 9px;background:var(--soft);color:#173250;font-size:12.2px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.center{text-align:center;font-weight:700}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .choice{font-size:11.8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · точки истины</div>
+  <h1>Точка контакта или точка истины?</h1>
+  <p>Отделите обычный контакт от момента, где клиент оценивает доверие, реальность обещания и решает, продолжать ли путь.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status">
+    <div class="counter" id="counter"></div>
+    <div class="progress"><div id="progress"></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="s1">Найти</div>
+    <div class="step" id="s2">Глазами клиента</div>
+  </div>
+
+  <div id="stage1">
+    <div class="kicker" id="contactKicker"></div>
+    <h2 class="stage-title">Это точка истины?</h2>
+    <div class="card">
+      <h3 id="contactTitle"></h3>
+      <p id="contactDesc"></p>
+      <div class="options two">
+        <button class="choice center" id="truthBtn">Да</button>
+        <button class="choice center" id="contactBtn">Нет</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="back1">Назад</button>
+      <button class="btn primary" id="next1" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage2" class="hidden">
+    <div class="kicker" id="formKicker"></div>
+    <h2 class="stage-title">Какая формулировка звучит глазами клиента?</h2>
+    <div class="card">
+      <h3 id="formTitle"></h3>
+      <p id="formDesc"></p>
+      <div class="options" id="formOptions"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="back2">Назад</button>
+      <button class="btn primary" id="finish" disabled>Результат</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result">
+      <h2 id="resultTitle"></h2>
+      <p id="resultText"></p>
+      <div class="mini" id="resultMini"></div>
+    </div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+
+<script>
+const contacts = [
+  {title:"Клиент открыл главную страницу сайта", desc:"Он впервые увидел бренд, но пока почти не проверил реальность обещания.", correct:false},
+  {title:"Клиент впервые пришел в клинику, офис, клуб или зал", desc:"Он сразу считывает порядок, безопасность, понятность маршрута и отношение к себе.", correct:true},
+  {title:"Первая экспертная встреча в B2B", desc:"Клиент быстро понимает, перед ним команда с пониманием его задачи или шаблонная презентация.", correct:true},
+  {title:"Менеджер внес контакт в CRM", desc:"Это внутреннее действие компании, клиент его не переживает как момент решения.", correct:false},
+  {title:"После оплаты клиент пытается понять, что будет дальше", desc:"Если следующий шаг не ясен, обещание компании начинает рассыпаться.", correct:true},
+  {title:"Клиент распаковывает товар и впервые пользуется им", desc:"Именно здесь продукт должен подтвердить цену, качество и обещание бренда.", correct:true},
+  {title:"Поддержка решила проблему, из-за которой клиент уже сомневался", desc:"В этот момент клиент оценивает, можно ли снова доверять компании.", correct:true},
+  {title:"Компания переслала внутренний отчет между отделами", desc:"Клиент напрямую этого не видит и не принимает решение о доверии на этом контакте.", correct:false}
+];
+
+const forms = [
+  {
+    title:"Первый визит в пространство компании",
+    desc:"Клиент впервые заходит в клинику, офис, клуб или зал.",
+    correct:0,
+    options:[
+      "Ожидание: безопасно, понятно, меня заметили. Риск: здесь хаос, мне некомфортно и я не хочу возвращаться.",
+      "Ожидание: отдел продаж заполнит CRM. Риск: внутренний регламент нарушат.",
+      "Ожидание: маркетинг настроит рекламу. Риск: будет мало лидов."
+    ]
+  },
+  {
+    title:"Первая экспертная встреча в B2B",
+    desc:"Клиент встречается с потенциальным подрядчиком до договора.",
+    correct:1,
+    options:[
+      "Ожидание: компания сразу пришлет счет. Риск: придется ждать оплату.",
+      "Ожидание: команда понимает мою задачу. Риск: мне покажут шаблонную презентацию и потратят мое время.",
+      "Ожидание: CRM будет заполнена корректно. Риск: менеджер забудет комментарий."
+    ]
+  },
+  {
+    title:"Упаковка и первое использование продукта",
+    desc:"Клиент впервые берет продукт в руки и пробует его.",
+    correct:2,
+    options:[
+      "Ожидание: склад закроет отгрузку вовремя. Риск: оператор не отметит чекбокс.",
+      "Ожидание: руководитель увидит отчет. Риск: метрика опоздает к совещанию.",
+      "Ожидание: качество соответствует цене. Риск: продукт выглядит дешевле обещания и разочаровывает."
+    ]
+  },
+  {
+    title:"После оплаты",
+    desc:"Клиент оплатил и ждет продолжения пути.",
+    correct:0,
+    options:[
+      "Ожидание: быстро начну без лишних действий. Риск: я не понимаю следующий шаг и ухожу к конкуренту.",
+      "Ожидание: отделы согласуют документы между собой. Риск: кому-то придется пересчитать таблицу.",
+      "Ожидание: реклама окупится. Риск: будет низкий CTR."
+    ]
+  }
+];
+
+let i=0, j=0;
+let answers1=new Array(contacts.length).fill(null);
+let answers2=new Array(forms.length).fill(null);
+const $=id=>document.getElementById(id);
+
+function setStep(n){["s1","s2"].forEach((id,idx)=>$(id).classList.toggle("active", idx===n-1));}
+function updateProgress(){
+  const done = answers1.filter(v=>v!==null).length + answers2.filter(v=>v!==null).length;
+  $("progress").style.width = (done/12*100) + "%";
+}
+function renderStage1(){
+  const x=contacts[i];
+  $("counter").textContent=`${i+1} / ${contacts.length}`;
+  $("contactKicker").textContent=`Контакт ${i+1} из ${contacts.length}`;
+  $("contactTitle").textContent=x.title;
+  $("contactDesc").textContent=x.desc;
+  $("back1").disabled = i===0;
+  $("next1").disabled = answers1[i]===null;
+  $("next1").textContent = i===contacts.length-1 ? "К формулировкам" : "Дальше";
+  $("truthBtn").classList.toggle("selected", answers1[i]===true);
+  $("contactBtn").classList.toggle("selected", answers1[i]===false);
+  updateProgress();
+}
+function choose1(v){answers1[i]=v;renderStage1();}
+$("truthBtn").onclick=()=>choose1(true);
+$("contactBtn").onclick=()=>choose1(false);
+$("back1").onclick=()=>{if(i>0){i--;renderStage1();}};
+$("next1").onclick=()=>{
+  if(i<contacts.length-1){i++;renderStage1();}
+  else{$("stage1").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);j=0;renderStage2();}
+};
+
+function renderStage2(){
+  const x=forms[j];
+  $("counter").textContent=`${j+1} / ${forms.length}`;
+  $("formKicker").textContent=`Ситуация ${j+1} из ${forms.length}`;
+  $("formTitle").textContent=x.title;
+  $("formDesc").textContent=x.desc;
+  const box=$("formOptions"); box.innerHTML="";
+  x.options.forEach((t,idx)=>{
+    const b=document.createElement("button");
+    b.className="choice"+(answers2[j]===idx?" selected":"");
+    b.textContent=t;
+    b.onclick=()=>{answers2[j]=idx;renderStage2();};
+    box.appendChild(b);
+  });
+  $("back2").disabled=false;
+  $("finish").disabled = answers2[j]===null;
+  $("finish").textContent = j===forms.length-1 ? "Результат" : "Дальше";
+  updateProgress();
+}
+$("back2").onclick=()=>{
+  if(j>0){j--;renderStage2();}
+  else{$("stage2").classList.add("hidden");$("stage1").classList.remove("hidden");setStep(1);i=contacts.length-1;renderStage1();}
+};
+$("finish").onclick=()=>{
+  if(j<forms.length-1){j++;renderStage2(); return;}
+  const a = answers1.reduce((s,v,idx)=>s+(v===contacts[idx].correct?1:0),0);
+  const b = answers2.reduce((s,v,idx)=>s+(v===forms[idx].correct?1:0),0);
+  const total = a+b;
+  $("stage2").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("counter").textContent = `${total} / 12`;
+  $("progress").style.width="100%";
+  if(total<=5){
+    $("resultTitle").textContent="Пока точка истины смешивается с обычным контактом";
+    $("resultText").textContent="Вы уже видите важные моменты пути, но еще не всегда отделяете внутренние действия компании от ситуации, где клиент реально проверяет обещание.";
+    $("resultMini").textContent="Ориентир: точка истины — это момент с высоким риском для доверия, решения и будущего поведения клиента.";
+  }else if(total<=9){
+    $("resultTitle").textContent="Вы уже различаете часть точек истины";
+    $("resultText").textContent="Есть понимание, что не каждый контакт важен одинаково и что смотреть нужно глазами клиента, а не изнутри компании.";
+    $("resultMini").textContent="Следующий шаг — в каждой точке истины видеть ожидание клиента, риск и управленческую реакцию компании.";
+  }else{
+    $("resultTitle").textContent="Вы уверенно отличаете точку контакта от точки истины";
+    $("resultText").textContent="Вы видите, где клиент действительно принимает решение о доверии, покупке, продлении или уходе.";
+    $("resultMini").textContent="Такой взгляд помогает директору управлять не шумом, а моментами, которые меняют поведение клиента.";
+  }
+};
+$("start").onclick=()=>{$("intro").classList.add("hidden");$("work").classList.remove("hidden");renderStage1();};
+$("restart").onclick=()=>location.reload();
+</script>
+</body></html>

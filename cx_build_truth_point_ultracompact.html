@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Соберите точку истины</title>
+<style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button,select{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.steps{display:flex;gap:5px;margin-bottom:8px}
+.step{flex:1;border-radius:999px;background:#efebe6;color:#657180;padding:5px 6px;text-align:center;font-size:10.5px;font-weight:800;white-space:nowrap}
+.step.active{background:var(--blue);color:var(--navy);outline:1px solid #bfd2ef}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:16px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:12px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.options.two{grid-template-columns:1fr 1fr}
+.choice{min-height:37px;border:1px solid #d8d3cb;border-radius:10px;padding:7px 9px;background:var(--soft);color:#173250;font-size:12.2px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.center{text-align:center;font-weight:700}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .choice{font-size:11.8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · точки истины</div>
+  <h1>Соберите точку истины</h1>
+  <p>Пройдите метод как руководитель: ожидание и риск клиента, действие компании, владелец и показатель.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status">
+    <div class="counter" id="counter"></div>
+    <div class="progress"><div id="progress"></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="s1">Ожидание + риск</div>
+    <div class="step" id="s2">Действие компании</div>
+    <div class="step" id="s3">Владелец + показатель</div>
+  </div>
+
+  <div id="stage1">
+    <div class="kicker" id="k1"></div>
+    <h2 class="stage-title">Какой вариант точнее описывает ожидание и риск клиента?</h2>
+    <div class="card">
+      <h3 id="t1"></h3>
+      <p id="d1"></p>
+      <div class="options" id="o1"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="back1">Назад</button>
+      <button class="btn primary" id="next1" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage2" class="hidden">
+    <div class="kicker" id="k2"></div>
+    <h2 class="stage-title">Какое действие компании уместно в этой точке истины?</h2>
+    <div class="card">
+      <h3 id="t2"></h3>
+      <p id="d2"></p>
+      <div class="options" id="o2"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="back2">Назад</button>
+      <button class="btn primary" id="next2" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage3" class="hidden">
+    <div class="kicker" id="k3"></div>
+    <h2 class="stage-title">Кто владелец и чем измерять?</h2>
+    <div class="card">
+      <h3 id="t3"></h3>
+      <p id="d3"></p>
+      <div class="options" id="o3"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="back3">Назад</button>
+      <button class="btn primary" id="finish" disabled>Результат</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result">
+      <h2 id="resultTitle"></h2>
+      <p id="resultText"></p>
+      <div class="mini" id="resultMini"></div>
+    </div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+
+<script>
+const expectations = [
+  {
+    title:"Сайт: открытие главной страницы",
+    desc:"Клиент впервые знакомится с компанией онлайн.",
+    correct:2,
+    options:[
+      "Ожидание: компания просто напомнит о скидке. Риск: клиент увидит рекламу.",
+      "Ожидание: CRM заполнится корректно. Риск: менеджер потеряет лид.",
+      "Ожидание: быстро пойму, подходит ли мне компания. Риск: все неясно и я закрываю вкладку."
+    ]
+  },
+  {
+    title:"B2B: первая экспертная встреча",
+    desc:"Клиент встречается с потенциальным подрядчиком до договора.",
+    correct:0,
+    options:[
+      "Ожидание: команда понимает мою задачу. Риск: мне показывают шаблонную презентацию и тратят мое время.",
+      "Ожидание: бухгалтерия быстро пришлет акт. Риск: будет ошибка в реквизитах.",
+      "Ожидание: руководитель подпишет отпуск. Риск: сотрудник перепутает календарь."
+    ]
+  },
+  {
+    title:"Товарный бизнес: распаковка и первое использование",
+    desc:"Клиент впервые берет продукт в руки.",
+    correct:1,
+    options:[
+      "Ожидание: склад закроет смену. Риск: курьер не отметит чекбокс.",
+      "Ожидание: качество соответствует цене. Риск: продукт выглядит дешевле обещания и разочаровывает.",
+      "Ожидание: отдел продаж выполнит план. Риск: упадет конверсия."
+    ]
+  },
+  {
+    title:"После оплаты",
+    desc:"Клиент оплатил и ждет следующий шаг.",
+    correct:2,
+    options:[
+      "Ожидание: рекламная кампания окупится. Риск: низкий CTR.",
+      "Ожидание: сотрудник заполнит таблицу. Риск: данные внесут не туда.",
+      "Ожидание: быстро начну без лишних действий. Риск: не понимаю, что делать дальше, и сомневаюсь в покупке."
+    ]
+  }
+];
+
+const actions = [
+  {
+    title:"Сайт: открытие главной страницы",
+    desc:"Что должна сделать компания в этот момент?",
+    correct:1,
+    options:[
+      "Увеличить скидку во всплывающем окне",
+      "Сделать обещание понятным, показать следующий шаг и убрать лишнее трение",
+      "Передать посетителя напрямую в бухгалтерию"
+    ]
+  },
+  {
+    title:"B2B: первая экспертная встреча",
+    desc:"Какое действие уместно?",
+    correct:0,
+    options:[
+      "Показать понимание задачи клиента, уточнить контекст и предложить релевантное решение",
+      "Сразу отправить шаблонную коммерческую презентацию без уточнений",
+      "Обсудить внутренние KPI команды"
+    ]
+  },
+  {
+    title:"Товарный бизнес: распаковка и первое использование",
+    desc:"Какое действие уместно?",
+    correct:2,
+    options:[
+      "Снизить цену на следующую покупку",
+      "Попросить клиента написать отзыв до использования",
+      "Обеспечить качество продукта, понятность начала использования и ощущение соответствия обещанию"
+    ]
+  },
+  {
+    title:"После оплаты",
+    desc:"Какое действие уместно?",
+    correct:1,
+    options:[
+      "Ждать, пока клиент сам обратится с вопросом",
+      "Показать следующий шаг, владельца этапа и довести клиента до первого действия",
+      "Перенаправить клиента между отделами без объяснений"
+    ]
+  }
+];
+
+const owners = [
+  {
+    title:"Сайт: открытие главной страницы",
+    desc:"Выберите пару владелец + показатель.",
+    correct:0,
+    options:[
+      "Маркетинг / продукт сайта + доля переходов к следующему шагу",
+      "Бухгалтерия + количество актов",
+      "HR + скорость найма"
+    ]
+  },
+  {
+    title:"B2B: первая экспертная встреча",
+    desc:"Выберите пару владелец + показатель.",
+    correct:1,
+    options:[
+      "Склад + время отгрузки",
+      "Продажи / эксперт встречи + доля встреч, которые переходят к следующему шагу без потери доверия",
+      "Поддержка + число тикетов"
+    ]
+  },
+  {
+    title:"Товарный бизнес: распаковка и первое использование",
+    desc:"Выберите пару владелец + показатель.",
+    correct:2,
+    options:[
+      "Финдиректор + средний чек",
+      "Закупки + число поставщиков",
+      "Продукт / операция + доля успешного первого использования и ранних жалоб"
+    ]
+  },
+  {
+    title:"После оплаты",
+    desc:"Выберите пару владелец + показатель.",
+    correct:0,
+    options:[
+      "Онбординг / аккаунт + доля клиентов, которые сделали первое действие в срок",
+      "Юристы + число договоров",
+      "Руководитель компании лично + количество созвонов"
+    ]
+  }
+];
+
+let i1=0,i2=0,i3=0;
+let a1=new Array(expectations.length).fill(null);
+let a2=new Array(actions.length).fill(null);
+let a3=new Array(owners.length).fill(null);
+const $=id=>document.getElementById(id);
+
+function setStep(n){["s1","s2","s3"].forEach((id,idx)=>$(id).classList.toggle("active", idx===n-1));}
+function updateProgress(){
+  const done = a1.filter(v=>v!==null).length + a2.filter(v=>v!==null).length + a3.filter(v=>v!==null).length;
+  $("progress").style.width = (done/12*100) + "%";
+}
+function renderList(stageIdx, data, ans, titleId, descId, kickerId, optionsId, btnId, prefix){
+  const x=data[stageIdx];
+  $(kickerId).textContent = `${prefix} ${stageIdx+1} из ${data.length}`;
+  $(titleId).textContent = x.title;
+  $(descId).textContent = x.desc;
+  const box=$(optionsId); box.innerHTML="";
+  x.options.forEach((t,idx)=>{
+    const b=document.createElement("button");
+    b.className="choice"+(ans[stageIdx]===idx?" selected":"");
+    b.textContent=t;
+    b.onclick=()=>{ans[stageIdx]=idx; renderCurrent();};
+    box.appendChild(b);
+  });
+  $(btnId).disabled = ans[stageIdx]===null;
+  updateProgress();
+}
+function renderCurrent(){
+  if(!$("stage1").classList.contains("hidden")){
+    $("counter").textContent=`${i1+1} / ${expectations.length}`;
+    $("back1").disabled = i1===0;
+    $("next1").textContent = i1===expectations.length-1 ? "К действиям" : "Дальше";
+    renderList(i1, expectations, a1, "t1","d1","k1","o1","next1","Ситуация");
+  } else if(!$("stage2").classList.contains("hidden")){
+    $("counter").textContent=`${i2+1} / ${actions.length}`;
+    $("back2").disabled = false;
+    $("next2").textContent = i2===actions.length-1 ? "К владельцам" : "Дальше";
+    renderList(i2, actions, a2, "t2","d2","k2","o2","next2","Ситуация");
+  } else if(!$("stage3").classList.contains("hidden")){
+    $("counter").textContent=`${i3+1} / ${owners.length}`;
+    $("back3").disabled = false;
+    $("finish").textContent = i3===owners.length-1 ? "Результат" : "Дальше";
+    renderList(i3, owners, a3, "t3","d3","k3","o3","finish","Ситуация");
+  }
+}
+
+$("back1").onclick=()=>{if(i1>0){i1--;renderCurrent();}};
+$("next1").onclick=()=>{
+  if(i1<expectations.length-1){i1++;renderCurrent();}
+  else{$("stage1").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);i2=0;renderCurrent();}
+};
+$("back2").onclick=()=>{
+  if(i2>0){i2--;renderCurrent();}
+  else{$("stage2").classList.add("hidden");$("stage1").classList.remove("hidden");setStep(1);i1=expectations.length-1;renderCurrent();}
+};
+$("next2").onclick=()=>{
+  if(i2<actions.length-1){i2++;renderCurrent();}
+  else{$("stage2").classList.add("hidden");$("stage3").classList.remove("hidden");setStep(3);i3=0;renderCurrent();}
+};
+$("back3").onclick=()=>{
+  if(i3>0){i3--;renderCurrent();}
+  else{$("stage3").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);i2=actions.length-1;renderCurrent();}
+};
+$("finish").onclick=()=>{
+  if(i3<owners.length-1){i3++;renderCurrent(); return;}
+  const s1 = a1.reduce((s,v,idx)=>s+(v===expectations[idx].correct?1:0),0);
+  const s2 = a2.reduce((s,v,idx)=>s+(v===actions[idx].correct?1:0),0);
+  const s3 = a3.reduce((s,v,idx)=>s+(v===owners[idx].correct?1:0),0);
+  const total = s1+s2+s3;
+  $("stage3").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("counter").textContent = `${total} / 12`;
+  $("progress").style.width = "100%";
+  if(total<=5){
+    $("resultTitle").textContent="Пока метод точки истины собран не полностью";
+    $("resultText").textContent="Есть понимание отдельных элементов, но ожидание клиента, риск, действие компании и управленческая логика еще не всегда складываются в одну систему.";
+    $("resultMini").textContent="Ориентир: хорошая точка истины всегда переводится в действие компании, владельца и показатель.";
+  }else if(total<=9){
+    $("resultTitle").textContent="Вы уже понимаете логику метода";
+    $("resultText").textContent="Вы видите, что эмоция клиента должна переводиться в управленческое действие, а не оставаться просто впечатлением о сервисе.";
+    $("resultMini").textContent="Следующий шаг — применять эту логику к своим ключевым клиентским сценариям.";
+  }else{
+    $("resultTitle").textContent="Вы уверенно собираете точку истины";
+    $("resultText").textContent="Вы связываете клиентский сценарий, ожидание и риск с конкретным действием компании, владельцем и показателем.";
+    $("resultMini").textContent="Так директор получает не абстрактную эмоцию клиента, а управляемую систему решений.";
+  }
+};
+
+$("start").onclick=()=>{$("intro").classList.add("hidden");$("work").classList.remove("hidden");renderCurrent();};
+$("restart").onclick=()=>location.reload();
+</script>
+</body></html>
