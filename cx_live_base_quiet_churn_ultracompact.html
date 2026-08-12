@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Живая база и тихий уход клиента</title>
+<style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --white:#fff; --navy:#082a57; --text:#10233f;
+  --muted:#5d6b79; --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef;
+  --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button,select{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.steps{display:flex;gap:5px;margin-bottom:8px}
+.step{flex:1;border-radius:999px;background:#efebe6;color:#657180;padding:5px 6px;text-align:center;font-size:10.5px;font-weight:800;white-space:nowrap}
+.step.active{background:var(--blue);color:var(--navy);outline:1px solid #bfd2ef}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:16px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:12px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.options.two{grid-template-columns:1fr 1fr}
+.choice{min-height:37px;border:1px solid #d8d3cb;border-radius:10px;padding:7px 9px;background:var(--soft);color:#173250;font-size:12.2px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.center{text-align:center;font-weight:700}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.field{display:grid;gap:5px;margin-top:8px}
+.field label{font-size:11px;color:#59697b;font-weight:700}
+.field select{width:100%;min-height:37px;border:1px solid #d8d3cb;border-radius:10px;background:var(--soft);padding:7px 9px;color:#173250;font-size:12px}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .choice{font-size:11.8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · управление клиентским опытом</div>
+  <h1>Живая база и тихий уход клиента</h1>
+  <p>Распознайте клиентов, которые формально остаются в базе, но уже начинают отдаляться от компании.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status">
+    <div class="counter" id="counter"></div>
+    <div class="progress"><div id="progress"></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="s1">Риск</div>
+    <div class="step" id="s2">Действие</div>
+    <div class="step" id="s3">В бизнес</div>
+  </div>
+
+  <div id="stage1">
+    <div class="kicker" id="riskKicker"></div>
+    <h2 class="stage-title">Есть риск тихого ухода?</h2>
+    <div class="card">
+      <h3 id="riskTitle"></h3>
+      <p id="riskDesc"></p>
+      <div class="options two">
+        <button class="choice center" id="yesRisk">Да</button>
+        <button class="choice center" id="noRisk">Нет</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="backRisk">Назад</button>
+      <button class="btn primary" id="nextRisk" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage2" class="hidden">
+    <div class="kicker" id="actionKicker"></div>
+    <h2 class="stage-title">Какое действие нужно сейчас?</h2>
+    <div class="card">
+      <h3 id="actionTitle"></h3>
+      <p id="actionDesc"></p>
+      <div class="options" id="actionOptions"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="backAction">Назад</button>
+      <button class="btn primary" id="nextAction" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage3" class="hidden">
+    <h2 class="stage-title">Как перенести это в управление базой?</h2>
+    <p class="stage-text">Выберите правило, которое превращает разовую реакцию в систему.</p>
+    <div class="options" id="businessOptions"></div>
+    <div class="actions">
+      <button class="btn secondary" id="backBusiness">Назад</button>
+      <button class="btn primary" id="finish" disabled>Результат</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result">
+      <h2 id="resultTitle"></h2>
+      <p id="resultText"></p>
+      <div class="mini" id="resultMini"></div>
+    </div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+
+<script>
+const risks=[
+  {title:"85%",desc:"живая база: клиент активен и регулярно пользуется продуктом",correct:false},
+  {title:"14 дней",desc:"клиент не проявлял привычной активности две недели",correct:true},
+  {title:"21 день",desc:"клиент не возвращается уже три недели",correct:true},
+  {title:"1 год",desc:"продление готовится весь срок, а не только перед датой окончания",correct:false},
+  {title:"Использование снизилось вдвое",desc:"формально клиент остается, но пользуется продуктом заметно реже",correct:true},
+  {title:"Оплата прошла вовремя",desc:"сама по себе оплата еще не показывает качество дальнейшего использования",correct:false}
+];
+
+const actionCases=[
+  {title:"14 дней без привычной активности",desc:"Ранний сигнал: клиент еще не ушел, но поведение изменилось.",correct:0,opts:["Автоматический сигнал ответственному и мягкое сообщение клиенту","Ничего не делать до жалобы","Сразу предлагать скидку"]},
+  {title:"21 день без активности",desc:"Сигнал сильнее: нужен уже не только автоматический триггер.",correct:1,opts:["Отправить стандартную рассылку","Позвонить клиенту и выяснить причину снижения использования","Ждать даты продления"]},
+  {title:"Использование снизилось вдвое",desc:"Клиент остается в базе, но ценность продукта для него могла снизиться.",correct:2,opts:["Увеличить частоту рекламных сообщений","Считать клиента активным, пока он платит","Проверить сценарий использования и помочь вернуть ценность"]}
+];
+
+const businessRules=[
+  {text:"Считать живой базой всех, у кого действует договор",correct:false},
+  {text:"Настроить пороги активности, автоматические сигналы и владельца реакции по каждому уровню риска",correct:true},
+  {text:"Контролировать клиентов только в последний месяц перед продлением",correct:false},
+  {text:"Передать все такие случаи лично генеральному директору",correct:false}
+];
+
+let ri=0,ai=0;
+let riskAnswers=new Array(risks.length).fill(null);
+let actionAnswers=new Array(actionCases.length).fill(null);
+let businessAnswer=null;
+const $=id=>document.getElementById(id);
+
+function setStep(n){["s1","s2","s3"].forEach((id,idx)=>$(id).classList.toggle("active",idx===n-1));}
+function updateProgress(){
+  const done=riskAnswers.filter(v=>v!==null).length+actionAnswers.filter(v=>v!==null).length+(businessAnswer!==null?1:0);
+  $("progress").style.width=(done/10*100)+"%";
+}
+function renderRisk(){
+  const x=risks[ri];
+  $("counter").textContent=`${ri+1} / ${risks.length}`;
+  $("riskKicker").textContent=`Сигнал ${ri+1} из ${risks.length}`;
+  $("riskTitle").textContent=x.title;$("riskDesc").textContent=x.desc;
+  $("backRisk").disabled=ri===0;$("nextRisk").disabled=riskAnswers[ri]===null;
+  $("nextRisk").textContent=ri===risks.length-1?"К действиям":"Дальше";
+  $("yesRisk").classList.toggle("selected",riskAnswers[ri]===true);
+  $("noRisk").classList.toggle("selected",riskAnswers[ri]===false);
+  updateProgress();
+}
+function chooseRisk(v){riskAnswers[ri]=v;renderRisk();}
+$("yesRisk").onclick=()=>chooseRisk(true);$("noRisk").onclick=()=>chooseRisk(false);
+$("backRisk").onclick=()=>{if(ri>0){ri--;renderRisk();}};
+$("nextRisk").onclick=()=>{
+  if(ri<risks.length-1){ri++;renderRisk();}
+  else{$("stage1").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);ai=0;renderAction();}
+};
+
+function renderAction(){
+  const x=actionCases[ai];
+  $("counter").textContent=`${ai+1} / ${actionCases.length}`;
+  $("actionKicker").textContent=`Ситуация ${ai+1} из ${actionCases.length}`;
+  $("actionTitle").textContent=x.title;$("actionDesc").textContent=x.desc;
+  const box=$("actionOptions");box.innerHTML="";
+  x.opts.forEach((t,idx)=>{
+    const b=document.createElement("button");b.className="choice"+(actionAnswers[ai]===idx?" selected":"");
+    b.textContent=t;b.onclick=()=>{actionAnswers[ai]=idx;renderAction();};box.appendChild(b);
+  });
+  $("nextAction").disabled=actionAnswers[ai]===null;
+  $("nextAction").textContent=ai===actionCases.length-1?"К системе":"Дальше";
+  updateProgress();
+}
+$("backAction").onclick=()=>{
+  if(ai>0){ai--;renderAction();}
+  else{$("stage2").classList.add("hidden");$("stage1").classList.remove("hidden");setStep(1);ri=risks.length-1;renderRisk();}
+};
+$("nextAction").onclick=()=>{
+  if(ai<actionCases.length-1){ai++;renderAction();}
+  else{$("stage2").classList.add("hidden");$("stage3").classList.remove("hidden");setStep(3);$("counter").textContent="3 / 3";renderBusiness();}
+};
+
+function renderBusiness(){
+  const box=$("businessOptions");box.innerHTML="";
+  businessRules.forEach((x,idx)=>{
+    const b=document.createElement("button");b.className="choice"+(businessAnswer===idx?" selected":"");
+    b.textContent=x.text;b.onclick=()=>{businessAnswer=idx;renderBusiness();};box.appendChild(b);
+  });
+  $("finish").disabled=businessAnswer===null;updateProgress();
+}
+$("backBusiness").onclick=()=>{$("stage3").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);ai=actionCases.length-1;renderAction();};
+$("finish").onclick=()=>{
+  const a=riskAnswers.reduce((s,v,idx)=>s+(v===risks[idx].correct?1:0),0);
+  const b=actionAnswers.reduce((s,v,idx)=>s+(v===actionCases[idx].correct?1:0),0);
+  const c=businessRules[businessAnswer].correct?1:0;
+  const total=a+b+c;
+  $("stage3").classList.add("hidden");$("result").classList.remove("hidden");$("counter").textContent=`${total} / 10`;$("progress").style.width="100%";
+  if(total<=4){$("resultTitle").textContent="Пока база читается по факту договора";$("resultText").textContent="Ранние поведенческие сигналы ухода еще не полностью отделяются от формальной активности клиента.";$("resultMini").textContent="Ориентир: отслеживайте не только оплату, но и регулярность использования, снижение активности и пороги реакции.";}
+  else if(total<=7){$("resultTitle").textContent="Вы уже видите тихий отток раньше формального ухода";$("resultText").textContent="Есть понимание сигналов риска, но часть действий еще можно сильнее перевести в автоматическую управленческую систему.";$("resultMini").textContent="Следующий шаг — зафиксировать пороги, владельцев и сценарии реакции.";}
+  else{$("resultTitle").textContent="Вы управляете базой через поведение клиента";$("resultText").textContent="Вы видите ранние сигналы ухода и отличаете автоматический триггер, персональный контакт и работу с причиной.";$("resultMini").textContent="Такой подход превращает продление из последнего месяца в процесс на всем сроке отношений.";}
+};
+$("start").onclick=()=>{$("intro").classList.add("hidden");$("work").classList.remove("hidden");renderRisk();};
+$("restart").onclick=()=>location.reload();
+</script>
+</body>
+</html>

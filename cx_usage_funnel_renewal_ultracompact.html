@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Воронка использования и продление</title>
+<style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --white:#fff; --navy:#082a57; --text:#10233f;
+  --muted:#5d6b79; --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef;
+  --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button,select{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.steps{display:flex;gap:5px;margin-bottom:8px}
+.step{flex:1;border-radius:999px;background:#efebe6;color:#657180;padding:5px 6px;text-align:center;font-size:10.5px;font-weight:800;white-space:nowrap}
+.step.active{background:var(--blue);color:var(--navy);outline:1px solid #bfd2ef}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:16px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:12px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.options.two{grid-template-columns:1fr 1fr}
+.choice{min-height:37px;border:1px solid #d8d3cb;border-radius:10px;padding:7px 9px;background:var(--soft);color:#173250;font-size:12.2px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.center{text-align:center;font-weight:700}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.field{display:grid;gap:5px;margin-top:8px}
+.field label{font-size:11px;color:#59697b;font-weight:700}
+.field select{width:100%;min-height:37px;border:1px solid #d8d3cb;border-radius:10px;background:var(--soft);padding:7px 9px;color:#173250;font-size:12px}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .choice{font-size:11.8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · управление клиентским опытом</div>
+  <h1>Воронка использования и продление</h1>
+  <p>Соберите путь клиента от покупки к продлению: переходы, владельцы, показатели и решения.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status">
+    <div class="counter" id="counter"></div>
+    <div class="progress"><div id="progress"></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="s1">Переходы</div>
+    <div class="step" id="s2">Владелец + метрика</div>
+    <div class="step" id="s3">Решение</div>
+  </div>
+
+  <div id="stage1">
+    <div class="kicker" id="transitionKicker"></div>
+    <h2 class="stage-title">Это обязательный переход?</h2>
+    <div class="card">
+      <h3 id="transitionTitle"></h3>
+      <p id="transitionDesc"></p>
+      <div class="options two">
+        <button class="choice center" id="mustBtn">Да</button>
+        <button class="choice center" id="notMustBtn">Нет</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="backTransition">Назад</button>
+      <button class="btn primary" id="nextTransition" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage2" class="hidden">
+    <div class="kicker" id="ownerKicker"></div>
+    <h2 class="stage-title">Кто владеет переходом и чем его измерять?</h2>
+    <div class="card">
+      <h3 id="ownerTitle"></h3>
+      <p id="ownerDesc"></p>
+      <div class="field">
+        <label>Владелец</label>
+        <select id="ownerSelect"></select>
+      </div>
+      <div class="field">
+        <label>Показатель</label>
+        <select id="metricSelect"></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="backOwner">Назад</button>
+      <button class="btn primary" id="nextOwner" disabled>Дальше</button>
+    </div>
+  </div>
+
+  <div id="stage3" class="hidden">
+    <h2 class="stage-title">Какое решение должен видеть директор?</h2>
+    <p class="stage-text">Выберите управленческое правило для всей воронки использования.</p>
+    <div class="options" id="directorOptions"></div>
+    <div class="actions">
+      <button class="btn secondary" id="backDirector">Назад</button>
+      <button class="btn primary" id="finish" disabled>Результат</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result">
+      <h2 id="resultTitle"></h2>
+      <p id="resultText"></p>
+      <div class="mini" id="resultMini"></div>
+    </div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+
+<script>
+const transitions=[
+  {title:"Покупка → Старт",desc:"После оплаты клиент должен получить первый понятный маршрут и реально начать пользоваться.",correct:true},
+  {title:"Старт → Регулярность",desc:"Разовый запуск должен превратиться в привычное использование.",correct:true},
+  {title:"Регулярность → Результат",desc:"Клиент должен увидеть конкретную пользу, а не просто активность.",correct:true},
+  {title:"Результат → Продление",desc:"Полученная ценность должна привести к решению продолжить отношения.",correct:true},
+  {title:"Покупка → Продление",desc:"Пропуск использования и результата превращает продление в отдельную продажу с нуля.",correct:false},
+  {title:"Жалоба → Скидка",desc:"Это возможная реакция на отдельный эпизод, но не обязательный переход воронки использования.",correct:false}
+];
+
+const ownerCases=[
+  {title:"Покупка → Старт",desc:"Нужно довести клиента до первого действия.",owner:"Онбординг / аккаунт",metric:"Доля начавших использование"},
+  {title:"Старт → Регулярность",desc:"Нужно сформировать устойчивое использование.",owner:"Аккаунт / продукт",metric:"Частота активного использования"},
+  {title:"Регулярность → Результат",desc:"Нужно доказать ценность для клиента.",owner:"Аккаунт / бизнес-владелец",metric:"Доля клиентов, получивших целевой результат"},
+  {title:"Результат → Продление",desc:"Нужно перевести ценность в продолжение отношений.",owner:"Аккаунт / продажи",metric:"Доля продлений"}
+];
+const owners=["Выберите","Продажи","Поддержка","Онбординг / аккаунт","Аккаунт / продукт","Аккаунт / бизнес-владелец","Аккаунт / продажи","Генеральный директор"];
+const metrics=["Выберите","Количество лидов","Доля начавших использование","Частота активного использования","Доля клиентов, получивших целевой результат","Доля продлений","NPS","Количество обращений"];
+const directorRules=[
+  {text:"Смотреть только на итоговую долю продлений в конце периода",correct:false},
+  {text:"Управлять каждым переходом отдельно: владелец, показатель, порог риска и действие при отклонении",correct:true},
+  {text:"Передать всю воронку отделу продаж",correct:false},
+  {text:"Оценивать воронку только по NPS",correct:false}
+];
+
+let ti=0,oi=0;
+let transitionAnswers=new Array(transitions.length).fill(null);
+let ownerAnswers=ownerCases.map(()=>({owner:"",metric:""}));
+let director=null;
+const $=id=>document.getElementById(id);
+
+function setStep(n){["s1","s2","s3"].forEach((id,idx)=>$(id).classList.toggle("active",idx===n-1));}
+function updateProgress(){
+  const done=transitionAnswers.filter(v=>v!==null).length+ownerAnswers.filter(v=>v.owner&&v.metric).length+(director!==null?1:0);
+  $("progress").style.width=(done/11*100)+"%";
+}
+function renderTransition(){
+  const x=transitions[ti];
+  $("counter").textContent=`${ti+1} / ${transitions.length}`;
+  $("transitionKicker").textContent=`Переход ${ti+1} из ${transitions.length}`;
+  $("transitionTitle").textContent=x.title;$("transitionDesc").textContent=x.desc;
+  $("backTransition").disabled=ti===0;$("nextTransition").disabled=transitionAnswers[ti]===null;
+  $("nextTransition").textContent=ti===transitions.length-1?"К владельцам":"Дальше";
+  $("mustBtn").classList.toggle("selected",transitionAnswers[ti]===true);
+  $("notMustBtn").classList.toggle("selected",transitionAnswers[ti]===false);
+  updateProgress();
+}
+function chooseTransition(v){transitionAnswers[ti]=v;renderTransition();}
+$("mustBtn").onclick=()=>chooseTransition(true);$("notMustBtn").onclick=()=>chooseTransition(false);
+$("backTransition").onclick=()=>{if(ti>0){ti--;renderTransition();}};
+$("nextTransition").onclick=()=>{
+  if(ti<transitions.length-1){ti++;renderTransition();}
+  else{$("stage1").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);oi=0;renderOwner();}
+};
+
+function fillSelect(el,items,val){
+  el.innerHTML="";
+  items.forEach((x,idx)=>{const o=document.createElement("option");o.value=idx===0?"":x;o.textContent=x;el.appendChild(o);});
+  el.value=val;
+}
+function renderOwner(){
+  const x=ownerCases[oi],a=ownerAnswers[oi];
+  $("counter").textContent=`${oi+1} / ${ownerCases.length}`;
+  $("ownerKicker").textContent=`Переход ${oi+1} из ${ownerCases.length}`;
+  $("ownerTitle").textContent=x.title;$("ownerDesc").textContent=x.desc;
+  fillSelect($("ownerSelect"),owners,a.owner);
+  fillSelect($("metricSelect"),metrics,a.metric);
+  $("ownerSelect").onchange=()=>{ownerAnswers[oi].owner=$("ownerSelect").value;updateOwnerButton();updateProgress();};
+  $("metricSelect").onchange=()=>{ownerAnswers[oi].metric=$("metricSelect").value;updateOwnerButton();updateProgress();};
+  $("nextOwner").textContent=oi===ownerCases.length-1?"К решению":"Дальше";
+  updateOwnerButton();updateProgress();
+}
+function updateOwnerButton(){$("nextOwner").disabled=!(ownerAnswers[oi].owner&&ownerAnswers[oi].metric);}
+$("backOwner").onclick=()=>{
+  if(oi>0){oi--;renderOwner();}
+  else{$("stage2").classList.add("hidden");$("stage1").classList.remove("hidden");setStep(1);ti=transitions.length-1;renderTransition();}
+};
+$("nextOwner").onclick=()=>{
+  if(oi<ownerCases.length-1){oi++;renderOwner();}
+  else{$("stage2").classList.add("hidden");$("stage3").classList.remove("hidden");setStep(3);$("counter").textContent="3 / 3";renderDirector();}
+};
+
+function renderDirector(){
+  const box=$("directorOptions");box.innerHTML="";
+  directorRules.forEach((x,idx)=>{
+    const b=document.createElement("button");b.className="choice"+(director===idx?" selected":"");b.textContent=x.text;
+    b.onclick=()=>{director=idx;renderDirector();};box.appendChild(b);
+  });
+  $("finish").disabled=director===null;updateProgress();
+}
+$("backDirector").onclick=()=>{$("stage3").classList.add("hidden");$("stage2").classList.remove("hidden");setStep(2);oi=ownerCases.length-1;renderOwner();};
+$("finish").onclick=()=>{
+  const a=transitionAnswers.reduce((s,v,idx)=>s+(v===transitions[idx].correct?1:0),0);
+  const b=ownerAnswers.reduce((s,v,idx)=>s+(v.owner===ownerCases[idx].owner?1:0)+(v.metric===ownerCases[idx].metric?1:0),0);
+  const c=directorRules[director].correct?1:0;
+  const total=a+b+c;
+  $("stage3").classList.add("hidden");$("result").classList.remove("hidden");$("counter").textContent=`${total} / 15`;$("progress").style.width="100%";
+  if(total<=6){$("resultTitle").textContent="Пока воронка выглядит как набор этапов";$("resultText").textContent="Переходы, владельцы и показатели еще не полностью складываются в управляемую систему.";$("resultMini").textContent="Ориентир: каждый обязательный переход должен иметь владельца и показатель.";}
+  else if(total<=11){$("resultTitle").textContent="Вы уже видите логику воронки использования";$("resultText").textContent="Есть понимание ключевых переходов, но часть ответственности и метрик можно связать точнее.";$("resultMini").textContent="Следующий шаг — добавить пороги риска и действия при отклонении.";}
+  else{$("resultTitle").textContent="Вы собираете воронку как управленческую систему";$("resultText").textContent="Путь от покупки к продлению читается через переходы, ответственность и метрики, а не как финальная продажа в последний месяц.";$("resultMini").textContent="Такой подход делает продление следствием полученной клиентом ценности.";}
+};
+$("start").onclick=()=>{$("intro").classList.add("hidden");$("work").classList.remove("hidden");renderTransition();};
+$("restart").onclick=()=>location.reload();
+</script>
+</body>
+</html>
