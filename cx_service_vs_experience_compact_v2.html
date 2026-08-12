@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Сервис или клиентский опыт</title>
+<style>
+:root{
+  --bg:#d9d4d1;
+  --card:#fffaf1;
+  --white:#ffffff;
+  --navy:#082a57;
+  --text:#10233f;
+  --muted:#536579;
+  --yellow:#ffc83d;
+  --red:#cc4747;
+  --line:#ddd7cf;
+  --soft:#f7f4ef;
+  --blueSoft:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.34;
+}
+button{font-family:inherit}
+.wrap{
+  width:min(560px,calc(100% - 12px));
+  margin:6px auto 14px;
+}
+.panel,.hero{
+  background:var(--card);
+  border-radius:18px;
+  box-shadow:0 7px 20px rgba(24,36,54,.08);
+}
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:16px 16px 15px;
+  margin-bottom:12px;
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  width:180px;
+  height:180px;
+  right:-50px;
+  top:-72px;
+  border:18px solid rgba(8,42,87,.05);
+  border-radius:50%;
+}
+.tag{
+  position:relative;
+  z-index:1;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eef2f7;
+  color:var(--navy);
+  font-weight:800;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+}
+.tag:before{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--red);
+}
+.hero h1{
+  position:relative;
+  z-index:1;
+  margin:10px 0 7px;
+  font-size:24px;
+  line-height:1.06;
+  letter-spacing:-.025em;
+  color:#071d3c;
+}
+.hero p{
+  position:relative;
+  z-index:1;
+  margin:0;
+  font-size:14px;
+  line-height:1.42;
+  max-width:500px;
+}
+.panel{
+  padding:14px;
+  margin-bottom:12px;
+}
+.mini-title{
+  color:var(--navy);
+  font-size:12px;
+  font-weight:800;
+  text-transform:uppercase;
+  margin-bottom:8px;
+  letter-spacing:.02em;
+}
+.progress{
+  height:7px;
+  border-radius:99px;
+  background:#e7e1d9;
+  overflow:hidden;
+}
+.progress > div{
+  height:100%;
+  width:0;
+  background:var(--yellow);
+  transition:.2s ease;
+}
+.stats{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px 12px;
+  margin-top:10px;
+  font-size:13px;
+}
+.stats .label{color:#2a3c52}
+.stats .value{
+  color:var(--navy);
+  font-weight:800;
+  text-align:right;
+}
+.help{
+  margin-top:10px;
+  color:#6a7786;
+  font-size:12px;
+  line-height:1.38;
+}
+.steps{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+.step-pill{
+  flex:1;
+  min-height:36px;
+  border-radius:999px;
+  border:1px solid #e3ddd5;
+  background:#efebe6;
+  color:#526072;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:800;
+  padding:7px 10px;
+}
+.step-pill.active{
+  background:var(--blueSoft);
+  border-color:#bdd0ee;
+  color:var(--navy);
+}
+.dot{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#ffffff;
+  border:1px solid #cfd7e3;
+}
+.step-pill.active .dot{
+  background:#ffffff;
+  border-color:#9fb7db;
+}
+.stage-title{
+  margin:2px 0 6px;
+  font-size:16px;
+  color:var(--navy);
+  font-weight:800;
+}
+.stage-text{
+  margin:0 0 12px;
+  font-size:13px;
+  color:#334b63;
+  line-height:1.42;
+}
+.card{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:13px;
+}
+.context{
+  display:inline-block;
+  margin-bottom:8px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:#f1efea;
+  color:#4d5d71;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+}
+.card h3{
+  margin:0 0 6px;
+  font-size:17px;
+  line-height:1.18;
+  color:var(--navy);
+}
+.card p{
+  margin:0;
+  font-size:14px;
+  line-height:1.4;
+}
+.actions{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:10px;
+}
+.btn{
+  min-height:42px;
+  border:0;
+  border-radius:11px;
+  padding:10px 14px;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f1ede7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.42;cursor:default}
+.choice-row,.binary-row{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.binary-row{grid-template-columns:1fr 1fr}
+.choice{
+  width:100%;
+  min-height:42px;
+  border:1px solid #d8d3cb;
+  border-radius:11px;
+  padding:10px 11px;
+  background:var(--soft);
+  color:#173250;
+  font-size:14px;
+  line-height:1.28;
+  text-align:left;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.choice:hover{background:#fff}
+.choice.selected{
+  background:#f3f7fb;
+  border-color:var(--navy);
+  box-shadow:0 0 0 1px rgba(8,42,87,.12);
+}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.small-card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.small-card:hover{background:#fffdfa}
+.small-card.selected{
+  background:#f3f7fb;
+  border-color:var(--navy);
+  box-shadow:0 0 0 1px rgba(8,42,87,.12);
+}
+.small-card strong{
+  display:block;
+  margin-bottom:4px;
+  color:var(--navy);
+  font-size:13px;
+  line-height:1.22;
+}
+.small-card span{
+  display:block;
+  font-size:12px;
+  color:#42586f;
+  line-height:1.33;
+}
+.result{
+  background:#0d315e;
+  color:#fff;
+  border-radius:14px;
+  padding:16px;
+}
+.result h2{
+  margin:0 0 6px;
+  font-size:19px;
+  line-height:1.18;
+}
+.result p{
+  margin:0;
+  font-size:14px;
+  line-height:1.4;
+}
+.score{
+  height:9px;
+  background:rgba(255,255,255,.22);
+  border-radius:999px;
+  margin-top:12px;
+  overflow:hidden;
+}
+.score > div{
+  height:100%;
+  width:0;
+  background:var(--yellow);
+}
+.box-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+.box{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px;
+}
+.box h3{
+  margin:0 0 4px;
+  color:var(--navy);
+  font-size:14px;
+}
+.box p{
+  margin:0;
+  font-size:12.5px;
+  line-height:1.34;
+}
+.note{
+  margin-top:8px;
+  background:#f0ede8;
+  border-left:4px solid var(--yellow);
+  border-radius:11px;
+  padding:10px 11px;
+  font-size:12.5px;
+  line-height:1.36;
+}
+.hidden{display:none !important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 8px));margin:4px auto 10px}
+  .hero{padding:14px}
+  .hero h1{font-size:21px}
+  .panel{padding:12px}
+  .grid2,.box-grid,.binary-row{grid-template-columns:1fr}
+  .actions{flex-direction:column}
+  .btn{width:100%}
+}
+
+/* v2: ультракомпактный верх задания */
+.hero{
+  padding:13px 14px 12px !important;
+  margin-bottom:8px !important;
+  border-radius:15px !important;
+}
+.hero h1{
+  margin:7px 0 5px !important;
+  font-size:21px !important;
+  line-height:1.08 !important;
+}
+.hero p{
+  font-size:12.8px !important;
+  line-height:1.36 !important;
+}
+.tag{
+  padding:4px 8px !important;
+  font-size:9.5px !important;
+}
+.status-panel{
+  background:transparent;
+  box-shadow:none;
+  padding:0 2px;
+  margin:0 0 8px;
+}
+.status-panel .progress{
+  height:4px;
+  margin:0 0 6px;
+  background:#cfc9c3;
+}
+.status-panel .stats{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:0;
+  font-size:11px;
+}
+.status-panel .value{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(255,250,241,.84);
+  border:1px solid rgba(8,42,87,.08);
+  color:var(--navy);
+  font-weight:800;
+  white-space:nowrap;
+}
+.status-panel .value::before{
+  content:attr(data-label) " ";
+  color:#6b7785;
+  font-weight:600;
+}
+.panel{
+  padding:12px !important;
+  margin-bottom:8px !important;
+  border-radius:15px !important;
+}
+.steps{
+  margin-bottom:8px !important;
+  gap:6px !important;
+}
+.step-pill{
+  min-height:30px !important;
+  padding:5px 8px !important;
+  font-size:11.5px !important;
+}
+.dot{
+  width:11px !important;
+  height:11px !important;
+}
+.stage-title{
+  font-size:15px !important;
+  margin:0 0 4px !important;
+}
+.stage-text{
+  font-size:12.2px !important;
+  line-height:1.35 !important;
+  margin:0 0 9px !important;
+}
+.card{
+  padding:11px !important;
+  border-radius:12px !important;
+}
+.card h3{
+  font-size:15px !important;
+}
+.card p{
+  font-size:12.8px !important;
+}
+.actions{
+  margin-top:8px !important;
+}
+.btn{
+  min-height:38px !important;
+  padding:8px 12px !important;
+  font-size:13px !important;
+}
+.choice{
+  min-height:38px !important;
+  padding:8px 10px !important;
+  font-size:12.8px !important;
+}
+.small-card{
+  padding:9px !important;
+}
+.small-card strong{
+  font-size:12px !important;
+}
+.small-card span{
+  font-size:11.3px !important;
+}
+.grid2{
+  gap:6px !important;
+}
+@media(max-width:440px){
+  .status-panel .stats{
+    gap:4px;
+  }
+  .status-panel .value{
+    padding:4px 6px;
+    font-size:10.5px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<div class="tag">Практика · клиентский опыт</div>
+<h1>Сервис или клиентский опыт?</h1>
+<p>Разложите 12 ситуаций по двум группам: где речь о конкретном обслуживании, а где — о клиентском опыте как системе. Затем выберите 2 ситуации, где проблема не в отдельном сотруднике, а в устройстве процесса.</p>
+</section>
+<section class="status-panel">
+
+<div class="progress"><div id="p1"></div></div>
+<div class="stats">
+<div class="value" data-label="Этап" id="stageText1">1 из 2</div>
+<div class="value" data-label="Карточки" id="doneText1">0 / 12</div>
+<div class="value" data-label="Верно" id="scoreText1">0</div>
+</div>
+
+</section>
+<section class="panel">
+<div class="steps">
+<div class="step-pill active" id="pillA"><span class="dot"></span>Разложить карточки</div>
+<div class="step-pill" id="pillB"><span class="dot"></span>Найти системные проблемы</div>
+</div>
+<div id="stepA">
+<div class="stage-title">Разделите сервис и клиентский опыт</div>
+<p class="stage-text">Сервис — это конкретное обслуживание в моменте. Клиентский опыт включает обещания, путь после оплаты, передачу между отделами, сроки, ясность ожиданий и результат.</p>
+<div class="card">
+<div class="context" id="ctx1"></div>
+<h3 id="title1"></h3>
+<p id="desc1"></p>
+<div class="binary-row">
+<button class="choice" id="btnService">Сервис</button>
+<button class="choice" id="btnCX">Клиентский опыт</button>
+</div>
+</div>
+<div class="actions">
+<button class="btn secondary" disabled="" id="back1">Назад</button>
+<button class="btn primary" disabled="" id="next1">Дальше</button>
+</div>
+</div>
+<div class="hidden" id="stepB">
+<div class="stage-title">Выберите 2 системные проблемы</div>
+<p class="stage-text">Отметьте две ситуации, где корень проблемы лежит в устройстве процесса. Не смотрите на «виноватого» сотрудника — ищите сбой в маршруте клиента.</p>
+<div class="grid2" id="systemGrid"></div>
+<div class="actions">
+<button class="btn secondary" id="backToA">Назад</button>
+<button class="btn primary" disabled="" id="finish1">Показать результат</button>
+</div>
+</div>
+<div class="hidden" id="result1">
+<div class="result">
+<h2 id="resTitle1"></h2>
+<p id="resText1"></p>
+<div class="score"><div id="scoreFill1"></div></div>
+</div>
+<div class="box-grid">
+<div class="box"><h3>Что уже получается</h3><p id="box11"></p></div>
+<div class="box"><h3>Что стоит усилить</h3><p id="box12"></p></div>
+<div class="box"><h3>Ключевой вывод</h3><p id="box13"></p></div>
+<div class="box"><h3>Следующий шаг</h3><p id="box14"></p></div>
+</div>
+<div class="note">Ориентир: если вы уверенно различаете момент обслуживания и систему пути, дальше будет проще анализировать точки истины, стыки этапов и причины оттока.</div>
+<div class="actions">
+<button class="btn alt" id="restart1">Пройти еще раз</button>
+</div>
+</div>
+</section>
+</div>
+<script>
+const cards = [
+  {ctx:"Контакт", title:"Сотрудник улыбнулся, поприветствовал клиента и обратился по имени", desc:"Речь о поведении конкретного человека в конкретном моменте.", type:"service"},
+  {ctx:"Путь после оплаты", title:"Клиент оплатил услугу, но не понял, какой следующий шаг и кто теперь отвечает за его вопрос", desc:"Здесь важна логика маршрута после оплаты.", type:"cx"},
+  {ctx:"Обещание", title:"Менеджер перезвонил точно в то время, которое обещал", desc:"Это единичное качественное действие в моменте.", type:"service"},
+  {ctx:"Передача между отделами", title:"Клиент повторяет одну и ту же информацию продажам, аккаунту и поддержке", desc:"Проблема проявляется на стыке этапов.", type:"cx"},
+  {ctx:"Доставка", title:"Курьер заранее предупредил о приезде и вежливо передал заказ", desc:"Оценивается конкретное обслуживание.", type:"service"},
+  {ctx:"Ожидания", title:"В рекламе обещают одно, а на звонке клиент слышит другое", desc:"Несовпадение возникает еще до обслуживания.", type:"cx"},
+  {ctx:"Решение вопроса", title:"Специалист быстро извинился и помог клиенту в чате", desc:"Здесь важен конкретный эпизод контакта.", type:"service"},
+  {ctx:"Запуск", title:"После продажи нет понятной передачи клиента в внедрение или онбординг", desc:"Сбой встроен в процесс перехода на следующий этап.", type:"cx"},
+  {ctx:"В магазине", title:"Консультант заметил сомнение клиента и помог подобрать вариант без давления", desc:"Это поведение сотрудника в живом контакте.", type:"service"},
+  {ctx:"Документы и условия", title:"Счет, договор и устные договоренности содержат разные сроки и правила", desc:"Клиент видит не одну компанию, а набор несвязанных частей.", type:"cx"},
+  {ctx:"Жалоба", title:"Проблему клиенту закрыли, но причина продолжает повторяться у других", desc:"Важен не только ответ, но и системная причина сбоя.", type:"cx"},
+  {ctx:"После встречи", title:"Менеджер отправил короткое и понятное резюме разговора", desc:"Это отдельное сервисное действие после контакта.", type:"service"}
+];
+
+const systemCandidates = [
+  {id:1, text:"После оплаты клиент не понимает следующий шаг"},
+  {id:3, text:"Клиент повторяет информацию разным сотрудникам"},
+  {id:5, text:"В рекламе обещают одно, а на звонке другое"},
+  {id:7, text:"Нет передачи клиента из продаж в внедрение"},
+  {id:10, text:"Причина жалобы повторяется у других клиентов"},
+  {id:11, text:"После встречи менеджер отправил резюме разговора"}
+];
+const correctSystems = [3,7];
+
+let indexA = 0;
+let answersA = new Array(cards.length).fill(null);
+let score = 0;
+let systemSelected = [];
+
+const $ = id => document.getElementById(id);
+
+function scorePartA(){
+  return answersA.reduce((acc, val, idx) => acc + (val === cards[idx].type ? 1 : 0), 0);
+}
+
+function updateHeader(){
+  const answered = answersA.filter(v => v !== null).length;
+  $("doneText1").textContent = `${answered} / 12`;
+  $("scoreText1").textContent = score.toString();
+  const stage = document.getElementById("stepB").classList.contains("hidden") ? "1 из 2" : "2 из 2";
+  $("stageText1").textContent = stage;
+  const pct = document.getElementById("result1").classList.contains("hidden")
+    ? ((answered + (stage === "2 из 2" ? systemSelected.length : 0)) / 14) * 100
+    : 100;
+  $("p1").style.width = pct + "%";
+}
+
+function renderA(){
+  const item = cards[indexA];
+  $("ctx1").textContent = item.ctx;
+  $("title1").textContent = `Карточка ${indexA+1} из 12`;
+  $("desc1").textContent = item.title + " " + item.desc;
+  $("back1").disabled = indexA === 0;
+  $("next1").disabled = answersA[indexA] === null;
+  document.querySelectorAll("#stepA .choice").forEach(btn => btn.classList.remove("selected"));
+  if(answersA[indexA] === "service") $("btnService").classList.add("selected");
+  if(answersA[indexA] === "cx") $("btnCX").classList.add("selected");
+  updateHeader();
+}
+
+function chooseA(val){
+  answersA[indexA] = val;
+  document.querySelectorAll("#stepA .choice").forEach(btn => btn.classList.remove("selected"));
+  if(val === "service") $("btnService").classList.add("selected");
+  if(val === "cx") $("btnCX").classList.add("selected");
+  $("next1").disabled = false;
+}
+
+$("btnService").onclick = () => chooseA("service");
+$("btnCX").onclick = () => chooseA("cx");
+
+$("back1").onclick = () => {
+  if(indexA > 0) {
+    indexA--;
+    renderA();
+  }
+};
+
+$("next1").onclick = () => {
+  if(indexA < cards.length - 1) {
+    indexA++;
+    renderA();
+  } else {
+    score = scorePartA();
+    $("scoreText1").textContent = score.toString();
+    $("stepA").classList.add("hidden");
+    $("stepB").classList.remove("hidden");
+    $("pillA").classList.remove("active");
+    $("pillB").classList.add("active");
+    renderSystemGrid();
+    updateHeader();
+  }
+};
+
+function renderSystemGrid(){
+  const grid = $("systemGrid");
+  grid.innerHTML = "";
+  systemCandidates.forEach(item => {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "small-card";
+    if(systemSelected.includes(item.id)) el.classList.add("selected");
+    el.innerHTML = `<strong>${item.text}</strong><span>Выберите, если считаете проблему системной</span>`;
+    el.onclick = () => {
+      if(systemSelected.includes(item.id)) {
+        systemSelected = systemSelected.filter(v => v !== item.id);
+      } else {
+        if(systemSelected.length >= 2) return;
+        systemSelected.push(item.id);
+      }
+      renderSystemGrid();
+      $("finish1").disabled = systemSelected.length !== 2;
+      updateHeader();
+    };
+    grid.appendChild(el);
+  });
+  $("finish1").disabled = systemSelected.length !== 2;
+}
+
+$("backToA").onclick = () => {
+  $("stepB").classList.add("hidden");
+  $("stepA").classList.remove("hidden");
+  $("pillB").classList.remove("active");
+  $("pillA").classList.add("active");
+  updateHeader();
+};
+
+$("finish1").onclick = () => {
+  const partB = correctSystems.filter(v => systemSelected.includes(v)).length;
+  score = scorePartA() + partB;
+  showResult1(score);
+};
+
+function showResult1(total){
+  $("stepB").classList.add("hidden");
+  $("result1").classList.remove("hidden");
+  $("p1").style.width = "100%";
+  $("stageText1").textContent = "Готово";
+  $("doneText1").textContent = "12 / 12";
+  $("scoreText1").textContent = total.toString();
+  const pct = Math.round(total / 14 * 100);
+  $("scoreFill1").style.width = pct + "%";
+
+  let data;
+  if(total <= 6) {
+    data = [
+      "Пока вы чаще видите частные действия, чем систему",
+      "Сервисные эпизоды распознаются, но клиентский путь как целое еще смешивается с обслуживанием.",
+      "Вы замечаете качество отдельных контактов.",
+      "Стоит увереннее отличать момент обслуживания от стыка этапов и ожиданий.",
+      "Клиентский опыт — это не только вежливость, а весь маршрут и логика обещаний.",
+      "Возьмите один путь после оплаты и опишите, что клиент должен понимать на каждом шаге."
+    ];
+  } else if(total <= 10) {
+    data = [
+      "База есть: вы различаете часть ситуаций верно",
+      "Вы уже видите разницу между поведением сотрудника и устройством пути, но не всегда уверенно.",
+      "Есть хорошее ощущение сервисных моментов и видимость части системных сбоев.",
+      "Полезно чаще задавать вопрос: проблема в сотруднике или в маршруте клиента.",
+      "Когда клиент сталкивается с непонятным следующим шагом, это почти всегда вопрос CX.",
+      "Проверьте, где клиент повторяет информацию и где нет ясного перехода между отделами."
+    ];
+  } else {
+    data = [
+      "Вы уверенно различаете сервис и клиентский опыт",
+      "Вы видите не только качество контакта, но и то, как компания ведет клиента через весь путь.",
+      "Есть системный управленческий взгляд на клиентский маршрут.",
+      "Следующая зона роста — связывать наблюдения с метриками и экономикой.",
+      "Сильный CX-подход начинается там, где за путь есть владелец и следующий шаг понятен клиенту.",
+      "Используйте этот же подход для разбора точек истины и проблемных переходов."
+    ];
+  }
+
+  $("resTitle1").textContent = data[0];
+  $("resText1").textContent = data[1];
+  $("box11").textContent = data[2];
+  $("box12").textContent = data[3];
+  $("box13").textContent = data[4];
+  $("box14").textContent = data[5];
+};
+
+$("restart1").onclick = () => {
+  indexA = 0;
+  answersA = new Array(cards.length).fill(null);
+  score = 0;
+  systemSelected = [];
+  $("result1").classList.add("hidden");
+  $("stepA").classList.remove("hidden");
+  $("stepB").classList.add("hidden");
+  $("pillA").classList.add("active");
+  $("pillB").classList.remove("active");
+  renderA();
+};
+
+renderA();
+</script>
+</body>
+</html>
