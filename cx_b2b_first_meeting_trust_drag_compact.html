@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Первая встреча как точка доверия</title><style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:11.8px;line-height:1.34}
+.choice{min-height:37px;border:1px solid #d8d3cb;border-radius:10px;padding:7px 9px;background:var(--soft);color:#173250;font-size:12.1px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.choice.center{text-align:center;font-weight:700}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+
+/* board */
+.casebar{margin-bottom:8px;padding:8px 9px;border-radius:10px;background:#f2eee8;color:#31485f;font-size:11.5px;line-height:1.32}
+.goal{margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.goal strong{display:block;color:var(--navy);font-size:12.2px;margin-bottom:4px}
+.goal span{font-size:11.4px;line-height:1.32;color:#41586f}
+.zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.zone{
+  min-height:78px;border:1px dashed #bcc5cf;border-radius:10px;background:rgba(255,255,255,.72);padding:7px;cursor:pointer;position:relative
+}
+.zone.active,.zone.over{border-style:solid;border-color:var(--navy);background:#f4f7fb}
+.zone-label{font-size:9.5px;text-transform:uppercase;font-weight:800;color:#6a7887;margin-bottom:4px}
+.zone-empty{font-size:10.8px;color:#88929d;line-height:1.26}
+.placed{font-size:11.2px;line-height:1.28;color:#173250;font-weight:700;padding-right:18px}
+.remove{
+  position:absolute;right:5px;top:5px;width:18px;height:18px;border:0;border-radius:50%;
+  background:#ece8e2;color:#526275;font-size:12px;line-height:18px;padding:0;cursor:pointer
+}
+.bank{margin-top:8px;border-top:1px solid #e2ddd6;padding-top:8px}
+.bank-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+.bank-title{font-size:11px;font-weight:800;color:var(--navy)}
+.bank-count{font-size:10.5px;color:#667586}
+.bank-card{min-height:64px;border:1px solid #cfd5dc;border-radius:10px;background:#fff;padding:9px;cursor:grab;user-select:none}
+.bank-card.selected{outline:2px solid #bfd2ef;background:#f7faff}
+.bank-card strong{display:block;color:var(--navy);font-size:12.3px;margin-bottom:3px}
+.bank-card span{display:block;color:#45596d;font-size:11.3px;line-height:1.3}
+.bank-nav{display:grid;grid-template-columns:auto 1fr auto;gap:6px;margin-top:6px}
+.bank-nav .btn{min-height:34px;padding:7px 9px}
+.keep{width:100%}
+.hint{margin-top:6px;font-size:10.5px;color:#718090;line-height:1.3}
+
+/* sequence */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.slot-chip{padding:7px;border-radius:10px;border:1px solid var(--line);background:#fff;min-height:50px}
+.slot-chip strong{display:block;color:var(--navy);font-size:11.5px;margin-bottom:3px}
+.slot-chip span{display:block;font-size:10.7px;line-height:1.25;color:#5b6c7e}
+.numgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.num{min-height:38px}
+.tip{margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.tip strong{display:block;color:var(--navy);font-size:11.7px;margin-bottom:3px}
+.tip span{font-size:11.1px;line-height:1.3;color:#466076}
+
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+}
+</style></head>
+<body><div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · B2B до договора</div>
+  <h1>Первая встреча как точка доверия</h1>
+  <p>Разложите карточки по зонам первой экспертной встречи и оставьте лишние формулировки в банке.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status"><div class="counter" id="counter"></div><div class="progress"><div id="progress"></div></div></div>
+  <div class="stage-title">Что вынести на первую экспертную встречу?</div>
+  <div class="stage-text">Команда готовится к встрече до договора. Нужны не общие слова о сервисе, а содержательная повестка, которая показывает понимание задачи клиента.</div>
+
+  <div class="goal"><strong>Цель встречи</strong><span>Клиент должен выйти не с мыслью «нам продают услугу», а с ощущением: «они уже видят наши риски, понимают контекст и помогают вернуть контроль».</span></div>
+
+  <div class="zone-grid" id="zones"></div>
+
+  <div class="bank" id="bank">
+    <div class="bank-head"><div class="bank-title">Банк карточек</div><div class="bank-count" id="bankCount"></div></div>
+    <div class="bank-card" id="bankCard" draggable="true"></div>
+    <div class="bank-nav">
+      <button class="btn secondary" id="prevCard">←</button>
+      <button class="btn secondary keep" id="skipCard">Оставить в банке</button>
+      <button class="btn secondary" id="nextCard">→</button>
+    </div>
+    <div class="hint">Сохранили суть задания: карточку можно перетащить в нужную зону. На телефоне — нажать карточку, затем зону. Лишние карточки остаются в банке.</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" id="reset">Сбросить</button>
+    <button class="btn primary" id="check" disabled>Проверить</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result"><h2 id="resultTitle"></h2><p id="resultText"></p><div class="mini" id="resultMini"></div></div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+<script>
+const zones = [
+  {id:"facts1",label:"Факты и карта риска"},
+  {id:"facts2",label:"Факты и карта риска"},
+  {id:"plan1",label:"План действий"},
+  {id:"plan2",label:"План действий"},
+  {id:"trust1",label:"Признак доверия"},
+  {id:"trust2",label:"Признак доверия"}
+];
+const cards = [
+  {id:"c1",title:"Карта очагов негатива",text:"Где негатив уже накапливается и на какие темы повторяется.",slot:"facts1"},
+  {id:"c2",title:"Площадки влияния",text:"Какие каналы и сообщества сильнее всего воздействуют на репутацию бренда.",slot:"facts2"},
+  {id:"c3",title:"Срочные действия",text:"Что нужно тушить в ближайшие 48 часов.",slot:"plan1"},
+  {id:"c4",title:"Системная перестройка коммуникации",text:"Какие сообщения, каналы или процессы нужно менять устойчиво.",slot:"plan2"},
+  {id:"c5",title:"Клиент делится внутренним контекстом",text:"Рассказывает то, чего не было в открытых источниках.",slot:"trust1"},
+  {id:"c6",title:"Клиент подключает более высоких лиц",text:"В обсуждение заходят руководители, которые влияют на решение.",slot:"trust2"},
+  {id:"c7",title:"Зона мониторинга",text:"Что отслеживать каждую неделю, чтобы не пропустить рост риска.",slot:null},
+  {id:"c8",title:"Темы, которые могут вырасти в кризис",text:"Что сейчас выглядит слабым сигналом, но может стать публичной проблемой.",slot:null},
+  {id:"c9",title:"История компании подрядчика",text:"Общий рассказ о том, какие вы классные.",slot:null},
+  {id:"c10",title:"Прайс на все услуги",text:"Каталог предложений без привязки к задаче клиента.",slot:null}
+];
+let assigned={}, bankIds=cards.map(c=>c.id), current=0, selectedCardId=null;
+const $=id=>document.getElementById(id);
+const cardById=id=>cards.find(c=>c.id===id);
+
+function renderZones(){
+  const wrap=$("zones");wrap.innerHTML="";
+  zones.forEach(z=>{
+    const el=document.createElement("div");el.className="zone";el.dataset.zone=z.id;
+    el.ondragover=e=>{e.preventDefault();el.classList.add("over");};
+    el.ondragleave=()=>el.classList.remove("over");
+    el.ondrop=e=>{e.preventDefault();el.classList.remove("over");place(z.id, selectedCardId);};
+    el.onclick=e=>{if(e.target.classList.contains("remove")) return; if(selectedCardId) place(z.id, selectedCardId);};
+    el.innerHTML=`<div class="zone-label">${z.label}</div>`;
+    const cid=assigned[z.id];
+    if(cid){
+      const c=cardById(cid);
+      const p=document.createElement("div");p.className="placed";p.textContent=c.title;el.appendChild(p);
+      const rm=document.createElement("button");rm.className="remove";rm.textContent="×";rm.onclick=(e)=>{e.stopPropagation();unplace(z.id);};el.appendChild(rm);
+    }else{
+      const p=document.createElement("div");p.className="zone-empty";p.textContent="Перетащите карточку";el.appendChild(p);
+    }
+    if(selectedCardId) el.classList.add("active");
+    wrap.appendChild(el);
+  });
+  updateStatus();
+}
+function normalize(){ if(bankIds.length===0){current=0;return;} if(current<0) current=bankIds.length-1; if(current>=bankIds.length) current=0; }
+function renderBank(){
+  normalize();
+  const box=$("bankCard");
+  if(bankIds.length===0){
+    box.innerHTML="<strong>Банк пуст</strong><span>Все карточки либо разложены, либо сознательно пропущены.</span>";
+    $("prevCard").disabled=$("nextCard").disabled=$("skipCard").disabled=true;
+    box.draggable=false; selectedCardId=null;
+  }else{
+    const c=cardById(bankIds[current]);
+    box.innerHTML=`<strong>${c.title}</strong><span>${c.text}</span>`;
+    box.draggable=true; box.classList.toggle("selected", selectedCardId===c.id);
+    $("prevCard").disabled=$("nextCard").disabled=$("skipCard").disabled=false;
+  }
+  $("bankCount").textContent=`В банке: ${bankIds.length}`;
+}
+$("bankCard").ondragstart=e=>{ if(!bankIds.length) return; selectedCardId=bankIds[current]; renderZones(); renderBank(); };
+$("bankCard").onclick=()=>{ if(!bankIds.length) return; const id=bankIds[current]; selectedCardId=selectedCardId===id?null:id; renderZones(); renderBank(); };
+$("prevCard").onclick=()=>{current--; selectedCardId=null; renderBank(); renderZones();};
+$("nextCard").onclick=()=>{current++; selectedCardId=null; renderBank(); renderZones();};
+$("skipCard").onclick=()=>{current++; selectedCardId=null; renderBank(); renderZones();};
+function place(zoneId, cardId){
+  if(!cardId || !bankIds.includes(cardId)) return;
+  if(assigned[zoneId]) bankIds.push(assigned[zoneId]);
+  assigned[zoneId]=cardId;
+  bankIds=bankIds.filter(x=>x!==cardId);
+  selectedCardId=null; normalize(); renderZones(); renderBank();
+}
+function unplace(zoneId){
+  const cid=assigned[zoneId]; if(!cid) return;
+  bankIds.push(cid); delete assigned[zoneId]; selectedCardId=null; renderZones(); renderBank();
+}
+function updateStatus(){
+  const filled=Object.keys(assigned).length;
+  $("counter").textContent=`Заполнено ${filled} / 6`;
+  $("progress").style.width=(filled/6*100)+"%";
+  $("check").disabled=filled!==6;
+}
+$("check").onclick=()=>{
+  let correct=0; zones.forEach(z=>{const cid=assigned[z.id]; if(cid && cardById(cid).slot===z.id) correct++;});
+  document.getElementById("zones").classList.add("hidden"); $("bank").classList.add("hidden"); $("reset").classList.add("hidden"); $("check").classList.add("hidden");
+  $("result").classList.remove("hidden"); $("progress").style.width="100%"; $("counter").textContent=`${correct} / 6`;
+  if(correct<=2){$("resultTitle").textContent="Встреча пока собрана как набор идей"; $("resultText").textContent="Часть карточек не попала в рабочие зоны, а лишние формулировки трудно отличить от нужной повестки."; $("resultMini").textContent="Полезно делить подготовку на три блока: карта риска, план действий и признаки доверия клиента.";}
+  else if(correct<=5){$("resultTitle").textContent="Логика первой встречи уже видна"; $("resultText").textContent="Вы в целом отделяете содержательную повестку от лишних карточек, но одну-две зоны еще можно собрать точнее."; $("resultMini").textContent="Сильная встреча показывает: что происходит, что делать дальше и что клиент начал вам доверять.";}
+  else{$("resultTitle").textContent="Первая встреча собрана как точка доверия"; $("resultText").textContent="Вы сохранили содержательную структуру встречи: факты и карта риска, план действий и признаки, что разговор перешел в доверие."; $("resultMini").textContent="Именно такая повестка помогает не продавать шаблон, а показывать понимание задачи клиента.";}
+};
+$("reset").onclick=()=>{assigned={}; bankIds=cards.map(c=>c.id); current=0; selectedCardId=null; renderZones(); renderBank();};
+$("start").onclick=()=>{$("intro").classList.add("hidden"); $("work").classList.remove("hidden"); renderZones(); renderBank();};
+$("restart").onclick=()=>location.reload();
+</script></body></html>
