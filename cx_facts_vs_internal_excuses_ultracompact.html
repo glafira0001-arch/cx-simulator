@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Факты против внутренних оправданий</title><style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.kicker{display:inline-block;margin-bottom:6px;padding:3px 6px;border-radius:999px;background:#f1efea;color:#607083;font-size:9.5px;font-weight:800;text-transform:uppercase}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:11.8px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.choice{min-height:38px;border:1px solid #d8d3cb;border-radius:10px;padding:8px 9px;background:var(--soft);color:#173250;font-size:12.1px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.choice.center{text-align:center;font-weight:700}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.chip{padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.chip strong{display:block;color:var(--navy);font-size:11.8px;margin-bottom:3px}
+.chip span{display:block;font-size:11px;color:#5a697a;line-height:1.28}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .summary{grid-template-columns:1fr}
+}
+</style></head>
+<body><div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · CJM-досье</div>
+  <h1>Факты против внутренних оправданий</h1>
+  <p>Соберите полезные сигналы для сессии по CJM. Отделите конкретные факты с контекстом от внутренних объяснений, которые звучат гладко, но не помогают увидеть путь клиента.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status"><div class="counter" id="counter"></div><div class="progress"><div id="progress"></div></div></div>
+  <div class="summary" id="summary"></div>
+
+  <div class="kicker" id="kicker"></div>
+  <div class="stage-title">Что делаем с этим сигналом?</div>
+  <div class="card">
+    <h3 id="dept"></h3>
+    <p id="signal"></p>
+    <div class="options">
+      <button class="choice center" id="takeBtn">Берем в CJM-досье</button>
+      <button class="choice center" id="returnBtn">Возвращаем на уточнение</button>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn secondary" id="back">Назад</button>
+    <button class="btn primary" id="next" disabled>Дальше</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result"><h2 id="resultTitle"></h2><p id="resultText"></p><div class="mini" id="resultMini"></div></div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+<script>
+const items = [
+  {dept:"Продажи", signal:"До консультации 38% лидов спрашивают, чем тарифы отличаются. После ответа менеджера половина просит скидку вместо выбора тарифа.", correct:true},
+  {dept:"Продажи", signal:"Клиенты приходят нецелевые.", correct:false},
+  {dept:"Сервис", signal:"После оплаты 27% клиентов повторно спрашивают, где инструкция. Вопрос появляется в первые два дня и замедляет старт.", correct:true},
+  {dept:"Сервис", signal:"Клиенты сами не читают инструкцию.", correct:false},
+  {dept:"Маркетинг", signal:"В рекламе обещаем запуск за 24 часа, а фактически операции запускают за 3 дня. Из-за этого в поддержку идут жалобы.", correct:true},
+  {dept:"Маркетинг", signal:"Оффер нормальный, заявки идут.", correct:false},
+  {dept:"Поддержка", signal:"После первого обращения клиенту приходится заново объяснять проблему другому специалисту. На этом этапе растет повторный контакт и раздражение.", correct:true},
+  {dept:"Поддержка", signal:"Клиенты слишком эмоциональные.", correct:false}
+];
+let i=0, answers=new Array(items.length).fill(null);
+const $=id=>document.getElementById(id);
+
+function renderSummary(){
+  const taken = answers.filter(v=>v===true).length;
+  const returned = answers.filter(v=>v===false).length;
+  $("summary").innerHTML = `
+    <div class="chip"><strong>Берем в досье</strong><span>Выбрано: ${taken}</span></div>
+    <div class="chip"><strong>Возвращаем</strong><span>Выбрано: ${returned}</span></div>
+  `;
+}
+function render(){
+  renderSummary();
+  const x=items[i];
+  $("counter").textContent=`${i+1} / ${items.length}`;
+  $("progress").style.width=(answers.filter(v=>v!==null).length/items.length*100)+"%";
+  $("kicker").textContent=`Сигнал ${i+1} из ${items.length}`;
+  $("dept").textContent=x.dept;
+  $("signal").textContent=x.signal;
+  $("takeBtn").classList.toggle("selected", answers[i]===true);
+  $("returnBtn").classList.toggle("selected", answers[i]===false);
+  $("back").disabled=i===0;
+  $("next").disabled=answers[i]===null;
+  $("next").textContent=i===items.length-1?"Результат":"Дальше";
+}
+$("takeBtn").onclick=()=>{answers[i]=true; render();};
+$("returnBtn").onclick=()=>{answers[i]=false; render();};
+$("back").onclick=()=>{if(i>0){i--; render();}};
+$("next").onclick=()=>{
+  if(i<items.length-1){i++; render(); return;}
+  const total = answers.reduce((s,v,idx)=>s+(v===items[idx].correct?1:0),0);
+  document.querySelector(".kicker").classList.add("hidden");
+  document.querySelector(".stage-title").classList.add("hidden");
+  document.querySelector(".card").classList.add("hidden");
+  document.querySelector(".actions").classList.add("hidden");
+  document.getElementById("summary").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("progress").style.width="100%";
+  $("counter").textContent=`${total} / ${items.length}`;
+  if(total<=3){
+    $("resultTitle").textContent="Пока факты и оправдания смешиваются";
+    $("resultText").textContent="Часть формулировок еще воспринимается как полезный сигнал, хотя в них нет конкретного этапа пути, события и влияния на клиента.";
+    $("resultMini").textContent="Для CJM-досье подходит сигнал, где видно: что произошло, на каком этапе, как это повлияло на клиента и какой риск создало для бизнеса.";
+  }else if(total<=6){
+    $("resultTitle").textContent="Вы уже отделяете полезные сигналы";
+    $("resultText").textContent="В большинстве случаев вы видите разницу между конкретным фактом и внутренней защитной формулировкой отдела.";
+    $("resultMini").textContent="Следующий шаг — просить команды доносить сигнал языком пути клиента, а не языком оправданий.";
+  }else{
+    $("resultTitle").textContent="Вы хорошо собираете CJM-досье";
+    $("resultText").textContent="Вы уверенно отделяете наблюдаемый сигнал с контекстом от общих объяснений, которые мешают увидеть реальную карту пути.";
+    $("resultMini").textContent="Такой подход помогает строить CJM не вокруг мнений отделов, а вокруг фактов клиентского опыта.";
+  }
+};
+$("start").onclick=()=>{$("intro").classList.add("hidden"); $("work").classList.remove("hidden"); render();};
+$("restart").onclick=()=>location.reload();
+</script></body></html>
