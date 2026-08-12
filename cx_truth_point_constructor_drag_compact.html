@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Конструктор точки истины</title><style>
+:root{
+  --bg:#d9d4d1; --card:#fffaf1; --navy:#082a57; --text:#10233f;
+  --yellow:#ffc83d; --red:#cc4747; --line:#ddd7cf; --soft:#f7f4ef; --blue:#eef3fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.32}
+button{font-family:inherit}
+.wrap{width:min(560px,calc(100% - 10px));margin:5px auto 10px}
+.hero,.panel{background:var(--card);border-radius:14px;box-shadow:0 5px 16px rgba(24,36,54,.07)}
+.hero{position:relative;overflow:hidden;padding:13px 14px}
+.hero:after{content:"";position:absolute;width:155px;height:155px;border:15px solid rgba(8,42,87,.05);border-radius:50%;right:-48px;top:-66px}
+.tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eef2f7;color:var(--navy);font-weight:800;font-size:9.2px;text-transform:uppercase}
+.tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red)}
+.hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:20px;line-height:1.06;color:#071d3c}
+.hero p{position:relative;z-index:1;margin:0;font-size:12.4px;line-height:1.34}
+.hero .btn{position:relative;z-index:1;margin-top:10px;width:100%}
+.panel{padding:11px}
+.status{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.progress{flex:1;height:4px;background:#d7d1ca;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--yellow);transition:.2s}
+.counter{flex:0 0 auto;color:var(--navy);font-size:11px;font-weight:800}
+.stage-title{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.15;font-weight:800}
+.stage-text{margin:0 0 8px;color:#40566c;font-size:11.8px;line-height:1.34}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}
+.card h3{margin:0 0 4px;color:var(--navy);font-size:15px;line-height:1.16}
+.card p{margin:0;color:#45596d;font-size:11.8px;line-height:1.34}
+.options{display:grid;gap:6px;margin-top:9px}
+.choice{min-height:37px;border:1px solid #d8d3cb;border-radius:10px;padding:7px 9px;background:var(--soft);color:#173250;font-size:12.1px;line-height:1.22;text-align:left;cursor:pointer}
+.choice.selected{background:#f3f7fb;border-color:var(--navy);box-shadow:0 0 0 1px rgba(8,42,87,.11)}
+.actions{display:flex;justify-content:space-between;gap:7px;margin-top:8px}
+.btn{min-height:37px;border:0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.secondary{background:#f0ece7;color:var(--navy)}
+.btn.alt{background:var(--yellow);color:#3d2d00}
+.btn:disabled{opacity:.4;cursor:default}
+.result{background:#0d315e;color:#fff;border-radius:12px;padding:13px}
+.result h2{margin:0 0 5px;font-size:17px;line-height:1.16}
+.result p{margin:0;font-size:12.5px;line-height:1.36}
+.result .mini{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18);font-size:11.8px}
+.hidden{display:none!important}
+
+/* Конструктор */
+.casebar{margin-bottom:8px;padding:8px 9px;border-radius:10px;background:#f2eee8;color:#31485f;font-size:11.5px;line-height:1.32}
+.template{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.slot{
+  position:relative;min-height:67px;border:1px dashed #bfc7d0;border-radius:10px;
+  background:rgba(255,255,255,.68);padding:7px;cursor:pointer;
+}
+.slot.over,.slot.active{border-style:solid;border-color:var(--navy);background:#f4f7fb}
+.slot-label{font-size:9.5px;text-transform:uppercase;font-weight:800;color:#69788a;margin-bottom:4px}
+.slot-empty{font-size:11px;color:#87919c;line-height:1.25}
+.placed{font-size:11.2px;line-height:1.27;color:#173250;font-weight:700;padding-right:18px}
+.remove{
+  position:absolute;right:5px;top:5px;width:19px;height:19px;border:0;border-radius:50%;
+  background:#ece8e2;color:#526275;font-size:13px;line-height:19px;padding:0;cursor:pointer
+}
+.bank{
+  margin-top:8px;border-top:1px solid #e2ddd6;padding-top:8px
+}
+.bank-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+.bank-title{font-size:11px;font-weight:800;color:var(--navy)}
+.bank-count{font-size:10.5px;color:#667586}
+.bank-card{
+  min-height:64px;border:1px solid #cfd5dc;border-radius:10px;background:#fff;padding:9px;
+  cursor:grab;user-select:none
+}
+.bank-card.selected{outline:2px solid #bfd2ef;background:#f7faff}
+.bank-card strong{display:block;color:var(--navy);font-size:12.3px;margin-bottom:3px}
+.bank-card span{display:block;color:#45596d;font-size:11.3px;line-height:1.3}
+.bank-nav{display:grid;grid-template-columns:auto 1fr auto;gap:6px;margin-top:6px}
+.bank-nav .btn{min-height:34px;padding:7px 9px}
+.keep{width:100%}
+.hint{margin-top:6px;font-size:10.5px;color:#718090;line-height:1.3}
+
+@media(max-width:440px){
+  .wrap{width:min(100%,calc(100% - 6px));margin:3px auto 8px}
+  .hero h1{font-size:18.5px}
+  .choice{font-size:11.8px}
+  .template{grid-template-columns:1fr 1fr}
+}
+</style></head>
+<body><div class="wrap">
+<section class="hero" id="intro">
+  <div class="tag">Практика · конструктор</div>
+  <h1>Конструктор точки истины</h1>
+  <p>Разложите карточки по шаблону. Лишние оставьте в банке.</p>
+  <button class="btn primary" id="start">Начать</button>
+</section>
+
+<section class="panel hidden" id="work">
+  <div class="status"><div class="counter" id="counter"></div><div class="progress"><div id="progress"></div></div></div>
+  <div class="casebar"><b>Кейс:</b> новый клиент после оплаты не дошел до первого использования за 7 дней.</div>
+
+  <div class="template" id="template"></div>
+
+  <div class="bank" id="bank">
+    <div class="bank-head"><div class="bank-title">Банк карточек</div><div class="bank-count" id="bankCount"></div></div>
+    <div class="bank-card" id="bankCard" draggable="true"></div>
+    <div class="bank-nav">
+      <button class="btn secondary" id="prevCard">←</button>
+      <button class="btn secondary keep" id="skipCard">Оставить в банке</button>
+      <button class="btn secondary" id="nextCard">→</button>
+    </div>
+    <div class="hint">Перетащите карточку в поле. На телефоне можно нажать карточку, затем нужное поле. Крестик возвращает карточку в банк.</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" id="reset">Сбросить</button>
+    <button class="btn primary" id="check" disabled>Проверить</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="result">
+      <h2 id="resultTitle"></h2><p id="resultText"></p><div class="mini" id="resultMini"></div>
+    </div>
+    <div class="actions"><button class="btn alt" id="restart">Пройти еще раз</button></div>
+  </div>
+</section>
+</div>
+<script>
+const slots=[
+ {id:"scenario",label:"Сценарий"},
+ {id:"expectation",label:"Ожидание"},
+ {id:"risk",label:"Риск"},
+ {id:"action",label:"Действие"},
+ {id:"owner",label:"Владелец"},
+ {id:"metric",label:"Показатель"}
+];
+const cards=[
+ {id:"c1",title:"Новый клиент после оплаты",text:"Не дошел до первого использования за 7 дней.",slot:"scenario"},
+ {id:"c2",title:"Понятный старт",text:"Клиент ждет, что компания объяснит следующий шаг и поможет начать.",slot:"expectation"},
+ {id:"c3",title:"Тихое охлаждение",text:"Клиент не получает первый результат и постепенно перестает быть активным.",slot:"risk"},
+ {id:"c4",title:"Сопроводить первый шаг",text:"Связаться заранее, объяснить маршрут и довести до первого использования.",slot:"action"},
+ {id:"c5",title:"Сервис или клиентский успех",text:"Отвечает за переход от оплаты к первому результату.",slot:"owner"},
+ {id:"c6",title:"Доля первого использования",text:"Процент клиентов, дошедших до первого действия за 7 дней.",slot:"metric"},
+ {id:"c7",title:"Все клиенты, которые купили продукт",text:"Формулировка слишком широкая для конкретной точки истины.",slot:null},
+ {id:"c8",title:"Попросить сотрудников быть внимательнее",text:"Общее пожелание, а не управленческое действие.",slot:null},
+ {id:"c9",title:"NPS всей компании",text:"Слишком общий показатель для этого перехода.",slot:null}
+];
+
+let assigned={};
+let bankIds=cards.map(c=>c.id);
+let current=0;
+let selectedCardId=null;
+const $=id=>document.getElementById(id);
+const cardById=id=>cards.find(c=>c.id===id);
+
+function renderTemplate(){
+ const t=$("template");t.innerHTML="";
+ slots.forEach(s=>{
+   const el=document.createElement("div");el.className="slot";el.dataset.slot=s.id;
+   el.ondragover=e=>{e.preventDefault();el.classList.add("over");};
+   el.ondragleave=()=>el.classList.remove("over");
+   el.ondrop=e=>{e.preventDefault();el.classList.remove("over");placeCard(s.id,selectedCardId);};
+   el.onclick=e=>{
+     if(e.target.classList.contains("remove")) return;
+     if(selectedCardId) placeCard(s.id,selectedCardId);
+   };
+   const label=document.createElement("div");label.className="slot-label";label.textContent=s.label;el.appendChild(label);
+   const cid=assigned[s.id];
+   if(cid){
+     const c=cardById(cid);
+     const p=document.createElement("div");p.className="placed";p.textContent=c.title;el.appendChild(p);
+     const rm=document.createElement("button");rm.className="remove";rm.textContent="×";rm.title="Вернуть в банк";
+     rm.onclick=(e)=>{e.stopPropagation();returnCard(s.id);};el.appendChild(rm);
+   }else{
+     const p=document.createElement("div");p.className="slot-empty";p.textContent="Перетащите карточку";el.appendChild(p);
+   }
+   if(selectedCardId) el.classList.add("active");
+   t.appendChild(el);
+ });
+ updateStatus();
+}
+function normalizeCurrent(){
+ if(bankIds.length===0){current=0;return;}
+ if(current<0) current=bankIds.length-1;
+ if(current>=bankIds.length) current=0;
+}
+function renderBank(){
+ normalizeCurrent();
+ const box=$("bankCard");
+ if(bankIds.length===0){
+   box.innerHTML="<strong>Банк пуст</strong><span>Все карточки распределены. При необходимости верните карточку крестиком.</span>";
+   box.draggable=false;selectedCardId=null;
+   $("prevCard").disabled=$("nextCard").disabled=$("skipCard").disabled=true;
+ }else{
+   const c=cardById(bankIds[current]);
+   box.innerHTML=`<strong>${c.title}</strong><span>${c.text}</span>`;
+   box.draggable=true;box.dataset.id=c.id;
+   box.classList.toggle("selected",selectedCardId===c.id);
+   $("prevCard").disabled=$("nextCard").disabled=false;$("skipCard").disabled=false;
+ }
+ $("bankCount").textContent=`В банке: ${bankIds.length}`;
+ updateStatus();
+}
+$("bankCard").ondragstart=e=>{
+ if(bankIds.length===0) return;
+ selectedCardId=bankIds[current];
+ e.dataTransfer.setData("text/plain",selectedCardId);
+ $("bankCard").classList.add("selected");renderTemplate();
+};
+$("bankCard").onclick=()=>{
+ if(bankIds.length===0) return;
+ const id=bankIds[current];
+ selectedCardId=selectedCardId===id?null:id;
+ renderBank();renderTemplate();
+};
+$("prevCard").onclick=()=>{if(bankIds.length){current--;selectedCardId=null;renderBank();renderTemplate();}};
+$("nextCard").onclick=()=>{if(bankIds.length){current++;selectedCardId=null;renderBank();renderTemplate();}};
+$("skipCard").onclick=()=>{if(bankIds.length){current++;selectedCardId=null;renderBank();renderTemplate();}};
+
+function placeCard(slotId,cid){
+ if(!cid || !bankIds.includes(cid)) return;
+ if(assigned[slotId]){
+   bankIds.push(assigned[slotId]);
+ }
+ assigned[slotId]=cid;
+ bankIds=bankIds.filter(id=>id!==cid);
+ selectedCardId=null;
+ normalizeCurrent();
+ renderTemplate();renderBank();
+}
+function returnCard(slotId){
+ const cid=assigned[slotId];
+ if(!cid) return;
+ bankIds.push(cid);delete assigned[slotId];selectedCardId=null;
+ renderTemplate();renderBank();
+}
+function updateStatus(){
+ const filled=Object.keys(assigned).length;
+ $("counter").textContent=`Заполнено ${filled} / 6`;
+ $("progress").style.width=(filled/6*100)+"%";
+ $("check").disabled=filled!==6;
+}
+$("check").onclick=()=>{
+ let correct=0;
+ slots.forEach(s=>{const cid=assigned[s.id]; if(cid && cardById(cid).slot===s.id) correct++;});
+ $("template").classList.add("hidden");$("bank").classList.add("hidden");$("reset").classList.add("hidden");$("check").classList.add("hidden");$("result").classList.remove("hidden");
+ $("progress").style.width="100%";$("counter").textContent=`${correct} / 6`;
+ if(correct<=2){$("resultTitle").textContent="Шаблон пока собран не как управленческая точка истины";$("resultText").textContent="Часть карточек попала не в те поля или вместо конкретного элемента использована слишком общая формулировка.";$("resultMini").textContent="Проверьте логику: сценарий → ожидание → риск → действие → владелец → показатель.";}
+ else if(correct<=5){$("resultTitle").textContent="Точка истины почти собрана";$("resultText").textContent="Основная логика верная, но один или несколько элементов можно связать точнее.";$("resultMini").textContent="Особенно проверьте, что действие отвечает на риск, а показатель измеряет именно этот переход.";}
+ else{$("resultTitle").textContent="Точка истины собрана";$("resultText").textContent="Вы перевели клиентскую ситуацию в управленческий шаблон: от ожидания и риска до конкретного действия, владельца и показателя.";$("resultMini").textContent="Именно в таком виде точку истины можно использовать на рабочей сессии команды.";}
+};
+$("reset").onclick=()=>{assigned={};bankIds=cards.map(c=>c.id);current=0;selectedCardId=null;renderTemplate();renderBank();};
+$("start").onclick=()=>{$("intro").classList.add("hidden");$("work").classList.remove("hidden");renderTemplate();renderBank();};
+$("restart").onclick=()=>location.reload();
+</script></body></html>
