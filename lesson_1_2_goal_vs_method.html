@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Цель вместо способа</title>
+<style>
+:root{--text:#202733;--muted:#6f7682;--line:#d9dde4;--soft:#f3f5f7;--dark:#303744;--ok:#eef5f0;--warn:#faf4ea}
+*{box-sizing:border-box}html,body{margin:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}body{display:flex;justify-content:center;padding:8px}.app{width:min(560px,100%);border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}.head{padding:13px 15px 10px;border-bottom:1px solid var(--line)}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}h1{font-size:18px;line-height:1.2;margin:0}.count{font-size:12px;color:var(--muted);white-space:nowrap}.progress{display:flex;gap:5px;margin-top:8px}.progress i{height:5px;flex:1;border-radius:10px;background:var(--soft)}.progress .on{background:var(--dark)}.progress .done{background:#a7aeb8}.main{padding:11px 15px 14px}.case{padding:9px 10px;background:var(--soft);border-radius:10px;font-size:13px;font-weight:700;line-height:1.35;margin-bottom:9px}.why{display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:center;margin-bottom:6px}.why b{width:24px;height:24px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:11px}.compact{display:grid;grid-template-columns:82px 1fr;gap:6px 8px;align-items:center}.label{font-size:11.5px;font-weight:700;line-height:1.15}input{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;padding:0 9px;font:inherit;font-size:12px;outline:none}input:focus{border-color:#aeb5bf;box-shadow:0 0 0 3px rgba(48,55,68,.06)}.tip{font-size:10.8px;color:var(--muted);line-height:1.3;margin-top:7px}.feedback{display:none;margin-top:8px;padding:8px 9px;border-radius:9px;font-size:11.5px;line-height:1.35;background:var(--soft)}.feedback.show{display:block}.feedback.ok{background:var(--ok)}.feedback.warn{background:var(--warn)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}button{height:35px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.primary{background:var(--dark);color:#fff}.secondary{background:var(--soft);color:var(--text)}button:disabled{opacity:.4;cursor:default}.summary{display:none;padding:16px}.summary.show{display:block}.summary h2{font-size:18px;margin:0 0 7px}.summary p{font-size:12px;color:var(--muted);line-height:1.4;margin:0 0 10px}.sitem{border:1px solid var(--line);border-radius:9px;padding:8px 9px;margin-bottom:6px;font-size:11.5px;line-height:1.35}.sitem b{display:block;margin-bottom:2px}.modal{display:none;position:fixed;inset:0;background:rgba(24,29,37,.36);align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}.mcard{width:min(450px,100%);background:#fff;border-radius:13px;padding:13px;box-shadow:0 10px 30px rgba(0,0,0,.14)}.mhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:700}.close{width:30px;height:30px;padding:0}.mtext{font-size:11.5px;line-height:1.45;color:var(--muted);margin-top:7px}@media(max-width:420px){.compact{grid-template-columns:72px 1fr}.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="head"><div class="row"><h1>Найдите цель за способом</h1><div class="count" id="count"></div></div><div class="progress" id="progress"></div></div>
+  <div class="main">
+    <div class="case" id="caseText"></div>
+    <div class="why"><b>1</b><input id="why1" placeholder="Почему это важно?"></div>
+    <div class="why"><b>2</b><input id="why2" placeholder="Почему это важно дальше?"></div>
+    <div class="why"><b>3</b><input id="why3" placeholder="До какого рабочего результата дошли?"></div>
+    <div class="compact">
+      <div class="label">Цель</div><input id="goal" placeholder="Рабочий результат, а не действие">
+      <div class="label">Показатель</div><input id="metric" placeholder="Как проверить результат">
+      <div class="label">3 способа</div><input id="ways" placeholder="Через ; перечислите три варианта">
+      <div class="label">Лишнее</div><input id="side" placeholder="Что полезно, но не ведет к цели">
+    </div>
+    <div class="tip">Если цель повторяет исходную инициативу или допускает только один способ, поднимитесь еще на уровень.</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions"><button class="secondary" id="prev">Назад</button><button class="primary" id="next">Проверить и дальше</button></div>
+  </div>
+</section>
+<section class="summary" id="summary"><h2>Готово</h2><p>Сравните итоговые цели. Они должны описывать управляемый результат и допускать разные способы достижения.</p><div id="sumList"></div><div class="actions"><button class="secondary" id="back">Вернуться</button><button class="primary" id="restart">Начать заново</button></div></section>
+</div>
+<script>
+const tasks=[
+"Ввести ежедневные планерки для всех сотрудников отдела.",
+"Нанять еще одного специалиста по работе с документами.",
+"Запретить сотрудникам работать удаленно больше одного дня в неделю."
+];
+const ids=["why1","why2","why3","goal","metric","ways","side"];const state=tasks.map(()=>({why1:"",why2:"",why3:"",goal:"",metric:"",ways:"",side:"",checked:false}));let cur=0;const $=id=>document.getElementById(id);
+function save(){ids.forEach(id=>state[cur][id]=$(id).value.trim())}
+function render(){$("caseText").textContent=tasks[cur];ids.forEach(id=>$(id).value=state[cur][id]||"");$("count").textContent=`${cur+1} из ${tasks.length}`;$("progress").innerHTML=tasks.map((_,i)=>`<i class="${i===cur?'on':state[i].checked?'done':''}"></i>`).join('');$("prev").disabled=cur===0;$("next").textContent=cur===tasks.length-1?'Проверить и завершить':'Проверить и дальше';$("feedback").className='feedback';$("feedback").textContent=''}
+function check(){save();const d=state[cur];const miss=ids.filter(id=>d[id].length<3);const ways=d.ways.split(';').map(x=>x.trim()).filter(Boolean);let msg='',ok=false;if(miss.length){msg=`Заполните еще ${miss.length} ${miss.length===1?'поле':'поля'}.`}else if(ways.length<3){msg='В поле «3 способа» нужны три разных варианта, разделенные точкой с запятой.';}else if(d.goal.toLowerCase().replace(/[.!]/g,'')===tasks[cur].toLowerCase().replace(/[.!]/g,'')){msg='Цель повторяет исходную инициативу. Поднимитесь еще на один уровень.';}else{ok=true;state[cur].checked=true;msg='Цепочка собрана: есть рабочая цель, показатель и несколько способов ее достижения.'}$("feedback").textContent=msg;$("feedback").className='feedback show '+(ok?'ok':'warn');return ok}
+function next(){if(!check())return;setTimeout(()=>{if(cur<tasks.length-1){cur++;render()}else finish()},180)}
+function finish(){save();$("task").style.display='none';$("summary").classList.add('show');$("sumList").innerHTML=tasks.map((t,i)=>`<div class="sitem"><b>${i+1}. ${t}</b>${state[i].goal||'Нет итоговой цели'}</div>`).join('')}
+function backToTasks(){$("summary").classList.remove('show');$("task").style.display='block';render()}
+$("next").onclick=next;$("prev").onclick=()=>{save();if(cur>0){cur--;render()}};$("back").onclick=backToTasks;$("restart").onclick=()=>{state.forEach(s=>{ids.forEach(id=>s[id]='');s.checked=false});cur=0;backToTasks()};render();
+</script>
+</body>
+</html>
