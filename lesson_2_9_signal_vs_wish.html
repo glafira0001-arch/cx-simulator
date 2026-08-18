@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Сигнал и желаемый ответ</title>
+<style>
+:root{
+  --bg:#fff; --text:#202733; --muted:#707784; --line:#d9dde4;
+  --soft:#f3f5f7; --dark:#303744; --ok:#eef6f0; --okb:#cfe2d3;
+  --bad:#fbf0ef; --badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+h2{margin:0 0 7px;font-size:18px}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.options.two{grid-template-columns:1fr 1fr}
+.options.three{grid-template-columns:repeat(3,1fr)}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+.selectrow{display:grid;grid-template-columns:145px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700;line-height:1.25}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+select,input{height:35px}
+textarea{min-height:70px;resize:vertical;line-height:1.35}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.38;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.hidden{display:none!important}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.scoregrid{display:grid;grid-template-columns:1fr 115px;gap:6px 8px;align-items:center}
+.scoregrid .crit{font-size:11.5px;line-height:1.25}
+.notice{font-size:11px;color:var(--muted);line-height:1.35;margin:7px 0}
+@media(max-width:430px){
+  .actions{grid-template-columns:1fr 1fr}
+  .actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:105px 1fr}
+  .options.three{grid-template-columns:1fr}
+  .scoregrid{grid-template-columns:1fr 96px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="top">
+    <div class="toprow"><h1>Сигнал или желаемый ответ?</h1><div class="counter" id="counter"></div></div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="main">
+    <div id="classStep">
+      <div class="card"><div class="kicker">Утверждение</div><div class="text" id="statement"></div></div>
+      <div class="options two">
+        <button class="option" data-kind="signal">Профессиональный сигнал</button>
+        <button class="option" data-kind="wish">Желаемый ответ</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions"><button class="secondary" id="backBtn">Назад</button><button class="secondary" id="whyBtn">Разбор</button><button class="primary wide" id="checkBtn">Проверить</button></div>
+      <div class="actions hidden" id="nextRow"><button class="primary wide" id="nextBtn">Дальше</button></div>
+    </div>
+
+    <div id="adviceStep" class="hidden">
+      <div class="card"><div class="kicker">Совет другому руководителю</div><div class="text">Какой следующий шаг лучше всего отделяет рабочие данные от желания сохранить сотрудника?</div></div>
+      <div class="options" id="adviceOptions"></div>
+      <div class="feedback" id="adviceFb"></div>
+      <div class="actions"><button class="secondary" id="backAdvice">Назад</button><button class="secondary" id="adviceWhy">Разбор</button><button class="primary wide" id="checkAdvice">Проверить</button></div>
+      <div class="actions hidden" id="nextAdviceRow"><button class="primary wide" id="nextAdvice">Дальше</button></div>
+    </div>
+
+    <div id="timeStep" class="hidden">
+      <div class="card"><div class="kicker">Три горизонта</div><div class="text">Выберите наиболее вероятный фокус решения на каждом горизонте.</div></div>
+      <div class="selectrow"><label>Сейчас</label><select id="nowSel"></select></div>
+      <div class="selectrow"><label>Через 3 месяца</label><select id="m3Sel"></select></div>
+      <div class="selectrow"><label>Через год</label><select id="y1Sel"></select></div>
+      <div class="feedback" id="timeFb"></div>
+      <div class="actions"><button class="secondary" id="backTime">Назад</button><button class="secondary" id="timeWhy">Разбор</button><button class="primary wide" id="checkTime">Проверить</button></div>
+      <div class="actions hidden" id="nextTimeRow"><button class="primary wide" id="nextTime">Дальше</button></div>
+    </div>
+
+    <div id="openStep" class="hidden">
+      <div class="card"><div class="kicker">Что изменит вывод</div><div class="text">Назовите данные, после которых вы пересмотрите решение.</div></div>
+      <textarea id="changeText" placeholder="Например: если после ... конфликтность не снижается / результат команды ..."></textarea>
+      <div class="feedback" id="openFb"></div>
+      <div class="actions"><button class="secondary" id="backOpen">Назад</button><button class="secondary" id="openExample">Пример</button><button class="primary wide" id="checkOpen">Проверить</button></div>
+      <div class="actions hidden" id="finishRow"><button class="primary wide" id="finishBtn">Завершить</button></div>
+    </div>
+  </div>
+</section>
+<section class="finish" id="finish">
+  <h2>Готово</h2>
+  <p>Профессиональный сигнал опирается на наблюдаемые повторяющиеся данные. Желаемый ответ объясняет, какой исход руководитель хочет получить и почему ему трудно рассматривать альтернативу.</p>
+  <div class="finish-actions"><button class="secondary" id="returnBtn">Вернуться</button><button class="primary" id="restartBtn">Начать заново</button></div>
+</section>
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Разбор</strong><button class="close" id="closeBtn">×</button></div><div class="example" id="modalText"></div></div></div>
+</div>
+
+<script>
+const statements=[
+ ["Специалист стабильно приносит высокий рабочий результат.","signal","Это наблюдаемый рабочий результат, который действительно относится к решению."],
+ ["За последний квартал два сотрудника попросили перевести их в другую группу.","signal","Это наблюдаемый сигнал о последствиях поведения для команды."],
+ ["Специалист регулярно конфликтует с коллегами.","signal","Повторяющееся поведение относится к рабочей ситуации и требует учета."],
+ ["Специалист считает претензии проявлением слабости команды.","signal","Это наблюдаемая позиция, которая может влиять на способность корректировать поведение."],
+ ["Руководитель очень хочет сохранить специалиста, потому что боится не выполнить план.","wish","Это описывает желаемый исход и личную заинтересованность руководителя."],
+ ["Руководителю трудно представить, что подразделение справится без этого человека.","wish","Это может быть реальным риском, но пока формулировка отражает ожидание и страх. Его нужно подтвердить данными о зависимости команды."]
+];
+let i=0;const state=statements.map(()=>({kind:"",checked:false}));let advice="", time=["","",""];const $=id=>document.getElementById(id);
+
+function renderClass(){
+ $("statement").textContent=statements[i][0];$("counter").textContent=`${i+1} из ${statements.length}`;$("progress").innerHTML=statements.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+ document.querySelectorAll("[data-kind]").forEach(b=>{b.className="option";if(state[i].kind===b.dataset.kind)b.classList.add("selected");b.onclick=()=>{state[i].kind=b.dataset.kind;state[i].checked=false;clearfb("feedback");hide("nextRow");renderClass()}});
+ $("backBtn").disabled=i===0;clearfb("feedback");hide("nextRow");
+}
+$("checkBtn").onclick=()=>{if(!state[i].kind){show("feedback","Выберите категорию.",false);return}if(state[i].kind===statements[i][1]){state[i].checked=true;show("feedback","Верно. Прочитайте пояснение при необходимости и переходите дальше, когда будете готовы.",true);unhide("nextRow");renderProgress()}else show("feedback","Не совсем. Спросите: это наблюдаемые данные или желание получить определенный исход?",false)};
+$("nextBtn").onclick=()=>{if(!state[i].checked)return;if(i<statements.length-1){i++;renderClass()}else showAdvice()};
+$("backBtn").onclick=()=>{if(i>0){i--;renderClass()}};
+$("whyBtn").onclick=()=>openModal(statements[i][2]);
+function renderProgress(){$("progress").innerHTML=statements.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("")}
+
+const adviceOpts=[
+ ["keep","Сохранить все как есть: высокий результат важнее конфликтов"],
+ ["fire","Немедленно расстаться со специалистом"],
+ ["conditions","Сохранить сотрудника на ограниченный период, задать критерии поведения и результата команды, затем пересмотреть роль"],
+ ["ignore","Не обсуждать конфликты до конца квартала"]
+];
+function showAdvice(){
+ hide("classStep");unhide("adviceStep");$("counter").textContent="Совет";$("progress").innerHTML="<i class='done'></i><i class='done'></i><i class='done'></i><i class='done'></i><i class='done'></i><i class='done'></i>";
+ $("adviceOptions").innerHTML=adviceOpts.map(x=>`<button class="option ${advice===x[0]?"selected":""}" data-a="${x[0]}">${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{advice=b.dataset.a;showAdvice()});clearfb("adviceFb");hide("nextAdviceRow");
+}
+$("checkAdvice").onclick=()=>{if(!advice){show("adviceFb","Выберите действие.",false);return}if(advice==="conditions"){show("adviceFb","Верно. Такой шаг не игнорирует ценность специалиста, но проверяет влияние его поведения и снижает зависимость решения от желания руководителя.",true);unhide("nextAdviceRow")}else show("adviceFb","Ответ слишком быстро закрывает решение. Нужен шаг, который одновременно защищает результат и дает новые данные.",false)};
+$("adviceWhy").onclick=()=>openModal("Сильный следующий шаг — ограниченный период с четкими критериями: рабочий результат, повторные конфликты, текучесть внутри группы, способность принимать обратную связь. После этого решение пересматривают по данным.");
+$("backAdvice").onclick=()=>{hide("adviceStep");unhide("classStep");i=statements.length-1;renderClass()};
+$("nextAdvice").onclick=()=>{hide("adviceStep");unhide("timeStep");renderTime()};
+
+const choices=[
+ ["","Выберите"],
+ ["immediate","Снять немедленное напряжение и задать условия"],
+ ["team","Проверить влияние на команду и устойчивость результата"],
+ ["norm","Оценить, какое поведение закрепилось как норма"]
+];
+function fillTime(id,val){$(id).innerHTML=choices.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join("");$(id).value=val}
+function renderTime(){
+ fillTime("nowSel",time[0]);fillTime("m3Sel",time[1]);fillTime("y1Sel",time[2]);
+ ["nowSel","m3Sel","y1Sel"].forEach((id,n)=>$(id).onchange=e=>{time[n]=e.target.value;clearfb("timeFb");hide("nextTimeRow")});
+ clearfb("timeFb");hide("nextTimeRow");
+}
+$("checkTime").onclick=()=>{if(time.some(x=>!x)){show("timeFb","Заполните все три горизонта.",false);return}const ok=time[0]==="immediate"&&time[1]==="team"&&time[2]==="norm";if(ok){show("timeFb","Верно. Горизонты помогают отделить сегодняшнее облегчение от устойчивых последствий.",true);unhide("nextTimeRow")}else show("timeFb","Перепроверьте последовательность: сейчас — стабилизация, через несколько месяцев — влияние на команду, на длинном горизонте — закрепившаяся норма.",false)};
+$("timeWhy").onclick=()=>openModal("Сегодня важно прекратить эскалацию и задать проверяемые условия. Через несколько месяцев — увидеть влияние на команду и результат. Через год — понять, какое поведение стало нормой и как оно влияет на культуру.");
+$("backTime").onclick=()=>{hide("timeStep");unhide("adviceStep");showAdvice()};
+$("nextTime").onclick=()=>{hide("timeStep");unhide("openStep");clearfb("openFb");hide("finishRow")};
+
+$("checkOpen").onclick=()=>{const t=$("changeText").value.trim();if(t.length<40){show("openFb","Укажите хотя бы одно наблюдаемое условие пересмотра. Если нужно, откройте пример.",false);return}show("openFb","Формулировка достаточно конкретна: вы заранее определили, какие новые данные могут изменить решение.",true);unhide("finishRow")};
+$("openExample").onclick=()=>openModal("<b>Пример:</b> я пересмотрю решение, если после трех месяцев при четких правилах повторные конфликты сохранятся, сотрудники продолжат просить перевод, а высокий личный результат специалиста не будет компенсировать потери команды. Вывод также изменится, если роль можно перестроить так, чтобы сохранить экспертный вклад без постоянного управления коллегами.");
+$("backOpen").onclick=()=>{hide("openStep");unhide("timeStep");renderTime()};
+$("finishBtn").onclick=()=>{$("task").style.display="none";$("finish").classList.add("show")};
+
+function show(id,t,ok){$(id).textContent=t;$(id).className="feedback show "+(ok?"ok":"bad")}
+function clearfb(id){$(id).textContent="";$(id).className="feedback"}
+function hide(id){$(id).classList.add("hidden")}function unhide(id){$(id).classList.remove("hidden")}
+function openModal(html){$("modalText").innerHTML=html;$("modal").classList.add("show")}
+$("closeBtn").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+$("returnBtn").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";hide("classStep");hide("adviceStep");hide("timeStep");unhide("openStep")};
+$("restartBtn").onclick=()=>{state.forEach(x=>{x.kind="";x.checked=false});i=0;advice="";time=["","",""];$("changeText").value="";$("finish").classList.remove("show");$("task").style.display="block";unhide("classStep");hide("adviceStep");hide("timeStep");hide("openStep");renderClass()};
+renderClass();
+</script>
+
+</body>
+</html>

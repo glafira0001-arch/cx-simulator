@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тонкий срез</title>
+<style>
+:root{
+  --bg:#fff; --text:#202733; --muted:#707784; --line:#d9dde4;
+  --soft:#f3f5f7; --dark:#303744; --ok:#eef6f0; --okb:#cfe2d3;
+  --bad:#fbf0ef; --badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+h2{margin:0 0 7px;font-size:18px}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.options.two{grid-template-columns:1fr 1fr}
+.options.three{grid-template-columns:repeat(3,1fr)}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+.selectrow{display:grid;grid-template-columns:145px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700;line-height:1.25}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+select,input{height:35px}
+textarea{min-height:70px;resize:vertical;line-height:1.35}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.38;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.hidden{display:none!important}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.scoregrid{display:grid;grid-template-columns:1fr 115px;gap:6px 8px;align-items:center}
+.scoregrid .crit{font-size:11.5px;line-height:1.25}
+.notice{font-size:11px;color:var(--muted);line-height:1.35;margin:7px 0}
+@media(max-width:430px){
+  .actions{grid-template-columns:1fr 1fr}
+  .actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:105px 1fr}
+  .options.three{grid-template-columns:1fr}
+  .scoregrid{grid-template-columns:1fr 96px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="top">
+    <div class="toprow"><h1>Выберите ранние сигналы</h1><div class="counter" id="counter">Шаг 1 из 3</div></div>
+    <div class="progress"><i class="active"></i><i></i><i></i></div>
+  </div>
+  <div class="main">
+    <div id="step1">
+      <div class="card"><div class="kicker">Задача</div><div class="text">Выберите 4 показателя, которые лучше других помогают заранее заметить риск срыва проекта.</div></div>
+      <div class="pills" id="signalPills"></div>
+      <div class="smallnote">Выберите ровно четыре.</div>
+      <div class="feedback" id="fb1"></div>
+      <div class="actions"><button class="secondary" id="why1">Разбор</button><button class="primary wide" id="check1">Проверить</button></div>
+      <div class="actions hidden" id="next1row"><button class="primary wide" id="next1">Дальше</button></div>
+    </div>
+
+    <div id="step2" class="hidden">
+      <div class="card"><div class="kicker">Шум</div><div class="text">Выберите 2 ярких показателя, которые могут отвлекать, но сами по себе слабо предсказывают срыв.</div></div>
+      <div class="pills" id="noisePills"></div>
+      <div class="feedback" id="fb2"></div>
+      <div class="actions"><button class="secondary" id="back2">Назад</button><button class="primary wide" id="check2">Проверить</button></div>
+      <div class="actions hidden" id="next2row"><button class="primary wide" id="next2">Дальше</button></div>
+    </div>
+
+    <div id="step3" class="hidden">
+      <div class="card"><div class="kicker">Порог</div><div class="text">Для выбранных сигналов задайте порог предупреждения.</div></div>
+      <textarea id="thresholds" placeholder="Например: если доля задач без исполнителя превышает ..."></textarea>
+      <div class="smallnote">Здесь нет единственного правильного числа. Важно, чтобы порог был наблюдаемым и позволял начать действие до срыва.</div>
+      <div class="feedback" id="fb3"></div>
+      <div class="actions"><button class="secondary" id="back3">Назад</button><button class="secondary" id="example3">Пример</button><button class="primary wide" id="check3">Проверить</button></div>
+      <div class="actions hidden" id="next3row"><button class="primary wide" id="next3">Завершить</button></div>
+    </div>
+  </div>
+</section>
+<section class="finish" id="finish">
+  <h2>Готово</h2>
+  <p>Сильный сигнал появляется до результата, повторяется в сопоставимых случаях, наблюдается одинаковым способом и помогает отличать рискованные проекты от устойчивых.</p>
+  <div class="finish-actions"><button class="secondary" id="returnBtn">Вернуться</button><button class="primary" id="restartBtn">Начать заново</button></div>
+</section>
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Пример</strong><button class="close" id="closeBtn">×</button></div><div class="example" id="exampleText"></div></div></div>
+</div>
+
+<script>
+const metrics=[
+ ["1","Освоенный бюджет"],["2","Количество сообщений в рабочем чате"],["3","Доля задач без исполнителя"],
+ ["4","Количество совещаний"],["5","Средняя длительность совещания"],["6","Нерешенные вопросы старше пяти дней"],
+ ["7","Количество сотрудников в проекте"],["8","Число изменений требований"],["9","Количество подготовленных презентаций"],
+ ["10","Доля просроченных зависимостей"],["11","Настроение руководителя проекта"],["12","Количество отчетов для заказчика"]
+];
+const key=new Set(["3","6","8","10"]);
+const noiseKey=new Set(["4","9"]);
+let picked=new Set(), noise=new Set(), done=[false,false,false];
+const $=id=>document.getElementById(id);
+
+function pills(container,set,limit){
+  $(container).innerHTML=metrics.map(x=>`<button class="pill ${set.has(x[0])?"selected":""}" data-id="${x[0]}">${x[1]}</button>`).join("");
+  document.querySelectorAll(`#${container} [data-id]`).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.id;
+    if(set.has(id))set.delete(id); else if(set.size<limit)set.add(id);
+    if(container==="signalPills"){done[0]=false;hide("next1row");clearfb("fb1")}else{done[1]=false;hide("next2row");clearfb("fb2")}
+    pills(container,set,limit);
+  });
+}
+function setProgress(step){
+  $("counter").textContent=`Шаг ${step} из 3`;
+  document.querySelectorAll(".progress i").forEach((el,n)=>el.className=(n===step-1?"active":done[n]?"done":""));
+}
+function show(id,t,ok){$(id).textContent=t;$(id).className="feedback show "+(ok?"ok":"bad")}
+function clearfb(id){$(id).textContent="";$(id).className="feedback"}
+function hide(id){$(id).classList.add("hidden")} function unhide(id){$(id).classList.remove("hidden")}
+
+pills("signalPills",picked,4);
+$("check1").onclick=()=>{
+  if(picked.size!==4){show("fb1","Выберите ровно четыре показателя.",false);return}
+  const ok=[...key].every(x=>picked.has(x));
+  if(ok){done[0]=true;show("fb1","Верно. Эти четыре показателя связаны с распределением ответственности, нерешенными зависимостями и изменением объема.",true);unhide("next1row");setProgress(1)}
+  else show("fb1","Не все выбранные показатели являются ранними сигналами. Подумайте, какие из них появляются до срыва и связаны с управляемыми рисками.",false);
+};
+$("why1").onclick=()=>{openModal("<b>Ключевые сигналы:</b> доля задач без исполнителя, нерешенные вопросы старше пяти дней, изменения требований и просроченные зависимости. Они показывают проблемы до итогового срыва.")};
+$("next1").onclick=()=>{if(!done[0])return;hide("step1");unhide("step2");pills("noisePills",noise,2);setProgress(2)};
+
+$("check2").onclick=()=>{
+  if(noise.size!==2){show("fb2","Выберите ровно два показателя.",false);return}
+  const ok=[...noiseKey].every(x=>noise.has(x));
+  if(ok){done[1]=true;show("fb2","Верно. Количество совещаний и презентаций заметно, но без связи с результатом не дает надежного раннего прогноза.",true);unhide("next2row");setProgress(2)}
+  else show("fb2","Выберите показатели активности, которые могут выглядеть важными, но сами по себе не показывают риск срыва.",false);
+};
+$("back2").onclick=()=>{hide("step2");unhide("step1");setProgress(1)};
+$("next2").onclick=()=>{if(!done[1])return;hide("step2");unhide("step3");setProgress(3)};
+
+$("check3").onclick=()=>{
+  const t=$("thresholds").value.trim();
+  if(t.length<45){show("fb3","Добавьте наблюдаемые пороги хотя бы для нескольких выбранных сигналов. Если нужно, откройте пример.",false);return}
+  done[2]=true;show("fb3","Порог сформулирован достаточно конкретно. Сравните его с примером и убедитесь, что он запускает действие до итогового провала.",true);unhide("next3row");setProgress(3);
+};
+$("example3").onclick=()=>openModal("<b>Пример:</b><br>• задачи без исполнителя — предупреждение при доле выше 10%;<br>• нерешенные вопросы старше пяти дней — предупреждение при 3 и более;<br>• изменения требований — предупреждение при 2 изменениях за месяц;<br>• просроченные зависимости — предупреждение при доле выше 15%.<br><br>Это учебные ориентиры, а не универсальные нормы: в реальном проекте пороги калибруют по прошлым данным.");
+$("back3").onclick=()=>{hide("step3");unhide("step2");setProgress(2)};
+$("next3").onclick=()=>{if(!done[2])return;$("task").style.display="none";$("finish").classList.add("show")};
+
+function openModal(html){$("exampleText").innerHTML=html;$("modal").classList.add("show")}
+$("closeBtn").onclick=()=>$("modal").classList.remove("show");
+$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+$("returnBtn").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";hide("step1");hide("step2");unhide("step3");setProgress(3)};
+$("restartBtn").onclick=()=>{picked.clear();noise.clear();done=[false,false,false];$("thresholds").value="";$("finish").classList.remove("show");$("task").style.display="block";unhide("step1");hide("step2");hide("step3");hide("next1row");hide("next2row");hide("next3row");clearfb("fb1");clearfb("fb2");clearfb("fb3");pills("signalPills",picked,4);setProgress(1)};
+setProgress(1);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Право на интуицию</title>
+<style>
+:root{
+  --bg:#fff; --text:#202733; --muted:#707784; --line:#d9dde4;
+  --soft:#f3f5f7; --dark:#303744; --ok:#eef6f0; --okb:#cfe2d3;
+  --bad:#fbf0ef; --badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+h2{margin:0 0 7px;font-size:18px}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.options.two{grid-template-columns:1fr 1fr}
+.options.three{grid-template-columns:repeat(3,1fr)}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+.selectrow{display:grid;grid-template-columns:145px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700;line-height:1.25}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+select,input{height:35px}
+textarea{min-height:70px;resize:vertical;line-height:1.35}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.38;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.hidden{display:none!important}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.scoregrid{display:grid;grid-template-columns:1fr 115px;gap:6px 8px;align-items:center}
+.scoregrid .crit{font-size:11.5px;line-height:1.25}
+.notice{font-size:11px;color:var(--muted);line-height:1.35;margin:7px 0}
+@media(max-width:430px){
+  .actions{grid-template-columns:1fr 1fr}
+  .actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:105px 1fr}
+  .options.three{grid-template-columns:1fr}
+  .scoregrid{grid-template-columns:1fr 96px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="top">
+    <div class="toprow"><h1>Есть ли право на интуицию?</h1><div class="counter" id="counter"></div></div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="main">
+    <div class="card"><div class="kicker">Ситуация</div><div class="text" id="scenario"></div></div>
+
+    <div class="selectrow"><label>Среда</label><select id="env"></select></div>
+    <div class="selectrow"><label>Сопоставимый опыт</label><select id="exp"></select></div>
+    <div class="selectrow"><label>Обратная связь</label><select id="fbq"></select></div>
+    <div class="selectrow"><label>Как использовать интуицию</label><select id="trust"></select></div>
+    <div class="selectrow"><label>Как проверить</label><select id="verify"></select></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="secondary" id="backBtn">Назад</button>
+      <button class="secondary" id="exampleBtn">Разбор</button>
+      <button class="primary wide" id="checkBtn">Проверить</button>
+    </div>
+    <div class="actions hidden" id="nextRow">
+      <button class="primary wide" id="nextBtn">Дальше</button>
+    </div>
+  </div>
+</section>
+
+<section class="finish" id="finish">
+  <h2>Готово</h2>
+  <p>Интуиция надежнее, когда одновременно есть повторяющаяся среда, большой сопоставимый опыт и быстрая обратная связь.</p>
+  <div class="summary"><div>Если хотя бы одно условие заметно ослаблено, используйте интуицию как гипотезу и добавляйте проверку.</div></div>
+  <div class="finish-actions"><button class="secondary" id="returnBtn">Вернуться</button><button class="primary" id="restartBtn">Начать заново</button></div>
+</section>
+
+<div class="modal" id="modal"><div class="modal-card">
+  <div class="modal-head"><strong>Разбор</strong><button class="close" id="closeBtn">×</button></div>
+  <div class="example" id="exampleText"></div>
+</div></div>
+</div>
+
+<script>
+const cases=[
+ {s:"Руководитель смены замечает риск поломки знакомого оборудования.",
+  a:["yes","yes","yes","trust","observe"],
+  why:"Среда повторяемая, опыт сопоставимый, результат быстро виден. Интуиция может быть сильным рабочим сигналом, но его все равно полезно подтвердить диагностикой или наблюдением."},
+ {s:"Директор прогнозирует спрос на новый продукт через пять лет.",
+  a:["no","no","no","analyse","data"],
+  why:"Среда меняется, похожих решений мало, а обратная связь придет через годы. Уверенность здесь не заменяет сценарии, данные и внешний взгляд."},
+ {s:"Руководитель поддержки определяет срочность типового обращения.",
+  a:["yes","yes","yes","trust","audit"],
+  why:"Типовые обращения дают повторяющиеся сигналы, опыт накапливается быстро, а результат классификации виден почти сразу."},
+ {s:"Начальник отдела выбирает человека на первую руководящую роль.",
+  a:["partial","no","no","analyse","criteria"],
+  why:"Результат новой управленческой роли зависит от многих факторов и проявляется не сразу. Лучше использовать критерии, практическое задание и независимую оценку."},
+ {s:"Опытный переговорщик замечает, что партнер избегает обязательств.",
+  a:["partial","yes","yes","hypothesis","protect"],
+  why:"Опыт и обратная связь есть, но переговоры не полностью повторяемая среда. Сигнал стоит принять всерьез, но проверить защитным условием или ограниченным первым шагом."}
+];
+const opts={
+ env:[["","Выберите"],["yes","Устойчива"],["partial","Частично"],["no","Неустойчива"]],
+ exp:[["","Выберите"],["yes","Большой опыт"],["partial","Частичный опыт"],["no","Сопоставимого опыта мало"]],
+ fbq:[["","Выберите"],["yes","Быстрая и ясная"],["partial","Неполная"],["no","Поздняя или неясная"]],
+ trust:[["","Выберите"],["trust","Можно заметно опереться"],["hypothesis","Считать гипотезой"],["analyse","Не опираться без анализа"]],
+ verify:[["","Выберите"],["observe","Диагностика или дополнительное наблюдение"],["data","Данные, сценарии и внешний взгляд"],["audit","Выборочная перепроверка типовых случаев"],["criteria","Критерии и практическое задание"],["protect","Защитное условие или ограниченный тест"]]
+};
+let i=0;
+const state=cases.map(()=>({v:["","","","",""],checked:false}));
+const $=id=>document.getElementById(id);
+
+function fill(id,arr,val){$(id).innerHTML=arr.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join("");$(id).value=val}
+function render(){
+  const s=state[i];
+  $("scenario").textContent=cases[i].s;
+  $("counter").textContent=`${i+1} из ${cases.length}`;
+  $("progress").innerHTML=cases.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+  ["env","exp","fbq","trust","verify"].forEach((id,n)=>fill(id,opts[id],s.v[n]));
+  ["env","exp","fbq","trust","verify"].forEach((id,n)=>$(id).onchange=e=>{s.v[n]=e.target.value;resetCheck();});
+  $("backBtn").disabled=i===0;
+  $("feedback").className="feedback";$("feedback").textContent="";
+  $("nextRow").classList.add("hidden");
+}
+function resetCheck(){state[i].checked=false;$("feedback").className="feedback";$("feedback").textContent="";$("nextRow").classList.add("hidden")}
+$("checkBtn").onclick=()=>{
+  const s=state[i];
+  if(s.v.some(x=>!x)){show("Заполните все пять строк.",false);return}
+  const ok=s.v.every((x,n)=>x===cases[i].a[n]);
+  if(ok){
+    s.checked=true;
+    show("Верно. Теперь можно прочитать обратную связь и только потом перейти дальше.",true);
+    $("nextRow").classList.remove("hidden");
+    renderProgressOnly();
+  }else{
+    show("Есть неточность. Сопоставьте три условия с тем, насколько можно доверять интуиции, и откройте разбор.",false);
+  }
+};
+function renderProgressOnly(){$("progress").innerHTML=cases.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("")}
+$("nextBtn").onclick=()=>{if(!state[i].checked)return;if(i<cases.length-1){i++;render()}else finish()};
+$("backBtn").onclick=()=>{if(i>0){i--;render()}};
+$("exampleBtn").onclick=()=>{$("exampleText").textContent=cases[i].why;$("modal").classList.add("show")};
+$("closeBtn").onclick=()=>$("modal").classList.remove("show");
+$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+function show(t,ok){$("feedback").textContent=t;$("feedback").className="feedback show "+(ok?"ok":"bad")}
+function finish(){$("task").style.display="none";$("finish").classList.add("show")}
+$("returnBtn").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";i=cases.length-1;render()};
+$("restartBtn").onclick=()=>{state.forEach(x=>{x.v=["","","","",""];x.checked=false});i=0;$("finish").classList.remove("show");$("task").style.display="block";render()};
+render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Протокол паузы</title>
+<style>
+:root{
+  --bg:#fff; --text:#202733; --muted:#707784; --line:#d9dde4;
+  --soft:#f3f5f7; --dark:#303744; --ok:#eef6f0; --okb:#cfe2d3;
+  --bad:#fbf0ef; --badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+h2{margin:0 0 7px;font-size:18px}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.options.two{grid-template-columns:1fr 1fr}
+.options.three{grid-template-columns:repeat(3,1fr)}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+.selectrow{display:grid;grid-template-columns:145px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700;line-height:1.25}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+select,input{height:35px}
+textarea{min-height:70px;resize:vertical;line-height:1.35}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.38;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.hidden{display:none!important}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.scoregrid{display:grid;grid-template-columns:1fr 115px;gap:6px 8px;align-items:center}
+.scoregrid .crit{font-size:11.5px;line-height:1.25}
+.notice{font-size:11px;color:var(--muted);line-height:1.35;margin:7px 0}
+@media(max-width:430px){
+  .actions{grid-template-columns:1fr 1fr}
+  .actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:105px 1fr}
+  .options.three{grid-template-columns:1fr}
+  .scoregrid{grid-template-columns:1fr 96px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="top">
+    <div class="toprow"><h1>Протокол паузы</h1><div class="counter" id="counter"></div></div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="main">
+    <div id="classStep">
+      <div class="card"><div class="kicker">Действие</div><div class="text" id="actionText"></div></div>
+      <div class="options three">
+        <button class="option" data-zone="now">Выполнить сейчас</button>
+        <button class="option" data-zone="check">Проверить до решения</button>
+        <button class="option" data-zone="pause">Решить после паузы</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions"><button class="secondary" id="backBtn">Назад</button><button class="secondary" id="whyBtn">Разбор</button><button class="primary wide" id="checkBtn">Проверить</button></div>
+      <div class="actions hidden" id="nextRow"><button class="primary wide" id="nextBtn">Дальше</button></div>
+    </div>
+
+    <div id="variantStep" class="hidden">
+      <div class="card"><div class="kicker">Пять вариантов</div><div class="text" id="variantQuestion"></div></div>
+      <div class="pills" id="variantPills"></div>
+      <div class="feedback" id="variantFb"></div>
+      <div class="actions"><button class="secondary" id="backVariant">Назад</button><button class="secondary" id="variantWhy">Разбор</button><button class="primary wide" id="checkVariant">Проверить</button></div>
+      <div class="actions hidden" id="nextVariantRow"><button class="primary wide" id="nextVariant">Дальше</button></div>
+    </div>
+
+    <div id="pauseStep" class="hidden">
+      <div class="card"><div class="kicker">Срок паузы</div><div class="text">Какой финальный шаг лучше завершает протокол?</div></div>
+      <div class="options" id="pauseOptions"></div>
+      <div class="feedback" id="pauseFb"></div>
+      <div class="actions"><button class="secondary" id="backPause">Назад</button><button class="secondary" id="pauseWhy">Разбор</button><button class="primary wide" id="checkPause">Проверить</button></div>
+      <div class="actions hidden" id="finishRow"><button class="primary wide" id="finishBtn">Завершить</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="finish" id="finish">
+  <h2>Готово</h2>
+  <p>При высокой срочности сначала остановите ущерб и соберите критичные данные. Необратимый выбор принимайте только после паузы и независимой проверки.</p>
+  <div class="finish-actions"><button class="secondary" id="returnBtn">Вернуться</button><button class="primary" id="restartBtn">Начать заново</button></div>
+</section>
+
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Разбор</strong><button class="close" id="closeBtn">×</button></div><div class="example" id="modalText"></div></div></div>
+</div>
+
+<script>
+const actions=[
+ ["Перевести критические обращения на ручную обработку, чтобы клиенты не оставались без ответа.","now","Это обратимая защитная мера: она снижает ущерб, не закрепляя окончательную причину сбоя."],
+ ["Сообщить клиентам о задержке и новом временном порядке обработки.","now","Это защита клиента и процесса, а не финальное решение о системе."],
+ ["Зафиксировать время сбоя, затронутые обращения и технические логи.","now","Факты нужно сохранить сразу, пока информация доступна."],
+ ["Проверить, действительно ли последнее обновление вызвало сбой.","check","Это причинная гипотеза технической группы. Ее нельзя превращать в факт без проверки."],
+ ["Оценить последствия полного отключения системы до понедельника.","check","Полное отключение может увеличить ущерб, потому что старый процесс быстро не восстановить."],
+ ["Получить независимую техническую проверку причины сбоя.","check","Независимая проверка снижает риск принять обвинение подрядчика за доказательство."],
+ ["Расторгнуть договор с подрядчиком.","pause","Это решение с высокой ценой отмены и должно приниматься после проверки фактов и альтернатив."],
+ ["Полностью отказаться от новой системы.","pause","Необратимый или дорого обратимый выбор не нужен в пик инцидента."],
+ ["Перестроить весь процесс распределения заявок.","pause","Системное изменение не является первой защитной мерой при локальном сбое."]
+];
+let i=0;const state=actions.map(()=>({zone:"",checked:false}));const $=id=>document.getElementById(id);
+function renderClass(){
+ $("actionText").textContent=actions[i][0];$("counter").textContent=`${i+1} из ${actions.length}`;$("progress").innerHTML=actions.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+ document.querySelectorAll("[data-zone]").forEach(b=>{b.className="option";if(state[i].zone===b.dataset.zone)b.classList.add("selected");b.onclick=()=>{state[i].zone=b.dataset.zone;state[i].checked=false;clearfb("feedback");hide("nextRow");renderClass()}});
+ $("backBtn").disabled=i===0;clearfb("feedback");hide("nextRow");
+}
+$("checkBtn").onclick=()=>{if(!state[i].zone){show("feedback","Выберите зону.",false);return}if(state[i].zone===actions[i][1]){state[i].checked=true;show("feedback","Верно. Обратная связь останется на экране, пока вы сами не нажмете «Дальше».",true);unhide("nextRow");renderProgress()}else show("feedback","Не совсем. Отделите защитную меру, проверку фактов и необратимый выбор.",false)};
+$("nextBtn").onclick=()=>{if(!state[i].checked)return;if(i<actions.length-1){i++;renderClass()}else showVariant(0)};
+$("backBtn").onclick=()=>{if(i>0){i--;renderClass()}};
+$("whyBtn").onclick=()=>openModal(actions[i][2]);
+function renderProgress(){$("progress").innerHTML=actions.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("")}
+
+const variants=[
+ ["1","Полностью отключить систему"],
+ ["2","Продолжить работу без изменений"],
+ ["3","Откатить только последнее обновление"],
+ ["4","Перевести критические обращения на ручную обработку"],
+ ["5","Ограничить работу системы одним типом заявок"]
+];
+const rounds=[
+ {q:"Какие варианты можно использовать как временные обратимые меры прямо сейчас?",key:new Set(["4","5"]),why:"Ручная обработка критичных обращений и ограничение масштаба позволяют снизить риск и быстро вернуться назад."},
+ {q:"Какие варианты требуют технической проверки до выполнения?",key:new Set(["1","3"]),why:"Полное отключение и откат обновления могут изменить состояние системы. Перед ними нужно оценить последствия и возможность восстановления."},
+ {q:"Какой вариант нельзя оставлять как текущую защитную стратегию?",key:new Set(["2"]),why:"Продолжать работу без изменений нельзя, потому что клиенты уже не получают ответы и ущерб продолжается."}
+];
+let r=0,picked=new Set(),roundDone=[false,false,false];
+function showVariant(round){
+ hide("classStep");unhide("variantStep");r=round;picked.clear();$("counter").textContent=`Проверка ${r+1} из ${rounds.length}`;$("progress").innerHTML="<i class='done'></i><i class='done'></i><i class='done'></i>";
+ renderVariant();
+}
+function renderVariant(){
+ $("variantQuestion").textContent=rounds[r].q;
+ $("variantPills").innerHTML=variants.map(x=>`<button class="pill ${picked.has(x[0])?"selected":""}" data-v="${x[0]}">${x[0]}. ${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{picked.has(b.dataset.v)?picked.delete(b.dataset.v):picked.add(b.dataset.v);roundDone[r]=false;clearfb("variantFb");hide("nextVariantRow");renderVariant()});
+ clearfb("variantFb");hide("nextVariantRow");
+}
+$("checkVariant").onclick=()=>{
+ const key=rounds[r].key,ok=picked.size===key.size&&[...key].every(x=>picked.has(x));
+ if(ok){roundDone[r]=true;show("variantFb","Верно. Прочитайте пояснение, если нужно, и переходите дальше вручную.",true);unhide("nextVariantRow")}
+ else show("variantFb","Перепроверьте варианты. Важно учитывать не только техническую обратимость, но и риск продолжения ущерба.",false);
+};
+$("variantWhy").onclick=()=>openModal(rounds[r].why);
+$("nextVariant").onclick=()=>{if(!roundDone[r])return;if(r<rounds.length-1)showVariant(r+1);else showPause()};
+$("backVariant").onclick=()=>{if(r>0)showVariant(r-1);else{hide("variantStep");unhide("classStep");i=actions.length-1;renderClass()}};
+
+let pauseChoice="";
+const pauseOpts=[
+ ["none","Не назначать срок: вернуться к вопросу, когда будут все данные"],
+ ["monday","Сразу ждать до понедельника и ничего не решать"],
+ ["fixed","Назначить конкретное время повторного решения, ответственных за данные и условия досрочной остановки"],
+ ["director","Передать окончательное решение директору без собственной проверки"]
+];
+function showPause(){
+ hide("variantStep");unhide("pauseStep");$("counter").textContent="Финал";$("progress").innerHTML="<i class='done'></i><i class='done'></i><i class='done'></i>";
+ $("pauseOptions").innerHTML=pauseOpts.map(x=>`<button class="option ${pauseChoice===x[0]?"selected":""}" data-p="${x[0]}">${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{pauseChoice=b.dataset.p;showPause()});clearfb("pauseFb");hide("finishRow");
+}
+$("checkPause").onclick=()=>{if(!pauseChoice){show("pauseFb","Выберите вариант.",false);return}if(pauseChoice==="fixed"){show("pauseFb","Верно. Пауза должна иметь срок, владельцев проверки и понятный момент возврата к решению.",true);unhide("finishRow")}else show("pauseFb","Пауза не должна превращаться в бездействие или снятие ответственности. Нужен конкретный момент повторного решения.",false)};
+$("pauseWhy").onclick=()=>openModal("Рабочая формулировка: сейчас защищаем клиентов и собираем логи. К 19:00 техническая группа и независимый специалист проверяют причину и варианты отката. В 19:30 руководитель принимает решение о режиме работы на выходные. Критический сигнал может запустить пересмотр раньше.");
+$("backPause").onclick=()=>{hide("pauseStep");showVariant(rounds.length-1)};
+$("finishBtn").onclick=()=>{$("task").style.display="none";$("finish").classList.add("show")};
+
+function show(id,t,ok){$(id).textContent=t;$(id).className="feedback show "+(ok?"ok":"bad")}
+function clearfb(id){$(id).textContent="";$(id).className="feedback"}
+function hide(id){$(id).classList.add("hidden")}function unhide(id){$(id).classList.remove("hidden")}
+function openModal(html){$("modalText").innerHTML=html;$("modal").classList.add("show")}
+$("closeBtn").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+$("returnBtn").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";hide("classStep");hide("variantStep");unhide("pauseStep");showPause()};
+$("restartBtn").onclick=()=>{state.forEach(x=>{x.zone="";x.checked=false});i=0;r=0;picked.clear();roundDone=[false,false,false];pauseChoice="";$("finish").classList.remove("show");$("task").style.display="block";unhide("classStep");hide("variantStep");hide("pauseStep");renderClass()};
+renderClass();
+</script>
+
+</body>
+</html>
