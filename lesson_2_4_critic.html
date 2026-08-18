@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Критик решения</title>
+<style>
+:root{
+  --bg:#ffffff;--text:#202733;--muted:#707784;--line:#d9dde4;
+  --soft:#f3f5f7;--dark:#303744;--ok:#eef6f0;--bad:#fbf0ef;
+  --okb:#cfe2d3;--badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.card .kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.card .text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.option[disabled]{cursor:default}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.selectrow{display:grid;grid-template-columns:115px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+textarea{min-height:66px;resize:vertical;line-height:1.35}
+input{height:35px}
+select{height:35px;padding:0 8px}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.4;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:10.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 6px;color:#555e6b}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.finish h2{margin:0 0 7px;font-size:18px}
+.finish p{margin:0 0 12px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+@media(max-width:420px){
+  .actions{grid-template-columns:1fr 1fr}.actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:95px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+<div class="top"><div class="toprow"><h1>Проверьте предположения</h1><div class="counter" id="stepCounter"></div></div><div class="progress" id="progress"></div></div>
+<div class="main">
+  <div class="card"><div class="kicker">Предположение</div><div class="text" id="assumption"></div></div>
+  <div class="selectrow"><label>Что опровергнет</label><select id="counterSel"></select></div>
+  <div class="selectrow"><label>Каких данных не хватает</label><select id="data"></select></div>
+  <div class="selectrow"><label>Условие пересмотра</label><select id="trigger"></select></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="actions"><button class="secondary" id="prev">Назад</button><button class="secondary" id="example">Пример</button><button class="primary wide" id="next">Проверить и дальше</button></div>
+</div>
+</section>
+<section class="finish" id="finish">
+  <h2>Выберите действие</h2>
+  <p>После проверки предположений определите, что делать с инициативой.</p>
+  <div class="options" id="finalOptions"></div>
+  <div class="feedback" id="finalFeedback"></div>
+  <div class="q">Коротко обоснуйте выбор</div>
+  <textarea id="rationale" placeholder="Какие критерии и риски определяют решение?"></textarea>
+  <div class="actions"><button class="secondary" id="back">Вернуться</button><button class="secondary" id="finalExample">Пример</button><button class="primary wide" id="complete">Завершить</button></div>
+</section>
+<div class="finish" id="done">
+  <h2>Готово</h2>
+  <p>Критик проверяет логику решения, а не спорит ради спора: ищет опровержения, недостающие данные и условия пересмотра.</p>
+  <div class="finish-actions"><button class="secondary" id="returnFinal">Вернуться</button><button class="primary" id="restart">Начать заново</button></div>
+</div>
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Пример</strong><button class="close" id="close">×</button></div><div class="example" id="exampleText"></div></div></div>
+</div>
+
+<script>
+const assumptions=[
+ {a:"Сотрудники будут самостоятельно брать задачи из общей очереди.",
+  c:[["c1","Часть задач остается без исполнителя, пока руководитель не назначит их"],["c2","Очередь стала визуально аккуратнее"],["c3","Сотрудники положительно отнеслись к идее"]],
+  d:[["d1","Доля задач, взятых без назначения, и время ожидания"],["d2","Количество совещаний"],["d3","Возраст сотрудников"]],
+  t:[["t1","Более 10% задач регулярно ждут ручного назначения"],["t2","К концу месяца проведено меньше трех встреч"],["t3","Команда просит изменить цвет интерфейса"]],
+  A:["c1","d1","t1"],ex:"Если заметная доля задач все равно требует ручного назначения, ключевая гипотеза о самостоятельном распределении не подтверждается."},
+ {a:"Средний срок обработки сократится на 30 процентов.",
+  c:[["c1","После теста срок почти не меняется или растет"],["c2","Сотрудники быстро освоили интерфейс"],["c3","Руководитель поддерживает запуск"]],
+  d:[["d1","Исходный и фактический срок по сопоставимым задачам"],["d2","Количество писем о проекте"],["d3","Число участников совещания"]],
+  t:[["t1","После согласованного периода снижение меньше 10%"],["t2","В проекте участвует меньше 20 человек"],["t3","Есть хотя бы одна сложная заявка"]],
+  A:["c1","d1","t1"],ex:"Нужно заранее задать измеримый порог: какой результат будет достаточным, а какой заставит менять решение."},
+ {a:"Единая очередь не ухудшит качество обработки.",
+  c:[["c1","Доля возвратов и ошибок заметно растет"],["c2","Срок обработки сокращается"],["c3","Команда чаще смотрит на панель"]],
+  d:[["d1","Доля ошибок и возвратов до и после запуска"],["d2","Число комментариев в чате"],["d3","Количество сотрудников в офисе"]],
+  t:[["t1","Ошибки растут выше заранее допустимой границы"],["t2","Сотрудники реже обсуждают задачи"],["t3","Изменился график работы"]],
+  A:["c1","d1","t1"],ex:"Скорость сама по себе не доказывает качество. Нужен отдельный защитный показатель по ошибкам и возвратам."},
+ {a:"Все внутренние заявки подходят для одной очереди.",
+  c:[["c1","Часть заявок требует обязательной квалификации или отдельного маршрута"],["c2","Большинство заявок типовые"],["c3","Очередь позволяет сортировать по дате"]],
+  d:[["d1","Доля и типы исключений, требования к квалификации"],["d2","Средний возраст заявителей"],["d3","Количество строк в регламенте"]],
+  t:[["t1","Есть критичный тип заявок, который нельзя безопасно обрабатывать общим правилом"],["t2","В очереди больше 100 задач"],["t3","Пилот длится больше недели"]],
+  A:["c1","d1","t1"],ex:"Если есть принципиально разные типы заявок, решение лучше разделить: общая очередь для типовых и отдельный маршрут для исключений."}
+];
+let i=0;const state=assumptions.map(()=>({c:"",d:"",t:"",ok:false}));const $=x=>document.getElementById(x);
+function fill(sel,arr,val){sel.innerHTML='<option value="">Выберите</option>'+arr.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join("");sel.value=val}
+function render(){
+ $("assumption").textContent=assumptions[i].a;$("stepCounter").textContent=(i+1)+" из "+assumptions.length;$("progress").innerHTML=assumptions.map((_,n)=>`<i class="${n===i?"active":state[n].ok?"done":""}"></i>`).join("");
+ fill($("counterSel"),assumptions[i].c,state[i].c);fill($("data"),assumptions[i].d,state[i].d);fill($("trigger"),assumptions[i].t,state[i].t);
+ $("counterSel").onchange=e=>state[i].c=e.target.value;$("data").onchange=e=>state[i].d=e.target.value;$("trigger").onchange=e=>state[i].t=e.target.value;
+ $("feedback").className="feedback";$("feedback").textContent="";$("prev").disabled=i===0;$("next").textContent=i===assumptions.length-1?"Проверить и к решению":"Проверить и дальше";
+}
+$("next").onclick=()=>{const s=state[i],A=assumptions[i].A;if(!s.c||!s.d||!s.t){fb("Заполните все три поля.",false);return}const ok=s.c===A[0]&&s.d===A[1]&&s.t===A[2];s.ok=ok;fb(ok?"Верно.":"Перепроверьте связку: опровержение → данные → условие пересмотра.",ok);if(ok)setTimeout(()=>{if(i<assumptions.length-1){i++;render()}else showFinal()},170)};
+$("prev").onclick=()=>{if(i>0){i--;render()}};
+$("example").onclick=()=>{$("exampleText").textContent=assumptions[i].ex;$("modal").classList.add("show")};
+function fb(t,ok){$("feedback").textContent=t;$("feedback").className="feedback show "+(ok?"ok":"bad")}
+const finalActs=[["keep","Сохранить без изменений"],["change","Изменить сразу для всего отдела"],["scale","Сократить масштаб и провести проверку"],["delay","Отложить до полного массива данных"]];
+let finalChoice="";
+function showFinal(){
+ $("task").style.display="none";$("finish").classList.add("show");
+ $("finalOptions").innerHTML=finalActs.map(x=>`<button class="option ${finalChoice===x[0]?"selected":""}" data-final="${x[0]}">${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-final]").forEach(b=>b.onclick=()=>{finalChoice=b.dataset.final;showFinal()});
+}
+$("back").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";i=assumptions.length-1;render()};
+$("finalExample").onclick=()=>{$("exampleText").innerHTML="<b>Пример:</b> сократить масштаб и провести пилот на типовых заявках. Ключевые гипотезы о самостоятельном выборе задач, сокращении срока и сохранении качества пока не подтверждены. Пилот позволит проверить их без риска для всего подразделения.";$("modal").classList.add("show")};
+$("complete").onclick=()=>{if(!finalChoice){$("finalFeedback").textContent="Выберите действие.";$("finalFeedback").className="feedback show bad";return}if(finalChoice!=="scale"){$("finalFeedback").textContent="Лучший следующий шаг здесь — сократить масштаб и проверить ключевые предположения на пилоте.";$("finalFeedback").className="feedback show bad";return}if($("rationale").value.trim().length<25){$("finalFeedback").textContent="Добавьте короткое обоснование. Если нужно, откройте пример.";$("finalFeedback").className="feedback show bad";return}$("finish").classList.remove("show");$("done").classList.add("show")};
+$("returnFinal").onclick=()=>{$("done").classList.remove("show");showFinal()};
+$("restart").onclick=()=>{state.forEach(x=>{x.c=x.d=x.t="";x.ok=false});i=0;finalChoice="";$("rationale").value="";$("done").classList.remove("show");$("finish").classList.remove("show");$("task").style.display="block";render()};
+$("close").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+render();
+</script>
+
+</body></html>

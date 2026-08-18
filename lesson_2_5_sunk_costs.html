@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Невозвратные затраты</title>
+<style>
+:root{
+  --bg:#ffffff;--text:#202733;--muted:#707784;--line:#d9dde4;
+  --soft:#f3f5f7;--dark:#303744;--ok:#eef6f0;--bad:#fbf0ef;
+  --okb:#cfe2d3;--badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.card .kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.card .text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.option[disabled]{cursor:default}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.selectrow{display:grid;grid-template-columns:115px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+textarea{min-height:66px;resize:vertical;line-height:1.35}
+input{height:35px}
+select{height:35px;padding:0 8px}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.4;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:10.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 6px;color:#555e6b}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.finish h2{margin:0 0 7px;font-size:18px}
+.finish p{margin:0 0 12px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+@media(max-width:420px){
+  .actions{grid-template-columns:1fr 1fr}.actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:95px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+<div class="top"><div class="toprow"><h1>Что учитывать сегодня?</h1><div class="counter" id="counter"></div></div><div class="progress" id="progress"></div></div>
+<div class="main">
+  <div class="card"><div class="kicker">Фактор</div><div class="text" id="factor"></div></div>
+  <div class="row2"><button class="option" data-v="include">Учитывать</button><button class="option" data-v="exclude">Не учитывать как основание</button></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="actions"><button class="secondary" id="prev">Назад</button><button class="secondary" id="whyBtn">Почему?</button><button class="primary wide" id="next">Проверить и дальше</button></div>
+</div>
+</section>
+<section class="finish" id="finish">
+  <h2>Сравните три варианта</h2>
+  <p>Выберите вариант, который считаете сильнее на текущих данных. Сам выбор не оценивается автоматически — проверяется логика аргументации.</p>
+  <div class="options" id="variants"></div>
+  <div class="q">Почему вы выбрали его?</div>
+  <textarea id="rationale" placeholder="Используйте только будущие выгоды, расходы, риски и последствия выхода."></textarea>
+  <div class="q">Какие данные еще нужны?</div>
+  <textarea id="missing" placeholder="Например: стоимость доведения двух модулей, интеграция, последствия для пользователей..."></textarea>
+  <div class="feedback" id="finalFeedback"></div>
+  <div class="actions"><button class="secondary" id="back">Вернуться</button><button class="secondary" id="example">Пример</button><button class="primary wide" id="complete">Проверить логику</button></div>
+</section>
+<div class="finish" id="done">
+  <h2>Готово</h2>
+  <p>Прошлые затраты объясняют сожаление, но не определяют будущий выбор. Сравнивайте только последствия, которые еще можно изменить.</p>
+  <div class="finish-actions"><button class="secondary" id="returnFinal">Вернуться</button><button class="primary" id="restart">Начать заново</button></div>
+</div>
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Разбор</strong><button class="close" id="close">×</button></div><div class="example" id="why"></div></div></div>
+</div>
+
+<script>
+const factors=[
+ ["Уже потраченные 5 млн рублей.","exclude","Это невозвратные затраты: ни один будущий вариант их не вернет."],
+ ["12 месяцев уже выполненной работы команды.","exclude","Сам факт прошлой работы не является основанием продолжать. Учитывайте только ее будущую ценность."],
+ ["Еще 2 млн рублей и 4 месяца до завершения внутренней платформы.","include","Это будущие затраты и срок, поэтому они напрямую влияют на текущий выбор."],
+ ["Внутренняя платформа закроет 60% исходных потребностей.","include","Это ожидаемый будущий результат варианта."],
+ ["Готовое решение закроет 80% потребностей.","include","Это будущая выгода альтернативы."],
+ ["Переход на готовое решение займет 3 месяца и 1,6 млн рублей.","include","Это будущие срок и расходы."],
+ ["Остановка разработки освободит четырех сотрудников.","include","Это будущий ресурсный эффект выхода."],
+ ["Два разработанных модуля можно использовать в другом процессе.","include","Не прошлые затраты, а будущая ценность уже созданного результата."],
+ ["Сам факт того, что директор уже публично обещал внутреннюю платформу.","exclude","Прошлое обещание само по себе не доказывает ценность продолжения."],
+ ["Будущие репутационные последствия отказа от публичного обещания.","include","Это последствие еще впереди, поэтому его нужно учитывать в текущем решении."]
+];
+let i=0;const state=factors.map(()=>({v:null,ok:false,checked:false}));const $=x=>document.getElementById(x);
+function render(){
+ $("factor").textContent=factors[i][0];$("counter").textContent=(i+1)+" из "+factors.length;$("progress").innerHTML=factors.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+ document.querySelectorAll("[data-v]").forEach(b=>{b.className="option";if(state[i].v===b.dataset.v)b.classList.add("selected")});
+ $("feedback").className="feedback";$("feedback").textContent="";$("prev").disabled=i===0;$("next").textContent=i===factors.length-1?"Проверить и к выбору":"Проверить и дальше";
+}
+document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{state[i].v=b.dataset.v;render()});
+$("next").onclick=()=>{if(!state[i].v){fb("Выберите, учитывать ли фактор в текущем решении.",false);return}const ok=state[i].v===factors[i][1];state[i].checked=true;state[i].ok=ok;fb(ok?"Верно.":"Не совсем. Откройте разбор.",ok);if(ok)setTimeout(()=>{if(i<factors.length-1){i++;render()}else showFinal()},160)};
+$("prev").onclick=()=>{if(i>0){i--;render()}};
+$("whyBtn").onclick=()=>{$("why").textContent=factors[i][2];$("modal").classList.add("show")};
+function fb(t,ok){$("feedback").textContent=t;$("feedback").className="feedback show "+(ok?"ok":"bad")}
+const variants=[
+ ["continue","Продолжить внутреннюю платформу без изменений"],
+ ["hybrid","Сохранить два полезных модуля и перейти на готовое решение"],
+ ["stop","Полностью остановить разработку и перейти на готовое решение"]
+];
+let choice="";
+function showFinal(){
+ $("task").style.display="none";$("finish").classList.add("show");
+ $("variants").innerHTML=variants.map(x=>`<button class="option ${choice===x[0]?"selected":""}" data-choice="${x[0]}">${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-choice]").forEach(b=>b.onclick=()=>{choice=b.dataset.choice;showFinal()});
+}
+$("back").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";i=factors.length-1;render()};
+$("example").onclick=()=>{$("why").innerHTML="<b>Пример возможного обоснования:</b><br>Сегодня я бы выбрал гибридный вариант: готовое решение быстрее запускается, требует меньше будущих расходов и закрывает большую долю потребностей. Два уже созданных модуля сохраняют будущую ценность и могут использоваться отдельно. Перед окончательным решением я бы уточнил стоимость доведения этих модулей, интеграцию с готовым решением и реальные репутационные последствия отказа от первоначального обещания.";$("modal").classList.add("show")};
+$("complete").onclick=()=>{
+ if(!choice){showFinalFb("Выберите один из трех вариантов.",false);return}
+ const r=$("rationale").value.toLowerCase(), m=$("missing").value.trim();
+ if($("rationale").value.trim().length<45){showFinalFb("Добавьте обоснование через будущие выгоды, расходы и риски. При необходимости откройте пример.",false);return}
+ const bad=["уже потрати","5 млн","потратили 5","столько влож","12 месяцев работы"];
+ if(bad.some(x=>r.includes(x))){showFinalFb("В обосновании появился аргумент из прошлых невозвратных затрат. Уберите его и сравните только будущие последствия.",false);return}
+ if(m.length<25){showFinalFb("Добавьте хотя бы один недостающий параметр для окончательного выбора.",false);return}
+ showFinalFb("Логика подходит: выбор опирается на будущие последствия и признает недостающие данные.",true);
+ setTimeout(()=>{$("finish").classList.remove("show");$("done").classList.add("show")},260);
+};
+function showFinalFb(t,ok){$("finalFeedback").textContent=t;$("finalFeedback").className="feedback show "+(ok?"ok":"bad")}
+$("returnFinal").onclick=()=>{$("done").classList.remove("show");showFinal()};
+$("restart").onclick=()=>{state.forEach(x=>{x.v=null;x.ok=x.checked=false});i=0;choice="";$("rationale").value="";$("missing").value="";$("done").classList.remove("show");$("finish").classList.remove("show");$("task").style.display="block";render()};
+$("close").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+render();
+</script>
+
+</body></html>

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Факты, предположения и интерпретации</title>
+<style>
+:root{
+  --bg:#ffffff;--text:#202733;--muted:#707784;--line:#d9dde4;
+  --soft:#f3f5f7;--dark:#303744;--ok:#eef6f0;--bad:#fbf0ef;
+  --okb:#cfe2d3;--badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.card .kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.card .text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.option[disabled]{cursor:default}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.selectrow{display:grid;grid-template-columns:115px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+textarea{min-height:66px;resize:vertical;line-height:1.35}
+input{height:35px}
+select{height:35px;padding:0 8px}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.4;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:10.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 6px;color:#555e6b}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.finish h2{margin:0 0 7px;font-size:18px}
+.finish p{margin:0 0 12px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+@media(max-width:420px){
+  .actions{grid-template-columns:1fr 1fr}.actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:95px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="top">
+    <div class="toprow"><h1>Факт, предположение или интерпретация?</h1><div class="counter" id="counter"></div></div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="main">
+    <div id="step1">
+      <div class="card"><div class="kicker">Утверждение</div><div class="text" id="statement"></div></div>
+      <div class="row2" style="grid-template-columns:1fr 1fr 1fr">
+        <button class="option" data-cat="fact">Факт</button>
+        <button class="option" data-cat="assumption">Предположение</button>
+        <button class="option" data-cat="interpretation">Интерпретация</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="secondary" id="prev">Назад</button>
+        <button class="secondary" id="explain">Почему?</button>
+        <button class="primary wide" id="next">Проверить и дальше</button>
+      </div>
+    </div>
+    <div id="step2" style="display:none">
+      <div class="card"><div class="kicker">План наблюдения</div><div class="text">Что нужно фиксировать по пяти заявкам?</div></div>
+      <div class="pills" id="observePills"></div>
+      <div class="smallnote">Выберите 5 элементов, которые помогут проверить причины задержек.</div>
+      <div class="feedback" id="observeFeedback"></div>
+      <div class="actions"><button class="secondary" id="backToClassify">Назад</button><button class="primary wide" id="checkObserve">Проверить</button></div>
+    </div>
+    <div id="step3" style="display:none">
+      <div class="card"><div class="kicker">Что делать сейчас</div><div class="text">Разделите действия: что можно сделать сразу, а что требует проверки.</div></div>
+      <div id="decisionRows"></div>
+      <div class="feedback" id="decisionFeedback"></div>
+      <div class="actions"><button class="secondary" id="backObserve">Назад</button><button class="primary wide" id="finishBtn">Проверить и завершить</button></div>
+    </div>
+  </div>
+</section>
+<section class="finish" id="finish">
+  <h2>Готово</h2>
+  <p>Вы отделили наблюдаемые данные от версий и оценок, а затем собрали минимальный план проверки.</p>
+  <div class="summary"><div><b>Принцип:</b> сначала установите, что произошло. Затем проверяйте возможные причины и только после этого делайте выводы о людях и процессе.</div></div>
+  <div class="finish-actions"><button class="secondary" id="back">Вернуться</button><button class="primary" id="restart">Начать заново</button></div>
+</section>
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Разбор</strong><button class="close" id="close">×</button></div><div class="example" id="why"></div></div></div>
+</div>
+
+<script>
+const st=[
+ ["Средний срок обработки заявок за месяц вырос с трех до пяти дней.","fact","Это измеряемое изменение процесса."],
+ ["Четыре сотрудника стали реже присутствовать в офисе.","fact","Это наблюдаемое изменение, если его можно подтвердить графиком или данными посещения."],
+ ["Подразделение получило новый тип заявок.","fact","Событие можно подтвердить по входящему потоку."],
+ ["Согласование передали двум специалистам вместо четырех.","fact","Изменение распределения работы можно проверить."],
+ ["Гибридный график стал причиной роста срока обработки.","assumption","Это причинная версия. Совпадение по времени еще не доказывает связь."],
+ ["Сокращение числа согласующих могло увеличить ожидание.","assumption","Это проверяемая гипотеза о причине задержки."],
+ ["Сотрудники расслабились после перехода на гибридный график.","interpretation","Фраза оценивает поведение людей и не задает наблюдаемого признака."],
+ ["Команда дома работает менее ответственно.","interpretation","Это оценка, а не проверяемый факт."]
+];
+let i=0;
+const state=st.map(()=>({cat:null,checked:false,ok:false}));
+const $=x=>document.getElementById(x);
+function render(){
+ $("statement").textContent=st[i][0];$("counter").textContent=(i+1)+" из "+st.length;
+ $("progress").innerHTML=st.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+ document.querySelectorAll("[data-cat]").forEach(b=>{b.className="option";if(state[i].cat===b.dataset.cat)b.classList.add("selected")});
+ $("feedback").className="feedback";$("feedback").textContent="";$("prev").disabled=i===0;$("next").textContent=i===st.length-1?"Проверить и к наблюдению":"Проверить и дальше";
+}
+document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{state[i].cat=b.dataset.cat;render()});
+$("next").onclick=()=>{
+ if(!state[i].cat){fb("Выберите категорию.",false);return}
+ const ok=state[i].cat===st[i][1];state[i].checked=true;state[i].ok=ok;
+ fb(ok?"Верно.":"Нет. Откройте разбор и сравните формулировку с определениями.",ok);
+ if(ok)setTimeout(()=>{if(i<st.length-1){i++;render()}else showObserve()},160);
+};
+$("prev").onclick=()=>{if(i>0){i--;render()}};
+$("explain").onclick=()=>{$("why").textContent=st[i][2];$("modal").classList.add("show")};
+$("close").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+function fb(t,ok){$("feedback").textContent=t;$("feedback").className="feedback show "+(ok?"ok":"bad")}
+const observe=[
+ ["stage","Этап и время"],["handoff","Передачи между людьми"],["wait","Ожидание"],["return","Возвраты и ручные действия"],["source","Источник задержки"],
+ ["mood","Настроение сотрудника"],["office","Количество часов в офисе"],["messages","Число сообщений в чате"]
+];
+const needed=new Set(["stage","handoff","wait","return","source"]); const picked=new Set();
+function showObserve(){
+ $("step1").style.display="none";$("step2").style.display="block";
+ $("observePills").innerHTML=observe.map(x=>`<button class="pill ${picked.has(x[0])?"selected":""}" data-obs="${x[0]}">${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-obs]").forEach(b=>b.onclick=()=>{picked.has(b.dataset.obs)?picked.delete(b.dataset.obs):picked.add(b.dataset.obs);showObserve()});
+}
+$("checkObserve").onclick=()=>{
+ const ok=picked.size===5&&[...needed].every(x=>picked.has(x));
+ $("observeFeedback").textContent=ok?"Верно. Эти наблюдения позволяют увидеть путь заявки и точки отклонения.":"Выберите именно данные о ходе процесса, а не общие впечатления или активность.";
+ $("observeFeedback").className="feedback show "+(ok?"ok":"bad"); if(ok)setTimeout(showDecision,180);
+};
+$("backToClassify").onclick=()=>{$("step2").style.display="none";$("step1").style.display="block";i=st.length-1;render()};
+const decisions=[
+ ["Сразу начать фиксировать причины ожиданий в пяти заявках.","now"],
+ ["Вернуть всех сотрудников в офис.","later"],
+ ["Проверить время согласования после сокращения числа специалистов.","now"],
+ ["Сделать вывод, что гибридный график снижает дисциплину.","later"]
+];
+const decState=Array(decisions.length).fill("");
+function showDecision(){
+ $("step2").style.display="none";$("step3").style.display="block";
+ $("decisionRows").innerHTML=decisions.map((x,n)=>`<div class="selectrow"><label>${x[0]}</label><select data-dec="${n}"><option value="">Выберите</option><option value="now">Можно сейчас</option><option value="later">Нужна проверка</option></select></div>`).join("");
+ document.querySelectorAll("[data-dec]").forEach(s=>{s.value=decState[+s.dataset.dec];s.onchange=()=>decState[+s.dataset.dec]=s.value});
+}
+$("backObserve").onclick=()=>{$("step3").style.display="none";showObserve()};
+$("finishBtn").onclick=()=>{
+ const ok=decisions.every((x,n)=>decState[n]===x[1]);
+ $("decisionFeedback").textContent=ok?"Верно. Сейчас можно запускать сбор фактов и проверку процесса. Причинные выводы и крупные изменения требуют данных.":"Перепроверьте: сбор данных можно начать сразу, а причинный вывод и крупное изменение требуют проверки.";
+ $("decisionFeedback").className="feedback show "+(ok?"ok":"bad"); if(ok)setTimeout(finish,180);
+};
+function finish(){$("task").style.display="none";$("finish").classList.add("show")}
+$("back").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";showDecision()};
+$("restart").onclick=()=>{state.forEach(x=>{x.cat=null;x.checked=x.ok=false});picked.clear();decState.fill("");i=0;$("finish").classList.remove("show");$("task").style.display="block";$("step3").style.display="none";$("step2").style.display="none";$("step1").style.display="block";render()};
+render();
+</script>
+
+</body></html>

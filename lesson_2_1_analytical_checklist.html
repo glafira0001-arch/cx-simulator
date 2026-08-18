@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Аналитическое мышление</title>
+<style>
+:root{
+  --bg:#ffffff;--text:#202733;--muted:#707784;--line:#d9dde4;
+  --soft:#f3f5f7;--dark:#303744;--ok:#eef6f0;--bad:#fbf0ef;
+  --okb:#cfe2d3;--badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.card .kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.card .text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.option[disabled]{cursor:default}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.selectrow{display:grid;grid-template-columns:115px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+textarea{min-height:66px;resize:vertical;line-height:1.35}
+input{height:35px}
+select{height:35px;padding:0 8px}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.4;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:10.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 6px;color:#555e6b}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.finish h2{margin:0 0 7px;font-size:18px}
+.finish p{margin:0 0 12px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+@media(max-width:420px){
+  .actions{grid-template-columns:1fr 1fr}.actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:95px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+  <div class="top">
+    <div class="toprow"><h1>Быстро или аналитически?</h1><div class="counter" id="counter"></div></div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="main">
+    <div class="card"><div class="kicker">Ситуация</div><div class="text" id="scenario"></div></div>
+
+    <div class="q">1. Какой режим выбрать?</div>
+    <div class="row2">
+      <button class="option" data-mode="fast">Быстрый</button>
+      <button class="option" data-mode="analytic">Аналитический</button>
+    </div>
+
+    <div class="q">2. Какой признак сильнее всего влияет на выбор?</div>
+    <div class="options" id="signOptions"></div>
+
+    <div class="q">3. Минимальное действие перед решением</div>
+    <div class="options" id="actionOptions"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="secondary" id="prev">Назад</button>
+      <button class="secondary" id="hint">Почему?</button>
+      <button class="primary wide" id="next">Проверить и дальше</button>
+    </div>
+  </div>
+</section>
+<section class="finish" id="finish">
+  <h2>Готово</h2>
+  <p>Вы прошли 10 ситуаций и потренировались выбирать глубину анализа по цене ошибки, новизне, обратимости и качеству данных.</p>
+  <div class="summary" id="summary"></div>
+  <div class="finish-actions"><button class="secondary" id="back">Вернуться</button><button class="primary" id="restart">Начать заново</button></div>
+</section>
+<div class="modal" id="modal"><div class="modal-card">
+  <div class="modal-head"><strong>Почему такой режим</strong><button class="close" id="close">×</button></div>
+  <div class="example" id="hintText"></div>
+</div></div>
+</div>
+
+<script>
+const items = [
+ {s:"Сотрудник просит перенести внутреннюю встречу на следующий день.",mode:"fast",sign:"reversible",action:"check_calendar",
+  signs:[["reversible","Решение легко отменить"],["new","Ситуация новая"],["high","Высокая цена ошибки"]],
+  actions:[["check_calendar","Проверить, не ломает ли перенос критичный срок"],["collect_all","Собрать данные за квартал"],["escalate","Передать решение директору"]],
+  why:"Ситуация типовая и обратимая. Достаточно быстро проверить, не затрагивает ли перенос критичные обязательства."},
+ {s:"Руководитель выбирает исполнителя для знакомой типовой задачи.",mode:"fast",sign:"familiar",action:"check_load",
+  signs:[["familiar","Знакомая повторяющаяся ситуация"],["irreversible","Необратимые последствия"],["conflict","Противоречивые сведения"]],
+  actions:[["check_load","Проверить доступность и нужную компетенцию"],["interview","Провести отдельное расследование"],["pilot","Запустить пилот на месяц"]],
+  why:"Если задача типовая, а критерии назначения известны, нужен быстрый выбор с короткой проверкой доступности и компетенции."},
+ {s:"Отдел планирует отказаться от подрядчика, с которым работает три года.",mode:"analytic",sign:"high",action:"compare",
+  signs:[["high","Высокая цена и последствия разрыва"],["familiar","Знакомая ситуация"],["easy","Легко обратимое решение"]],
+  actions:[["compare","Проверить результаты подрядчика, договор и альтернативы"],["notify","Сразу уведомить о расторжении"],["vote","Провести голосование команды"]],
+  why:"Отказ от долгосрочного подрядчика влияет на сроки, деньги и обязательства. Сначала нужны факты, условия договора и реалистичные альтернативы."},
+ {s:"Сотрудник допустил ошибку, которая уже возникала в тех же условиях.",mode:"analytic",sign:"repeat",action:"cause",
+  signs:[["repeat","Ошибка повторяется в тех же условиях"],["easy","Решение легко обратимо"],["authority","Есть давление авторитета"]],
+  actions:[["cause","Проверить повторяющуюся причину и условия ошибки"],["warn","Ограничиться замечанием сотруднику"],["ignore","Ничего не менять"]],
+  why:"Повторение показывает, что привычная реакция могла не устранить причину. Нужна короткая аналитическая проверка процесса, а не очередное автоматическое действие."},
+ {s:"Руководитель рассматривает увольнение сильного, но конфликтного специалиста.",mode:"analytic",sign:"irreversible",action:"evidence",
+  signs:[["irreversible","Трудно обратимые последствия"],["routine","Типовая операция"],["low","Низкая цена ошибки"]],
+  actions:[["evidence","Проверить факты конфликтов, последствия и альтернативы"],["fire","Уволить сразу после следующего конфликта"],["survey","Спросить мнение большинства"]],
+  why:"Увольнение трудно обратить, а последствия затрагивают результат и команду. Нужна проверка фактов и альтернатив."},
+ {s:"Клиент просит заменить формат ежемесячного отчета.",mode:"fast",sign:"reversible",action:"requirements",
+  signs:[["reversible","Изменение обычно обратимо"],["high","Высокая цена ошибки"],["unknown","Полностью неизвестная среда"]],
+  actions:[["requirements","Уточнить обязательные поля и срок"],["research","Изучить все отчеты за два года"],["escalate","Сразу эскалировать директору"]],
+  why:"Если меняется только формат и обязательные данные сохраняются, решение обратимо. Достаточно уточнить требования клиента."},
+ {s:"Команда должна запустить незнакомый процесс за две недели.",mode:"analytic",sign:"new",action:"critical",
+  signs:[["new","Ситуация новая"],["routine","Процесс давно отработан"],["low","Низкая неопределенность"]],
+  actions:[["critical","Выделить критичные данные, риски и минимальную проверку"],["copy","Скопировать прошлый процесс без проверки"],["wait","Отложить решение до полного массива данных"]],
+  why:"Новизна и жесткий срок повышают риск автоматической ошибки. Нужен не полный анализ, а проверка критичных допущений и рисков."},
+ {s:"Руководитель хочет увеличить бюджет проекта после резкого роста расходов.",mode:"analytic",sign:"data",action:"costs",
+  signs:[["data","Нужно понять причину и устойчивость роста расходов"],["reversible","Нет финансовых последствий"],["routine","Всегда применяется одно правило"]],
+  actions:[["costs","Разделить разовый и постоянный рост затрат и проверить прогноз"],["approve","Сразу увеличить бюджет"],["cut","Сразу урезать объем проекта"]],
+  why:"Дополнительный бюджет требует проверки причин роста и будущих расходов. Иначе команда может закрепить случайное отклонение."},
+ {s:"Два подразделения по-разному описывают причину задержки.",mode:"analytic",sign:"conflict",action:"facts",
+  signs:[["conflict","Противоречивые сведения"],["routine","Полностью типовая ситуация"],["easy","Есть один очевидный факт"]],
+  actions:[["facts","Сопоставить факты и проследить путь задачи"],["choose","Выбрать версию более опытного руководителя"],["average","Считать обе версии одинаково верными"]],
+  why:"Когда источники противоречат друг другу, первый связный рассказ нельзя считать доказательством. Нужна проверка фактов."},
+ {s:"Сотрудники предлагают повторить решение, которое успешно сработало месяц назад.",mode:"analytic",sign:"single",action:"conditions",
+  signs:[["single","Есть только один успешный пример"],["irreversible","Решение точно необратимо"],["emotion","Есть сильный конфликт"]],
+  actions:[["conditions","Проверить, совпадают ли условия и критерии успеха"],["repeat","Повторить без проверки"],["discard","Отказаться, потому что решение уже использовали"]],
+  why:"Один успешный случай еще не создает надежного правила. Сначала сравните условия и проверьте, что именно обеспечило результат."}
+];
+let i=0;
+const state=items.map(()=>({mode:null,sign:null,action:null,checked:false,ok:false}));
+const $=x=>document.getElementById(x);
+function render(){
+  $("scenario").textContent=items[i].s;
+  $("counter").textContent=(i+1)+" из "+items.length;
+  $("progress").innerHTML=items.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+  document.querySelectorAll("[data-mode]").forEach(b=>{b.className="option"; if(state[i].mode===b.dataset.mode)b.classList.add("selected");});
+  $("signOptions").innerHTML=items[i].signs.map(x=>`<button class="option ${state[i].sign===x[0]?"selected":""}" data-sign="${x[0]}">${x[1]}</button>`).join("");
+  $("actionOptions").innerHTML=items[i].actions.map(x=>`<button class="option ${state[i].action===x[0]?"selected":""}" data-action="${x[0]}">${x[1]}</button>`).join("");
+  $("feedback").className="feedback"; $("feedback").textContent="";
+  $("prev").disabled=i===0; $("next").textContent=i===items.length-1?"Проверить и завершить":"Проверить и дальше";
+  bind();
+}
+function bind(){
+  document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{state[i].mode=b.dataset.mode;renderKeepFeedback();});
+  document.querySelectorAll("[data-sign]").forEach(b=>b.onclick=()=>{state[i].sign=b.dataset.sign;renderKeepFeedback();});
+  document.querySelectorAll("[data-action]").forEach(b=>b.onclick=()=>{state[i].action=b.dataset.action;renderKeepFeedback();});
+}
+function renderKeepFeedback(){ const f=$("feedback").textContent; const c=$("feedback").className; render(); if(f){$("feedback").textContent=f;$("feedback").className=c;} }
+function check(){
+  const s=state[i], it=items[i];
+  if(!s.mode||!s.sign||!s.action){show("Выберите режим, признак и минимальное действие.",false);return false;}
+  const ok=s.mode===it.mode&&s.sign===it.sign&&s.action===it.action;
+  s.checked=true;s.ok=ok;
+  if(ok) show("Верно. Вы выбрали достаточную глубину анализа и минимальную проверку.",true);
+  else{
+    let parts=[];
+    if(s.mode!==it.mode)parts.push("режим");
+    if(s.sign!==it.sign)parts.push("ключевой признак");
+    if(s.action!==it.action)parts.push("действие");
+    show("Перепроверьте: "+parts.join(", ")+". Откройте «Почему?», если нужен разбор.",false);
+  }
+  return ok;
+}
+function show(t,ok){$("feedback").textContent=t;$("feedback").className="feedback show "+(ok?"ok":"bad");}
+$("next").onclick=()=>{if(!check())return;setTimeout(()=>{if(i<items.length-1){i++;render()}else finish()},180)};
+$("prev").onclick=()=>{if(i>0){i--;render()}};
+$("hint").onclick=()=>{$("hintText").textContent=items[i].why;$("modal").classList.add("show")};
+$("close").onclick=()=>$("modal").classList.remove("show");
+$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+function finish(){
+ $("task").style.display="none";$("finish").classList.add("show");
+ const score=state.filter(x=>x.ok).length;
+ $("summary").innerHTML=`<div><b>Результат:</b> ${score} из ${items.length} ситуаций выполнены без ошибок.</div><div>Если какой-то ответ пришлось исправить, вернитесь к нему и еще раз сопоставьте цену ошибки, новизну, обратимость и качество данных.</div>`;
+}
+$("back").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";render()};
+$("restart").onclick=()=>{state.forEach(x=>{x.mode=x.sign=x.action=null;x.checked=x.ok=false});i=0;$("finish").classList.remove("show");$("task").style.display="block";render()};
+render();
+</script>
+
+</body></html>

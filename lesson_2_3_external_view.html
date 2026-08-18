@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Внешний взгляд</title>
+<style>
+:root{
+  --bg:#ffffff;--text:#202733;--muted:#707784;--line:#d9dde4;
+  --soft:#f3f5f7;--dark:#303744;--ok:#eef6f0;--bad:#fbf0ef;
+  --okb:#cfe2d3;--badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center;padding:8px}
+.app{width:min(560px,100%);background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:18px;line-height:1.2}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);border-radius:10px;padding:10px 11px;margin-bottom:10px}
+.card .kicker{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.card .text{font-size:13.5px;line-height:1.35;font-weight:700}
+.q{font-size:12.5px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;gap:6px}
+.option{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:12px;line-height:1.3;cursor:pointer;text-align:left}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.option.good{border-color:var(--okb);background:var(--ok)}
+.option.bad{border-color:var(--badb);background:var(--bad)}
+.option[disabled]{cursor:default}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.selectrow{display:grid;grid-template-columns:115px 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.selectrow label{font-size:11.5px;font-weight:700}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:var(--text);outline:none}
+textarea{min-height:66px;resize:vertical;line-height:1.35}
+input{height:35px}
+select{height:35px;padding:0 8px}
+.feedback{display:none;margin-top:9px;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.4;background:var(--soft)}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+button{min-height:36px;border:0;border-radius:9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:8px 10px}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.4;cursor:default}
+.smallnote{font-size:11px;line-height:1.35;color:var(--muted);margin-top:7px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:10.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 6px;color:#555e6b}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.finish h2{margin:0 0 7px;font-size:18px}
+.finish p{margin:0 0 12px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.summary{display:grid;gap:6px}
+.summary>div{border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:11.5px;line-height:1.35}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(24,29,37,.36);z-index:20}
+.modal.show{display:flex}
+.modal-card{width:min(500px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.modal-head strong{font-size:14px}
+.close{width:32px;min-height:32px;padding:0;background:var(--soft);font-size:16px}
+.example{font-size:12px;line-height:1.45}
+.example b{display:inline-block;margin-top:5px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:11px;cursor:pointer}
+.pill.selected{background:var(--dark);color:#fff;border-color:var(--dark)}
+@media(max-width:420px){
+  .actions{grid-template-columns:1fr 1fr}.actions .wide{grid-column:1/-1}
+  .selectrow{grid-template-columns:95px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="task">
+<div class="top"><div class="toprow"><h1>Скорректируйте прогноз</h1><div class="counter" id="counter"></div></div><div class="progress" id="progress"></div></div>
+<div class="main">
+  <div class="card"><div class="kicker">Данные</div><div class="text" id="dataText"></div></div>
+  <div class="q" id="question"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="actions"><button class="secondary" id="prev">Назад</button><button class="secondary" id="explain">Разбор</button><button class="primary wide" id="next">Проверить и дальше</button></div>
+</div>
+</section>
+<section class="finish" id="finish">
+  <h2>Прогноз собран</h2>
+  <p>Базой остаются результаты похожих проектов. Корректировать их стоит только по подтвержденным отличиям.</p>
+  <div class="summary" id="summary"></div>
+  <div class="finish-actions"><button class="secondary" id="back">Вернуться</button><button class="primary" id="restart">Начать заново</button></div>
+</section>
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><strong>Разбор</strong><button class="close" id="close">×</button></div><div class="example" id="why"></div></div></div>
+</div>
+
+<script>
+const steps=[
+ {d:"10 похожих проектов: средний срок полного запуска — 14 недель, самый быстрый — 9, самый долгий — 22.",
+  q:"Какой базовый прогноз нужно взять до учета особенностей текущего проекта?",
+  opts:[["8","8 недель"],["14","14 недель"],["22","22 недели"]],a:"14",
+  why:"Внешний взгляд начинается с типичного результата похожих проектов. В этих данных базовой точкой служит средний срок 14 недель."},
+ {d:"Руководитель говорит: проект поддерживает директор, команда мотивирована, новый порядок проще прежнего.",
+  q:"Какие из этих аргументов можно сразу использовать для сокращения срока?",
+  opts:[["all","Все три"],["director","Только поддержку директора"],["none","Ни один без подтверждения"]],a:"none",
+  why:"Поддержка и мотивация полезны, но сами по себе не показывают величину влияния на срок. «Проще прежнего» тоже нужно подтвердить данными."},
+ {d:"Текущий проект: правила исключений еще не согласованы; обучение назначено на пятую неделю; команда уже использует часть нового процесса.",
+  q:"Что является подтвержденным преимуществом текущего проекта?",
+  opts:[["rules","Несогласованные правила исключений"],["training","Обучение на пятой неделе"],["use","Команда уже использует часть нового процесса"]],a:"use",
+  why:"Частичное использование процесса уже проявилось в работе. Два других пункта скорее увеличивают риск задержки."},
+ {d:"В похожих проектах основная причина задержки — согласование исключений, вторая — обучение смежных подразделений.",
+  q:"Какой фактор текущего проекта сильнее всего тянет прогноз в сторону увеличения срока?",
+  opts:[["director","Поддержка директора"],["rules","Правила исключений еще не согласованы"],["partial","Часть процесса уже используется"]],a:"rules",
+  why:"Несогласованные исключения совпадают с главной причиной задержек в группе сравнения."},
+ {d:"База — 14 недель. Есть одно подтвержденное преимущество и два заметных риска задержки.",
+  q:"Какой диапазон выглядит наиболее обоснованным?",
+  opts:[["7-8","7–8 недель"],["12-18","12–18 недель"],["20-22","20–22 недели"]],a:"12-18",
+  why:"Диапазон 12–18 недель сохраняет базу 14 недель и отражает одновременно частичную готовность и реальные риски. Он не изображает ложную точность."}
+];
+let i=0; const state=steps.map(()=>({ans:null,ok:false,checked:false})); const $=x=>document.getElementById(x);
+function render(){
+ $("dataText").textContent=steps[i].d;$("question").textContent=steps[i].q;$("counter").textContent=(i+1)+" из "+steps.length;
+ $("progress").innerHTML=steps.map((_,n)=>`<i class="${n===i?"active":state[n].checked?"done":""}"></i>`).join("");
+ $("options").innerHTML=steps[i].opts.map(x=>`<button class="option ${state[i].ans===x[0]?"selected":""}" data-a="${x[0]}">${x[1]}</button>`).join("");
+ document.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{state[i].ans=b.dataset.a;render()});
+ $("feedback").className="feedback";$("feedback").textContent="";$("prev").disabled=i===0;$("next").textContent=i===steps.length-1?"Проверить и завершить":"Проверить и дальше";
+}
+$("next").onclick=()=>{if(!state[i].ans){fb("Выберите ответ.",false);return}const ok=state[i].ans===steps[i].a;state[i].checked=true;state[i].ok=ok;fb(ok?"Верно.":"Не совсем. Откройте разбор.",ok);if(ok)setTimeout(()=>{if(i<steps.length-1){i++;render()}else finish()},160)};
+$("prev").onclick=()=>{if(i>0){i--;render()}};
+$("explain").onclick=()=>{$("why").textContent=steps[i].why;$("modal").classList.add("show")};
+$("close").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+function fb(t,ok){$("feedback").textContent=t;$("feedback").className="feedback show "+(ok?"ok":"bad")}
+function finish(){$("task").style.display="none";$("finish").classList.add("show");$("summary").innerHTML="<div><b>Итог:</b> базовый ориентир — 14 недель; предварительный рабочий диапазон — 12–18 недель. Главные риски — несогласованные исключения и обучение смежных подразделений.</div>"}
+$("back").onclick=()=>{$("finish").classList.remove("show");$("task").style.display="block";render()};
+$("restart").onclick=()=>{state.forEach(x=>{x.ans=null;x.ok=x.checked=false});i=0;$("finish").classList.remove("show");$("task").style.display="block";render()};
+render();
+</script>
+
+</body></html>
