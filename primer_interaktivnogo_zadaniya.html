@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Модуль 1 Урок 1 — задание</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:#f5f6f8;color:#1f2937;font-family:Arial,Helvetica,sans-serif}body{padding:12px}.quiz{width:100%;max-width:560px;margin:0 auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.05);overflow:hidden}.top{padding:14px 16px 10px;border-bottom:1px solid #eef0f2}.eyebrow{font-size:12px;color:#6b7280;margin-bottom:4px}.title{font-size:18px;line-height:1.25;font-weight:700;margin:0}.instruction{font-size:14px;line-height:1.35;color:#4b5563;margin:7px 0 0}.progress{height:4px;background:#eef0f2}.progress>span{display:block;height:100%;background:#374151;width:0;transition:width .2s ease}.body{padding:14px 16px}.counter{font-size:12px;color:#6b7280;margin-bottom:8px}.question{font-size:15px;line-height:1.38;font-weight:600;margin:0 0 12px}.options{display:grid;grid-template-columns:1fr;gap:8px}.option{width:100%;border:1px solid #d1d5db;background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.3;text-align:left;cursor:pointer;color:#1f2937;transition:.15s}.option:hover{border-color:#6b7280}.option.selected{border-color:#111827;background:#f3f4f6}.option.correct{border-color:#15803d;background:#f0fdf4}.option.wrong{border-color:#b91c1c;background:#fef2f2}.feedback{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:13px;line-height:1.35}.feedback.show{display:block}.feedback.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}.feedback.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}.controls{display:flex;gap:8px;align-items:center;padding:0 16px 14px}.btn{border:0;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer}.btn:disabled{opacity:.42;cursor:not-allowed}.primary{background:#111827;color:#fff}.secondary{background:#e5e7eb;color:#111827}.ghost{background:transparent;color:#4b5563;border:1px solid #d1d5db}.spacer{flex:1}.result{display:none;padding:18px 16px 16px;text-align:center}.result.show{display:block}.score{font-size:28px;font-weight:700;margin:4px 0}.result p{font-size:14px;line-height:1.4;color:#4b5563;margin:6px 0 14px}@media(max-width:420px){body{padding:6px}.top,.body{padding-left:12px;padding-right:12px}.controls{padding-left:12px;padding-right:12px}.btn{padding:9px 10px}.title{font-size:17px}.option{font-size:13px}}
+</style>
+</head>
+<body>
+<main class="quiz" id="quiz">
+  <header class="top">
+    <div class="eyebrow">Модуль 1 · Урок 1</div>
+    <h1 class="title">Нужно ли проводить совещание?</h1>
+    <p class="instruction">Распределите карточки по одной — так задание остается компактным.</p>
+  </header>
+  <div class="progress"><span id="progressBar"></span></div>
+  <section class="body" id="quizBody">
+    <div class="counter" id="counter"></div>
+    <p class="question" id="question"></p>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+  </section>
+  <div class="controls" id="controls">
+    <button class="btn ghost" id="prevBtn" type="button">Назад</button>
+    <button class="btn secondary" id="resetBtn" type="button">Сбросить</button>
+    <span class="spacer"></span>
+    <button class="btn primary" id="checkBtn" type="button">Проверить</button>
+    <button class="btn secondary" id="nextBtn" type="button">Далее</button>
+  </div>
+  <section class="result" id="result">
+    <div class="eyebrow">Результат</div>
+    <div class="score" id="score"></div>
+    <p id="resultText"></p>
+    <button class="btn ghost" id="resultBack" type="button">Назад к вопросу</button>
+    <button class="btn primary" id="restartBtn" type="button">Пройти заново</button>
+  </section>
+</main>
+<script>
+const data = {"file": "m1_l1_filter_neobhodimosti.html", "module": "Модуль 1", "lesson": "Урок 1", "type": "binary", "title": "Нужно ли проводить совещание?", "instruction": "Для каждой ситуации выберите подходящий формат.", "labels": ["Проводим совещание", "Другой формат"], "items": [{"q": "Изменили форму ежемесячного отчета. Нужно передать новый шаблон сотрудникам.", "a": 1, "fb": "Достаточно отправить шаблон и инструкцию: совместное обсуждение не требуется."}, {"q": "Продажи и логистика по-разному определяют момент передачи срочного заказа и регулярно задерживают клиентов.", "a": 0, "fb": "Нужно совместно согласовать правило между функциями, поэтому встреча оправданна."}, {"q": "Нужно понять причины снижения повторных покупок. Аналитик, продажи и сервис видят разные части клиентского пути.", "a": 0, "fb": "Причину нужно собирать из данных нескольких функций, поэтому нужен общий разбор."}, {"q": "Нужно сообщить сотрудникам дату обязательного обучения.", "a": 1, "fb": "Это передача готовой информации. Совещание не добавит ценности."}, {"q": "Команда должна выбрать один из двух способов запуска новой функции. У вариантов разные сроки, стоимость и риски.", "a": 0, "fb": "Группе нужно сравнить последствия вариантов и сделать выбор совместно."}, {"q": "Один сотрудник третий месяц подряд сдает документы позже срока.", "a": 1, "fb": "Сначала нужен индивидуальный разбор причин и договоренностей с сотрудником."}]};
+let current = 0;
+let answers = [];
+let checked = [];
+
+const qEl = document.getElementById('question');
+const optsEl = document.getElementById('options');
+const fbEl = document.getElementById('feedback');
+const counterEl = document.getElementById('counter');
+const progressEl = document.getElementById('progressBar');
+const prevBtn = document.getElementById('prevBtn');
+const checkBtn = document.getElementById('checkBtn');
+const nextBtn = document.getElementById('nextBtn');
+const resetBtn = document.getElementById('resetBtn');
+const quizBody = document.getElementById('quizBody');
+const controls = document.getElementById('controls');
+const result = document.getElementById('result');
+const scoreEl = document.getElementById('score');
+const resultText = document.getElementById('resultText');
+const resultBack = document.getElementById('resultBack');
+const restartBtn = document.getElementById('restartBtn');
+
+function total(){ return data.type === 'single' ? 1 : data.items.length; }
+function getQuestion(i){
+  if(data.type === 'single') return {q:data.instruction, options:data.options, a:data.answer, fb:data.feedback};
+  const item=data.items[i];
+  if(data.type==='tf') return {q:item.q, options:['Правда','Ложь'], a:item.a===true?0:1, fb:item.fb};
+  if(data.type==='binary') return {q:item.q, options:data.labels, a:item.a, fb:item.fb};
+  return {q:item.q, options:data.options, a:item.a, fb:item.fb};
+}
+function render(){
+  result.classList.remove('show'); quizBody.style.display='block'; controls.style.display='flex';
+  const t=total(); const item=getQuestion(current);
+  counterEl.textContent=`${current+1} из ${t}`;
+  progressEl.style.width=`${((current+1)/t)*100}%`;
+  qEl.textContent=item.q;
+  optsEl.innerHTML='';
+  item.options.forEach((txt,idx)=>{
+    const b=document.createElement('button'); b.type='button'; b.className='option'; b.textContent=txt; b.dataset.idx=idx;
+    if(answers[current]===idx) b.classList.add('selected');
+    if(checked[current]){
+      if(idx===item.a) b.classList.add('correct');
+      if(answers[current]===idx && idx!==item.a) b.classList.add('wrong');
+    }
+    b.addEventListener('click',()=>selectOption(idx)); optsEl.appendChild(b);
+  });
+  fbEl.className='feedback'; fbEl.textContent='';
+  if(checked[current]) showFeedback();
+  prevBtn.disabled=current===0;
+  checkBtn.disabled=answers[current]===undefined;
+  nextBtn.disabled=!checked[current];
+  nextBtn.textContent=current===t-1?'Результат':'Далее';
+}
+function selectOption(idx){
+  answers[current]=idx; checked[current]=false;
+  render();
+}
+function showFeedback(){
+  const item=getQuestion(current); const ok=answers[current]===item.a;
+  fbEl.textContent=(ok?'Верно. ':'Неверно. ')+item.fb;
+  fbEl.className='feedback show '+(ok?'good':'bad');
+}
+function checkCurrent(){ checked[current]=true; render(); }
+function next(){ if(current<total()-1){current++;render();}else showResult(); }
+function prev(){ if(current>0){current--;render();} }
+function showResult(){
+  quizBody.style.display='none'; controls.style.display='none'; result.classList.add('show'); progressEl.style.width='100%';
+  let score=0; for(let i=0;i<total();i++){ if(answers[i]===getQuestion(i).a) score++; }
+  scoreEl.textContent=`${score} / ${total()}`;
+  const pct=score/total();
+  resultText.textContent=pct===1?'Все ответы верны.':pct>=0.7?'Хороший результат. Можно вернуться к ошибкам и проверить их еще раз.':'Есть ошибки. Вернитесь к вопросам или начните заново.';
+}
+function resetAll(){
+  current=0; answers=[]; checked=[]; render();
+}
+checkBtn.addEventListener('click',checkCurrent);
+nextBtn.addEventListener('click',next);
+prevBtn.addEventListener('click',prev);
+resetBtn.addEventListener('click',resetAll);
+restartBtn.addEventListener('click',resetAll);
+resultBack.addEventListener('click',()=>{ current=Math.max(0,total()-1); render(); });
+render();
+</script>
+</body>
+</html>
