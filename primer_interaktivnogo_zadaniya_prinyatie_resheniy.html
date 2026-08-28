@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Пример интерактивного задания</title>
+<style>
+:root{
+  --text:#202733; --muted:#6f7783; --line:#d9dde4;
+  --soft:#f3f5f7; --dark:#303744;
+  --ok:#eef6f0; --okb:#cfe2d3;
+  --bad:#fbf0ef; --badb:#ead0cd;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;background:transparent;
+  font-family:Arial,Helvetica,sans-serif;color:var(--text)
+}
+body{display:flex;justify-content:center;padding:8px}
+.app{
+  width:min(560px,100%);background:#fff;border:1px solid var(--line);
+  border-radius:16px;overflow:hidden
+}
+.top{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.toprow{display:flex;justify-content:space-between;gap:10px;align-items:center}
+h1{font-size:18px;line-height:1.2;margin:0}
+.counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{display:flex;gap:5px;margin-top:9px}
+.progress i{flex:1;height:5px;border-radius:999px;background:var(--soft)}
+.progress i.active{background:var(--dark)}
+.progress i.done{background:#a8afb9}
+.main{padding:12px 16px 14px}
+.card{background:var(--soft);padding:11px;border-radius:10px}
+.kicker{
+  font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--muted);font-weight:700;margin-bottom:4px
+}
+.case{font-size:14px;line-height:1.35;font-weight:700}
+.q{font-size:12px;font-weight:700;margin:10px 0 6px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.option{
+  border:1px solid var(--line);background:#fff;border-radius:9px;
+  min-height:42px;padding:8px 9px;font:inherit;font-size:12px;
+  font-weight:700;cursor:pointer
+}
+.option.selected{border-color:#7e8794;background:#f7f8fa}
+.feedback{
+  display:none;margin-top:9px;border-radius:10px;padding:9px 10px;
+  font-size:11.5px;line-height:1.4
+}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok);border:1px solid var(--okb)}
+.feedback.bad{background:var(--bad);border:1px solid var(--badb)}
+.actions{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px
+}
+button{
+  border:0;border-radius:9px;min-height:36px;padding:8px 10px;
+  font:inherit;font-size:12px;font-weight:700;cursor:pointer
+}
+.primary{background:var(--dark);color:#fff}
+.secondary{background:var(--soft);color:var(--text)}
+button:disabled{opacity:.38;cursor:default}
+.hidden{display:none!important}
+.finish{display:none;padding:18px 16px}
+.finish.show{display:block}
+.finish h2{font-size:18px;margin:0 0 7px}
+.finish p{font-size:12.5px;line-height:1.45;color:var(--muted);margin:0 0 12px}
+.finish-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+@media(max-width:420px){
+  .actions{grid-template-columns:1fr 1fr}
+  .actions .wide{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="task">
+    <div class="top">
+      <div class="toprow">
+        <h1>Быстро или аналитически?</h1>
+        <div class="counter" id="counter"></div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="main">
+      <div class="card">
+        <div class="kicker">Ситуация</div>
+        <div class="case" id="caseText"></div>
+      </div>
+
+      <div class="q">Какой режим выбрать?</div>
+      <div class="options">
+        <button class="option" data-answer="fast">Быстрый</button>
+        <button class="option" data-answer="analytic">Аналитический</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="actions">
+        <button class="secondary" id="backBtn">Назад</button>
+        <button class="secondary" id="resetBtn">Сбросить</button>
+        <button class="primary wide" id="checkBtn">Проверить</button>
+      </div>
+
+      <div class="actions hidden" id="nextRow">
+        <button class="primary wide" id="nextBtn">Дальше</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="finish" id="finish">
+    <h2>Готово</h2>
+    <p>Вы увидели главный принцип программы: не каждое решение требует долгого анализа, но при высокой цене ошибки, новизне и необратимых последствиях первый ответ нужно проверить.</p>
+    <div class="finish-actions">
+      <button class="secondary" id="returnBtn">Вернуться</button>
+      <button class="primary" id="restartBtn">Начать заново</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const cases = [
+  {
+    text: "Сотрудник просит перенести внутреннюю встречу на следующий день.",
+    correct: "fast",
+    feedback: "Верно. Решение типовое и легко обратимое. Достаточно быстро проверить, не нарушит ли перенос важный срок."
+  },
+  {
+    text: "Руководитель рассматривает увольнение сильного, но конфликтного специалиста.",
+    correct: "analytic",
+    feedback: "Верно. Цена ошибки высока, а последствия трудно обратить. Нужны факты, альтернативы и проверка причин конфликта."
+  },
+  {
+    text: "Два подразделения по-разному объясняют причину задержки проекта.",
+    correct: "analytic",
+    feedback: "Верно. Данные противоречат друг другу, поэтому нельзя автоматически принимать первую убедительную версию."
+  }
+];
+
+let index = 0;
+const state = cases.map(() => ({answer:"", checked:false}));
+const $ = id => document.getElementById(id);
+
+function render(){
+  $("caseText").textContent = cases[index].text;
+  $("counter").textContent = `${index + 1} из ${cases.length}`;
+  $("progress").innerHTML = cases.map((_,i) =>
+    `<i class="${i === index ? "active" : state[i].checked ? "done" : ""}"></i>`
+  ).join("");
+
+  document.querySelectorAll("[data-answer]").forEach(btn => {
+    btn.className = "option";
+    if (state[index].answer === btn.dataset.answer) btn.classList.add("selected");
+    btn.onclick = () => {
+      state[index].answer = btn.dataset.answer;
+      state[index].checked = false;
+      render();
+    };
+  });
+
+  $("backBtn").disabled = index === 0;
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  $("nextRow").classList.add("hidden");
+
+  if(state[index].checked){
+    $("feedback").textContent = cases[index].feedback;
+    $("feedback").className = "feedback show ok";
+    $("nextRow").classList.remove("hidden");
+    $("nextBtn").textContent = index === cases.length - 1 ? "Завершить" : "Дальше";
+  }
+}
+
+$("checkBtn").onclick = () => {
+  if(!state[index].answer){
+    $("feedback").textContent = "Сначала выберите режим.";
+    $("feedback").className = "feedback show bad";
+    return;
+  }
+
+  if(state[index].answer === cases[index].correct){
+    state[index].checked = true;
+    render();
+  } else {
+    $("feedback").textContent =
+      index === 0
+        ? "Попробуйте еще раз. Спросите себя: дорого ли обойдется ошибка и трудно ли отменить решение?"
+        : "Попробуйте еще раз. Здесь есть признаки, из-за которых первый ответ стоит проверить.";
+    $("feedback").className = "feedback show bad";
+    $("nextRow").classList.add("hidden");
+  }
+};
+
+$("nextBtn").onclick = () => {
+  if(!state[index].checked) return;
+  if(index < cases.length - 1){
+    index++;
+    render();
+  } else {
+    $("task").style.display = "none";
+    $("finish").classList.add("show");
+  }
+};
+
+$("backBtn").onclick = () => {
+  if(index > 0){
+    index--;
+    render();
+  }
+};
+
+$("resetBtn").onclick = () => {
+  state[index] = {answer:"", checked:false};
+  render();
+};
+
+$("returnBtn").onclick = () => {
+  $("finish").classList.remove("show");
+  $("task").style.display = "block";
+  index = cases.length - 1;
+  render();
+};
+
+$("restartBtn").onclick = () => {
+  for(let i=0;i<state.length;i++){
+    state[i] = {answer:"", checked:false};
+  }
+  index = 0;
+  $("finish").classList.remove("show");
+  $("task").style.display = "block";
+  render();
+};
+
+render();
+</script>
+</body>
+</html>
