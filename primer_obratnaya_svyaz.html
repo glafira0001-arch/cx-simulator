@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Даете ли вы обратную связь правильно?</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#f6f7f9;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#1f2937;font-size:15px;line-height:1.42
+}
+.task{width:100%;max-width:560px;margin:0 auto;padding:14px}
+.card{
+  background:#fff;border:1px solid #d9dee7;border-radius:14px;
+  padding:15px;box-shadow:0 2px 10px rgba(0,0,0,.04)
+}
+h2{font-size:19px;line-height:1.25;margin:0 0 8px}
+p{margin:0 0 10px}
+.intro{color:#475569;margin-bottom:12px}
+.case{background:#f1f5f9;border-radius:10px;padding:11px;margin:10px 0 12px}
+.step{font-size:12px;color:#64748b;margin:0 0 7px}
+.progress{height:5px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:0 0 12px}
+.progress>span{display:block;height:100%;background:#2563eb;transition:width .2s}
+.option{
+  display:block;width:100%;text-align:left;border:1px solid #cbd5e1;
+  background:#fff;border-radius:9px;padding:9px 10px;cursor:pointer;
+  font:inherit;color:inherit;margin:7px 0
+}
+.option:hover,.option.selected{background:#eff6ff;border-color:#60a5fa}
+.controls{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.btn{border:0;border-radius:9px;padding:8px 11px;font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:#1d4ed8;color:#fff}
+.btn.secondary{background:#e2e8f0;color:#0f172a}
+.btn.ghost{background:#fff;border:1px solid #cbd5e1;color:#334155}
+.btn:disabled{opacity:.4;cursor:default}
+.feedback{display:none;margin-top:11px;padding:10px 11px;border-radius:9px;font-size:14px}
+.feedback.ok{display:block;background:#ecfdf5;border:1px solid #86efac}
+.feedback.bad{display:block;background:#fff7ed;border:1px solid #fdba74}
+.result{background:#f8fafc;border:1px solid #dbe2ea;border-radius:10px;padding:12px;margin-top:8px}
+.score{font-size:24px;font-weight:700;margin-bottom:5px}
+.mini{font-size:13px;color:#64748b}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<main class="task">
+<section class="card">
+  <h2>Даете ли вы обратную связь правильно?</h2>
+  <p class="intro">Три короткие управленческие ситуации. Выберите, как бы вы действовали сейчас, и получите результат.</p>
+
+  <div class="progress"><span id="bar"></span></div>
+  <div class="step" id="stepLabel"></div>
+  <div id="screen"></div>
+
+  <div class="controls">
+    <button class="btn ghost" id="back">Назад</button>
+    <button class="btn primary" id="check">Проверить ответ</button>
+    <button class="btn secondary" id="reset">Начать заново</button>
+  </div>
+  <div class="feedback" id="fb"></div>
+</section>
+</main>
+
+<script>
+const questions = [
+  {
+    caseText:'Сотрудник второй раз сообщил о риске только в день срока. Вы пока не знаете, почему это произошло.',
+    prompt:'С чего начнете?',
+    options:[
+      {t:'Сразу обозначу, что такое отношение к срокам недопустимо.', ok:false},
+      {t:'Сначала уточню факты и проверю, что именно сотрудник мог контролировать.', ok:true},
+      {t:'Попрошу впредь предупреждать раньше и зафиксирую договоренность.', ok:false}
+    ],
+    okText:'Верно. До оценки нужно проверить факты и зону влияния сотрудника.',
+    badText:'Сначала стоит понять причину и управляемую часть ситуации. Иначе обратная связь может оказаться несправедливой.'
+  },
+  {
+    caseText:'На совещании сотрудник дважды перебил коллегу. После встречи вы хотите дать короткую обратную связь.',
+    prompt:'Какая реплика точнее?',
+    options:[
+      {t:'«Ты конфликтно ведешь себя на встречах. Так дальше нельзя».', ok:false},
+      {t:'«Старайся быть спокойнее и внимательнее к коллегам».', ok:false},
+      {t:'«Ты дважды перебил коллегу, и мы возвращались к его аргументу. Как ты сам видел ситуацию?»', ok:true}
+    ],
+    okText:'Да. Здесь есть наблюдаемое действие, рабочее влияние и вопрос без оценки личности.',
+    badText:'Полезнее опираться на конкретное действие и его влияние, а не на характеристику человека или общий совет.'
+  },
+  {
+    caseText:'После разговора сотрудник говорит: «Понял, в следующий раз буду внимательнее».',
+    prompt:'Что сделаете дальше?',
+    options:[
+      {t:'Уточню, в какой ситуации и что конкретно он сделает иначе.', ok:true},
+      {t:'Приму обещание: главное, что сотрудник понял проблему.', ok:false},
+      {t:'Сам дам ему точный алгоритм, чтобы исключить повторение.', ok:false}
+    ],
+    okText:'Верно. Общего намерения мало: нужно перевести вывод в конкретное будущее действие.',
+    badText:'Фраза «буду внимательнее» слишком общая. Руководителю стоит помочь сделать будущее действие наблюдаемым и конкретным.'
+  }
+];
+
+let step=0;
+let answers=new Array(questions.length).fill(null);
+let optionOrders=[];
+let checked=new Array(questions.length).fill(false);
+
+const screen=document.getElementById('screen');
+const fb=document.getElementById('fb');
+const bar=document.getElementById('bar');
+const stepLabel=document.getElementById('stepLabel');
+const back=document.getElementById('back');
+const check=document.getElementById('check');
+
+function shuffle(a){
+  const arr=[...a];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function initOrders(){
+  optionOrders=questions.map((q,qi)=>shuffle(q.options.map((_,i)=>i)));
+}
+
+function render(){
+  fb.className='feedback';
+  fb.textContent='';
+
+  if(step < questions.length){
+    const q=questions[step];
+    stepLabel.textContent=`Ситуация ${step+1} из ${questions.length}`;
+    bar.style.width=`${((step+1)/questions.length)*100}%`;
+    back.disabled=step===0;
+    check.textContent=checked[step] ? (step===questions.length-1?'Показать результат':'Дальше') : 'Проверить ответ';
+
+    const order=optionOrders[step];
+    screen.innerHTML=`
+      <div class="case"><b>Ситуация.</b> ${q.caseText}</div>
+      <p><b>${q.prompt}</b></p>
+      ${order.map((origIdx,displayIdx)=>{
+        const o=q.options[origIdx];
+        const selected=answers[step]===origIdx?'selected':'';
+        return `<button class="option ${selected}" data-idx="${origIdx}">${o.t}</button>`;
+      }).join('')}
+    `;
+
+    screen.querySelectorAll('.option').forEach(btn=>{
+      btn.onclick=()=>{
+        if(checked[step]) return;
+        answers[step]=Number(btn.dataset.idx);
+        render();
+      };
+    });
+
+    if(checked[step]){
+      const chosen=q.options[answers[step]];
+      fb.className='feedback '+(chosen.ok?'ok':'bad');
+      fb.textContent=chosen.ok?q.okText:q.badText;
+    }
+  } else {
+    const score=answers.reduce((s,a,i)=>s+(questions[i].options[a]?.ok?1:0),0);
+    stepLabel.textContent='Результат';
+    bar.style.width='100%';
+    back.disabled=false;
+    check.classList.add('hidden');
+
+    let title='', text='';
+    if(score===3){
+      title='У вас хорошая база';
+      text='Вы отделяете факты от оценок, не спешите с выводом и переводите разговор в конкретное действие. В программе сможете систематизировать эти приемы и отработать сложные случаи.';
+    }else if(score===2){
+      title='Основа есть, но есть риск в одном из этапов';
+      text='В большинстве ситуаций вы выбираете рабочую логику, но один из этапов обратной связи может давать сбой. В программе разберете весь цикл: от диагностики причины до проверки изменения.';
+    }else{
+      title='Есть что усилить';
+      text='Сейчас обратная связь может слишком быстро переходить в оценку, совет или требование. В программе вы научитесь сначала разбираться в ситуации, затем формулировать обратную связь и только после этого переходить к решению.';
+    }
+
+    screen.innerHTML=`
+      <div class="result">
+        <div class="score">${score} из ${questions.length}</div>
+        <p><b>${title}</b></p>
+        <p>${text}</p>
+      </div>
+    `;
+  }
+}
+
+check.onclick=()=>{
+  if(step>=questions.length) return;
+
+  if(checked[step]){
+    step++;
+    render();
+    return;
+  }
+
+  if(answers[step]===null){
+    fb.className='feedback bad';
+    fb.textContent='Выберите вариант.';
+    return;
+  }
+
+  checked[step]=true;
+  render();
+};
+
+back.onclick=()=>{
+  if(step>0){
+    step--;
+    check.classList.remove('hidden');
+    render();
+  }
+};
+
+document.getElementById('reset').onclick=()=>{
+  step=0;
+  answers=new Array(questions.length).fill(null);
+  checked=new Array(questions.length).fill(false);
+  initOrders();
+  check.classList.remove('hidden');
+  render();
+};
+
+initOrders();
+render();
+</script>
+</body>
+</html>
