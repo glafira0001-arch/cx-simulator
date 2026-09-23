@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Симулятор — аудит Excel</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif;color:#182230}
+body{display:flex;justify-content:center}
+.app{width:100%;max-width:560px;padding:16px}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:16px;padding:20px;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+.top{display:flex;justify-content:space-between;margin-bottom:10px}
+.small{font-size:13px;color:#667085;font-weight:700}
+.progress{height:5px;background:#eaecf0;border-radius:99px;overflow:hidden;margin-bottom:18px}
+.progress div{height:100%;background:#2563eb;transition:.25s}
+h2{font-size:21px;margin:0 0 9px}
+p{font-size:15px;color:#344054;line-height:1.45}
+.context{background:#f8fafc;border-radius:11px;padding:12px;margin:12px 0;font-size:14px;line-height:1.4}
+.mini-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.mini-table th,.mini-table td{border:1px solid #d0d5dd;padding:7px;text-align:left}
+.mini-table th{background:#f2f4f7}
+.mark{background:#fff4e5;font-weight:700}
+.decisions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:13px}
+.choice{border:1px solid #d0d5dd;background:white;color:#344054;padding:10px 5px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer}
+.choice.selected{border:2px solid #2563eb;background:#eff6ff;padding:9px 4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:9px;padding:10px 13px;font-size:13px;font-weight:700;cursor:pointer}
+.primary{background:#2563eb;color:white}
+.secondary{background:#f2f4f7;color:#344054}
+.link{background:white;border:1px solid #d0d5dd;color:#344054}
+.feedback{margin-top:13px;border-radius:11px;padding:12px;font-size:14px;line-height:1.45}
+.correct{background:#ecfdf3;color:#05603a}
+.wrong{background:#fffaeb;color:#93370d}
+.hidden{display:none}
+.result-row{border-bottom:1px solid #eaecf0;padding:9px 0;font-size:14px}
+.good{color:#067647;font-weight:700}.bad{color:#b54708;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="card">
+
+<div class="top">
+<span class="small" id="label">Ситуация 1 из 5</span>
+</div>
+
+<div class="progress"><div id="progress" style="width:20%"></div></div>
+
+<div id="task"></div>
+<div id="feedback"></div>
+<div id="nav"></div>
+
+<section id="result" class="hidden">
+<h2>Результат аудита</h2>
+<div id="summary"></div>
+<div class="actions">
+<button class="link" id="errorBtn" onclick="goError()">Вернуться к ошибке</button>
+<button class="secondary" onclick="restart()">Пройти заново</button>
+</div>
+</section>
+
+</div>
+</div>
+
+<script>
+const tasks=[
+{
+ title:'Разные форматы даты',
+ intro:'В одном столбце даты записаны по-разному.',
+ table:[
+  ['12.01.2026','Малый бизнес','470 000'],
+  ['13 января','Малый бизнес','490 000']
+ ],
+ mark:[1,0],
+ correct:'fix',
+ explanation:'Дату нужно привести к единому формату. Иначе одинаковый тип данных записан разными способами.'
+},
+{
+ title:'Разный формат одного показателя',
+ intro:'Посмотрите на столбец «Конверсия».',
+ table:[
+  ['12.01.2026','22%'],
+  ['13.01.2026','0,24'],
+  ['14.01.2026','21%']
+ ],
+ mark:[1,1],
+ correct:'fix',
+ explanation:'0,24 и 24% могут означать одно и то же, но формат должен быть единым по всему столбцу.'
+},
+{
+ title:'Пустое значение',
+ intro:'Факт за 14 января не заполнен.',
+ table:[
+  ['13.01.2026','490 000'],
+  ['14.01.2026','—'],
+  ['16.01.2026','950 000']
+ ],
+ mark:[1,1],
+ correct:'clarify',
+ explanation:'Пустое значение не означает ноль. Сначала нужно выяснить: продаж не было или данные ещё не внесены.'
+},
+{
+ title:'Персональные данные',
+ intro:'Для анализа нужна динамика продаж по сегментам.',
+ table:[
+  ['Малый бизнес','Иванов Сергей','470 000'],
+  ['Средний бизнес','Петрова Анна','620 000']
+ ],
+ mark:[0,1],
+ correct:'fix',
+ explanation:'ФИО для этой задачи не нужны. Перед загрузкой во внешний сервис данные нужно обезличить.'
+},
+{
+ title:'Пропущенный день',
+ intro:'В таблице нет строки за 15 января. Известно, что в этот день отдел продаж не работал.',
+ table:[
+  ['14.01.2026','950 000'],
+  ['16.01.2026','980 000']
+ ],
+ mark:null,
+ correct:'keep',
+ explanation:'Это не ошибка данных. Если событие действительно отсутствовало, не нужно искусственно добавлять строку или нулевое значение.'
+}
+];
+
+let index=0;
+let answers=new Array(tasks.length).fill(null);
+let checked=new Array(tasks.length).fill(false);
+
+function render(){
+ result.classList.add('hidden');
+ task.classList.remove('hidden');
+ feedback.innerHTML='';
+ nav.innerHTML='';
+
+ const t=tasks[index];
+
+ label.textContent='Ситуация '+(index+1)+' из '+tasks.length;
+ progress.style.width=((index+1)/tasks.length*100)+'%';
+
+ let rows=t.table.map((r,ri)=>
+   '<tr>'+r.map((c,ci)=>{
+     const marked=t.mark && t.mark[0]===ri && t.mark[1]===ci;
+     return '<td class="'+(marked?'mark':'')+'">'+c+'</td>';
+   }).join('')+'</tr>'
+ ).join('');
+
+ task.innerHTML=
+ '<h2>'+t.title+'</h2>'+
+ '<p>'+t.intro+'</p>'+
+ '<table class="mini-table">'+rows+'</table>'+
+ '<div class="context">Что должен сделать руководитель перед загрузкой файла в ИИ?</div>'+
+ '<div class="decisions">'+
+   choice('fix','Исправить')+
+   choice('clarify','Уточнить')+
+   choice('keep','Оставить')+
+ '</div>'+
+ '<div class="actions">'+
+   (index>0?'<button class="link" onclick="back()">Назад</button>':'')+
+   '<button class="primary" onclick="checkAnswer()">Проверить</button>'+
+ '</div>';
+
+ if(answers[index]){
+   document.querySelector('[data-choice="'+answers[index]+'"]').classList.add('selected');
+ }
+
+ if(checked[index])showFeedback();
+}
+
+function choice(id,text){
+ return '<button class="choice" data-choice="'+id+'" onclick="selectAnswer(\''+id+'\')">'+text+'</button>';
+}
+
+function selectAnswer(v){
+ if(checked[index])return;
+
+ answers[index]=v;
+
+ document.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+ document.querySelector('[data-choice="'+v+'"]').classList.add('selected');
+}
+
+function checkAnswer(){
+ if(!answers[index]){
+   feedback.innerHTML='<div class="feedback wrong">Сначала выберите решение.</div>';
+   return;
+ }
+
+ checked[index]=true;
+ showFeedback();
+}
+
+function showFeedback(){
+ const t=tasks[index];
+ const ok=answers[index]===t.correct;
+
+ feedback.innerHTML=
+ '<div class="feedback '+(ok?'correct':'wrong')+'">'+
+ '<b>'+(ok?'Решение корректно.':'Это решение рискованно.')+'</b><br>'+
+ t.explanation+
+ '</div>';
+
+ nav.innerHTML=
+ '<div class="actions">'+
+ '<button class="secondary" onclick="edit()">Изменить ответ</button>'+
+ (index<tasks.length-1
+   ? '<button class="primary" onclick="next()">Далее</button>'
+   : '<button class="primary" onclick="showResult()">Посмотреть результат</button>')+
+ '</div>';
+}
+
+function edit(){
+ checked[index]=false;
+ feedback.innerHTML='';
+ nav.innerHTML='';
+ render();
+}
+
+function next(){
+ index++;
+ render();
+}
+
+function back(){
+ index--;
+ render();
+}
+
+function showResult(){
+ task.classList.add('hidden');
+ feedback.innerHTML='';
+ nav.innerHTML='';
+ result.classList.remove('hidden');
+
+ label.textContent='Итог';
+ progress.style.width='100%';
+
+ const correct=answers.map((a,i)=>a===tasks[i].correct);
+ const score=correct.filter(Boolean).length;
+
+ summary.innerHTML=
+ '<div class="feedback '+(score===tasks.length?'correct':'wrong')+'">'+
+ '<b>'+score+' из '+tasks.length+' решений корректны.</b><br>'+
+ (score===tasks.length
+   ? 'Файл прошёл предзагрузочный аудит.'
+   : 'Перед загрузкой часть решений нужно пересмотреть.')+
+ '</div>'+
+ correct.map((ok,i)=>
+   '<div class="result-row">'+
+   '<span class="'+(ok?'good':'bad')+'">'+
+   (ok?'✓ ':'△ ')+tasks[i].title+
+   '</span><br>'+tasks[i].explanation+
+   '</div>'
+ ).join('')+
+ '<div class="context"><b>Главный вывод:</b> подготовка файла — это не механическая «чистка». Нужно различать ошибку, неизвестное значение и корректное отсутствие данных.</div>';
+
+ errorBtn.style.display=score===tasks.length?'none':'inline-block';
+}
+
+function goError(){
+ const first=answers.findIndex((a,i)=>a!==tasks[i].correct);
+ index=first<0?0:first;
+ render();
+}
+
+function restart(){
+ index=0;
+ answers=new Array(tasks.length).fill(null);
+ checked=new Array(tasks.length).fill(false);
+ render();
+}
+
+render();
+</script>
+</body>
+</html>

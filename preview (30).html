@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Симулятор — показатели отчёта</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#f5f7fb;font-family:Arial,sans-serif;color:#182230}
+body{display:flex;justify-content:center}
+.app{width:100%;max-width:560px;padding:16px}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:16px;padding:20px;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.step{font-size:13px;color:#667085;font-weight:700}
+.progress{height:5px;background:#eaecf0;border-radius:99px;overflow:hidden;margin-bottom:18px}
+.progress div{height:100%;background:#2563eb;transition:.25s}
+h2{font-size:21px;line-height:1.25;margin:0 0 10px}
+p{font-size:15px;line-height:1.48;margin:8px 0;color:#344054}
+.context{background:#f8fafc;border-radius:11px;padding:12px 13px;margin:13px 0;font-size:14px;line-height:1.45}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.option{border:1px solid #d0d5dd;border-radius:10px;padding:10px;font-size:13px;line-height:1.3;cursor:pointer;min-height:54px;display:flex;align-items:center}
+.option.selected{border:2px solid #2563eb;background:#eff6ff;padding:9px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:9px;padding:10px 13px;font-size:13px;font-weight:700;cursor:pointer}
+.primary{background:#2563eb;color:#fff}
+.secondary{background:#f2f4f7;color:#344054}
+.link{background:#fff;border:1px solid #d0d5dd;color:#344054}
+.feedback{margin-top:14px;border-radius:11px;padding:12px;font-size:14px;line-height:1.45}
+.correct{background:#ecfdf3;color:#05603a}
+.wrong{background:#fffaeb;color:#93370d}
+.hidden{display:none}
+.result-row{border-bottom:1px solid #eaecf0;padding:10px 0;font-size:14px}
+.result-row:last-child{border-bottom:0}
+.good{color:#067647;font-weight:700}
+.bad{color:#b54708;font-weight:700}
+@media(max-width:430px){.options{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="card">
+
+<div class="top">
+  <div class="step" id="stepLabel">Этап 1 из 3</div>
+  <div class="step" id="scoreLabel"></div>
+</div>
+<div class="progress"><div id="progress" style="width:33%"></div></div>
+
+<section id="screen1">
+<h2>Соберите минимальный отчёт</h2>
+<p>Новое B2B-направление работает третью неделю. Руководителю нужен короткий ежедневный отчёт.</p>
+
+<div class="context">
+В основной отчёт можно включить только <b>6 показателей</b>. Выберите те, которые помогут не только увидеть результат, но и понять причину отклонения.
+</div>
+
+<div class="options" id="metrics"></div>
+
+<div class="actions">
+<button class="primary" id="check1">Проверить</button>
+</div>
+
+<div id="fb1"></div>
+</section>
+
+<section id="screen2" class="hidden">
+<h2>План выполнен. Всё ли в порядке?</h2>
+<p>Выручка составила 103% от плана. При этом демонстраций стало больше, а количество сделок почти не изменилось.</p>
+
+<div class="context">
+Сможете ли вы по выбранному отчёту заметить проблему перехода от демонстрации к сделке?
+</div>
+
+<div id="scenario1"></div>
+<div id="fb2"></div>
+
+<div class="actions">
+<button class="link" onclick="goBack(1)">Назад</button>
+<button class="primary hidden" id="next2" onclick="showScreen(3)">Далее</button>
+</div>
+</section>
+
+<section id="screen3" class="hidden">
+<h2>Итог стабилен, но что происходит внутри?</h2>
+<p>Общая выручка почти не изменилась. Продажи малого бизнеса резко снизились, а корпоративного сегмента выросли.</p>
+
+<div class="context">
+Позволяет ли ваш отчёт увидеть это изменение, а не только общую сумму?
+</div>
+
+<div id="scenario2"></div>
+<div id="fb3"></div>
+
+<div class="actions">
+<button class="link" onclick="showScreen(2)">Назад</button>
+<button class="primary hidden" id="resultBtn" onclick="showResult()">Посмотреть результат</button>
+</div>
+</section>
+
+<section id="result" class="hidden">
+<h2>Результат</h2>
+<div id="resultText"></div>
+<div class="actions">
+<button class="link" id="errorBtn" onclick="returnToProblem()">Вернуться к ошибке</button>
+<button class="secondary" onclick="restart()">Пройти заново</button>
+</div>
+</section>
+
+</div>
+</div>
+
+<script>
+const metricData=[
+  ['plan','План по выручке'],
+  ['fact','Фактическая выручка'],
+  ['segment','Сегмент клиента'],
+  ['demos','Количество демонстраций'],
+  ['deals','Количество сделок'],
+  ['conv','Конверсия в сделку'],
+  ['calls','Количество звонков'],
+  ['site','Посещаемость сайта']
+];
+
+let selected=[];
+let checked1=false;
+let results={selection:null, scenario1:null, scenario2:null};
+
+const metrics=document.getElementById('metrics');
+
+metricData.forEach(([id,name])=>{
+  const el=document.createElement('div');
+  el.className='option';
+  el.dataset.id=id;
+  el.textContent=name;
+
+  el.onclick=()=>{
+    if(checked1)return;
+
+    if(selected.includes(id)){
+      selected=selected.filter(x=>x!==id);
+      el.classList.remove('selected');
+    }else{
+      if(selected.length>=6)return;
+      selected.push(id);
+      el.classList.add('selected');
+    }
+  };
+  metrics.appendChild(el);
+});
+
+document.getElementById('check1').onclick=()=>{
+  if(selected.length!==6){
+    document.getElementById('fb1').innerHTML=
+      '<div class="feedback wrong">Выберите ровно 6 показателей. Ограничение заставляет оставить в основном отчёте только управленчески полезные данные.</div>';
+    return;
+  }
+
+  checked1=true;
+
+  const coverage=
+    selected.includes('plan') &&
+    selected.includes('fact') &&
+    selected.includes('segment') &&
+    selected.includes('demos') &&
+    selected.includes('deals');
+
+  results.selection=coverage;
+
+  document.getElementById('fb1').innerHTML=
+    '<div class="feedback '+(coverage?'correct':'wrong')+'">'+
+    (coverage
+      ? '<b>Набор позволяет контролировать основные отклонения.</b><br>Теперь проверим его на двух ситуациях.'
+      : '<b>В наборе есть пробел.</b><br>Один из базовых управленческих вопросов может остаться без данных.')+
+    '</div>';
+
+  document.getElementById('check1').classList.add('hidden');
+
+  const actions=document.querySelector('#screen1 .actions');
+  actions.innerHTML+=
+    '<button class="secondary" onclick="editSelection()">Изменить ответ</button>'+
+    '<button class="primary" onclick="showScreen(2)">Далее</button>';
+};
+
+function editSelection(){
+  checked1=false;
+  results.selection=null;
+  document.getElementById('fb1').innerHTML='';
+  const actions=document.querySelector('#screen1 .actions');
+  actions.innerHTML='<button class="primary" id="checkAgain">Проверить</button>';
+  document.getElementById('checkAgain').onclick=document.getElementById('check1').onclick;
+}
+
+function showScreen(n){
+  ['screen1','screen2','screen3','result'].forEach(id=>
+    document.getElementById(id).classList.add('hidden')
+  );
+
+  document.getElementById('screen'+n).classList.remove('hidden');
+
+  document.getElementById('stepLabel').textContent='Этап '+n+' из 3';
+  document.getElementById('progress').style.width=(n*33.33)+'%';
+
+  if(n===2) renderScenario1();
+  if(n===3) renderScenario2();
+}
+
+function goBack(n){showScreen(n)}
+
+function renderScenario1(){
+  const ok=
+    selected.includes('demos') &&
+    selected.includes('deals') &&
+    (selected.includes('conv'));
+
+  results.scenario1=ok;
+
+  document.getElementById('scenario1').innerHTML=
+    '<div class="feedback '+(ok?'correct':'wrong')+'">'+
+    (ok
+      ? '<b>Да.</b> В отчёте есть демонстрации, сделки и конверсия. Рост активности без роста результата будет заметен.'
+      : '<b>Не полностью.</b> Итоговая выручка сама по себе не покажет, что переход между этапами воронки ухудшился.')+
+    '</div>';
+
+  document.getElementById('next2').classList.remove('hidden');
+}
+
+function renderScenario2(){
+  const ok=selected.includes('segment') && selected.includes('fact');
+  results.scenario2=ok;
+
+  document.getElementById('scenario2').innerHTML=
+    '<div class="feedback '+(ok?'correct':'wrong')+'">'+
+    (ok
+      ? '<b>Да.</b> Разбивка по сегментам позволит увидеть разнонаправленную динамику.'
+      : '<b>Нет.</b> Общая цифра может скрыть падение одного сегмента за счёт роста другого.')+
+    '</div>';
+
+  document.getElementById('resultBtn').classList.remove('hidden');
+}
+
+function showResult(){
+  ['screen1','screen2','screen3'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('result').classList.remove('hidden');
+  document.getElementById('stepLabel').textContent='Итог';
+  document.getElementById('progress').style.width='100%';
+
+  const score=Object.values(results).filter(Boolean).length;
+
+  document.getElementById('resultText').innerHTML=
+    '<div class="feedback '+(score===3?'correct':'wrong')+'"><b>'+score+' из 3 решений корректны.</b></div>'+
+    row(results.selection,'Состав отчёта','Набор покрывает основные вопросы руководителя.')+
+    row(results.scenario1,'Воронка продаж','Можно заметить рост активности без роста сделок.')+
+    row(results.scenario2,'Сегменты','Можно увидеть проблему внутри общей выручки.')+
+    '<div class="context"><b>Главный вывод:</b> показатель нужен в основном отчёте, если он помогает не только увидеть цифру, но и принять решение.</div>';
+
+  document.getElementById('errorBtn').style.display=score===3?'none':'inline-block';
+}
+
+function row(ok,title,text){
+ return '<div class="result-row"><span class="'+(ok?'good':'bad')+'">'+
+ (ok?'✓ ':'△ ')+title+'</span><br>'+text+'</div>';
+}
+
+function returnToProblem(){
+ if(!results.selection)return showScreen(1);
+ if(!results.scenario1)return showScreen(2);
+ return showScreen(3);
+}
+
+function restart(){location.reload()}
+</script>
+</body>
+</html>

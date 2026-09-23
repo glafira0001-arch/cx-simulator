@@ -1,0 +1,221 @@
+<div id="aiLesson7">
+<style>
+#aiLesson7{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#aiLesson7 *{box-sizing:border-box}
+#aiLesson7 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#aiLesson7 .header,#aiLesson7 .screen,#aiLesson7 .result{padding:16px}
+#aiLesson7 .header{border-bottom:1px solid #e5e7eb}
+#aiLesson7 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#aiLesson7 h3{margin:0;font-size:18px}
+#aiLesson7 .progress{height:5px;margin-top:12px;background:#eef2f6;border-radius:9px;overflow:hidden}
+#aiLesson7 .progress-fill{height:100%;background:#2563eb}
+#aiLesson7 .meta{font-size:12px;color:#667085;margin-bottom:8px}
+#aiLesson7 .question-title{font-size:16px;font-weight:700;margin-bottom:10px}
+#aiLesson7 .box{padding:10px 11px;border:1px solid #e5e7eb;border-radius:11px;background:#f8fafc;font-size:13px;line-height:1.45;margin:9px 0}
+#aiLesson7 .table-wrap{overflow:auto;border:1px solid #e5e7eb;border-radius:11px;margin:9px 0}
+#aiLesson7 table{width:100%;border-collapse:collapse;font-size:12px}
+#aiLesson7 th,#aiLesson7 td{padding:7px 8px;border-bottom:1px solid #e5e7eb;text-align:left}
+#aiLesson7 .question{font-size:14px;line-height:1.45;margin:11px 0}
+#aiLesson7 .options{display:grid;gap:8px}
+#aiLesson7 .option{padding:10px 11px;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.4;cursor:pointer}
+#aiLesson7 .option.selected{border-color:#7ca5ff;background:#f5f8ff}
+#aiLesson7 .feedback{display:none;margin-top:11px;padding:10px 11px;border-radius:11px;font-size:13px;line-height:1.45}
+#aiLesson7 .feedback.correct{display:block;background:#ecfdf3;color:#065f46;border:1px solid #abefc6}
+#aiLesson7 .feedback.wrong{display:block;background:#fff1f0;color:#7a271a;border:1px solid #fecdca}
+#aiLesson7 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#aiLesson7 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#aiLesson7 button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#aiLesson7 button:disabled{opacity:.4}
+#aiLesson7 .score{font-size:30px;font-weight:800}
+#aiLesson7 .row{display:flex;justify-content:space-between;padding:8px 9px;border:1px solid #e5e7eb;border-radius:9px;margin:7px 0;font-size:12px}
+#aiLesson7 .ok{color:#067647;font-weight:700}
+#aiLesson7 .bad{color:#b42318;font-weight:700}
+#aiLesson7 .final{margin-top:12px;padding:10px 11px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.45}
+</style>
+
+<div class="card">
+<div class="header">
+<div class="label">Практикум · Урок 7</div>
+<h3>Найдите значимые отклонения</h3>
+<div class="progress"><div class="progress-fill" id="l7Progress"></div></div>
+</div>
+
+<div class="screen" id="l7Screen">
+<div class="meta" id="l7Meta"></div>
+<div class="question-title" id="l7Title"></div>
+<div id="l7Scenario"></div>
+<div class="question" id="l7Question"></div>
+<div class="options" id="l7Options"></div>
+<div class="feedback" id="l7Feedback"></div>
+
+<div class="actions">
+<button id="l7Back">Назад</button>
+<button class="primary" id="l7Check">Проверить</button>
+<button id="l7Edit">Изменить ответ</button>
+<button class="primary" id="l7Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="l7Result" style="display:none">
+<div class="meta">Результат симулятора</div>
+<div class="score" id="l7Score"></div>
+<div id="l7Rows"></div>
+<div class="final"><strong>Логика:</strong><br>ориентир → величина отклонения → порог → финансовый эффект → приоритет.</div>
+<div class="actions">
+<button id="l7Error">Вернуться к ошибке</button>
+<button class="primary" id="l7Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function startLesson7(){
+
+const questions=[
+{
+ title:"Выберите точку сравнения",
+ scenario:'<div class="box">Задача: определить, какие сегменты не выполнили план текущего месяца.</div>',
+ question:"Что использовать как основную базу сравнения?",
+ options:["Среднюю выручку по сегментам","План текущего месяца","Лучший сегмент","Прошлогоднюю выручку"],
+ correct:1,
+ explanation:"Если управленческий вопрос касается выполнения плана, сравнивать нужно именно с планом текущего периода.",
+ short:"Ориентир"
+},
+{
+ title:"Примените порог",
+ scenario:'<div class="table-wrap"><table><tr><th>Сегмент</th><th>Отклонение</th></tr><tr><td>А</td><td>−16%</td></tr><tr><td>Б</td><td>+17%</td></tr><tr><td>В</td><td>−5%</td></tr></table></div>',
+ question:"Какие сегменты попадут в группу «отрицательное отклонение более 10%»?",
+ options:["А и В","Только А","А и Б","Все три"],
+ correct:1,
+ explanation:"Сегмент Б находится выше плана, а В отклоняется только на 5%. Критерию соответствует только А.",
+ short:"Порог"
+},
+{
+ title:"Сравните процент и деньги",
+ scenario:'<div class="table-wrap"><table><tr><th>Направление</th><th>Отклонение</th><th>В деньгах</th></tr><tr><td>А</td><td>−20%</td><td>−20 000 ₽</td></tr><tr><td>Б</td><td>−8%</td><td>−800 000 ₽</td></tr></table></div>',
+ question:"Какой вывод корректен без дополнительных критериев?",
+ options:[
+   "Направление А однозначно приоритетнее.",
+   "Направление Б однозначно приоритетнее.",
+   "Единого приоритета пока нет: показатели отражают разные виды значимости.",
+   "Нужно усреднить процент и сумму."
+ ],
+ correct:2,
+ explanation:"А сильнее отклоняется относительно собственной базы, Б сильнее влияет на финансовый результат. Для одного приоритета нужен дополнительный критерий.",
+ short:"Процент и деньги"
+},
+{
+ title:"Не придумывайте норму",
+ scenario:'<div class="box"><strong>ИИ:</strong> Конверсия 14% — проблемный показатель.</div><div class="box">В файле нет плана, норматива, прошлых периодов и сопоставимых сегментов.</div>',
+ question:"Как оценить этот вывод?",
+ options:[
+   "Принять: 14% выглядит низким.",
+   "Сравнить конверсию с выручкой.",
+   "Попросить ИИ самостоятельно выбрать норму.",
+   "Не считать показатель проблемным без точки сравнения."
+ ],
+ correct:3,
+ explanation:"Само число не доказывает отклонение. Нужен ориентир: план, норматив, прошлый период или сопоставимая группа.",
+ short:"Нет ориентира"
+}
+];
+
+const E=id=>document.getElementById(id);
+
+const screen=E("l7Screen"),result=E("l7Result"),progress=E("l7Progress"),
+meta=E("l7Meta"),title=E("l7Title"),scenario=E("l7Scenario"),
+question=E("l7Question"),options=E("l7Options"),feedback=E("l7Feedback"),
+back=E("l7Back"),check=E("l7Check"),edit=E("l7Edit"),next=E("l7Next"),
+score=E("l7Score"),rows=E("l7Rows"),error=E("l7Error"),restart=E("l7Restart");
+
+let current=0,answers=[],checked=[];
+
+function good(i){return answers[i]===questions[i].correct}
+
+function render(){
+ screen.style.display="block";
+ result.style.display="none";
+ const q=questions[current];
+
+ meta.textContent="Экран "+(current+1)+" из "+questions.length;
+ title.textContent=q.title;
+ scenario.innerHTML=q.scenario;
+ question.textContent=q.question;
+ options.innerHTML="";
+
+ q.options.forEach(function(text,index){
+   const el=document.createElement("div");
+   el.className="option"+(answers[current]===index?" selected":"");
+   el.textContent=text;
+   el.onclick=function(){answers[current]=index;render()};
+   options.appendChild(el);
+ });
+
+ feedback.className="feedback";
+ feedback.innerHTML="";
+
+ if(checked[current]){
+   const ok=good(current);
+   feedback.classList.add(ok?"correct":"wrong");
+   feedback.innerHTML="<strong>"+(ok?"Верно":"Не совсем")+"</strong><br>"+q.explanation;
+ }
+
+ back.disabled=current===0;
+ check.style.display=checked[current]?"none":"inline-block";
+ edit.style.display=checked[current]?"inline-block":"none";
+ next.style.display=checked[current]?"inline-block":"none";
+ next.textContent=current===questions.length-1?"Посмотреть результат":"Далее";
+ progress.style.width=((current+1)/questions.length*100)+"%";
+}
+
+check.onclick=function(){
+ if(answers[current]===undefined){alert("Сначала выберите ответ.");return}
+ checked[current]=true;render();
+};
+
+edit.onclick=function(){checked[current]=false;render()};
+back.onclick=function(){if(current>0){current--;render()}};
+next.onclick=function(){
+ if(current<questions.length-1){current++;render()}
+ else showResult();
+};
+
+function showResult(){
+ screen.style.display="none";
+ result.style.display="block";
+ let count=0;
+ rows.innerHTML="";
+
+ questions.forEach(function(q,index){
+   const ok=good(index);
+   if(ok)count++;
+
+   const row=document.createElement("div");
+   row.className="row";
+   row.innerHTML="<span>"+(index+1)+". "+q.short+"</span><span class='"+(ok?"ok":"bad")+"'>"+(ok?"верно":"ошибка")+"</span>";
+   rows.appendChild(row);
+ });
+
+ score.textContent=count+" / "+questions.length;
+ error.style.display=count===questions.length?"none":"inline-block";
+}
+
+error.onclick=function(){
+ const first=questions.findIndex(function(_,i){return !good(i)});
+ if(first!==-1){current=first;render()}
+};
+
+restart.onclick=function(){current=0;answers=[];checked=[];render()};
+
+render();
+}
+
+if(document.readyState==="loading"){
+ document.addEventListener("DOMContentLoaded",startLesson7);
+}else{
+ startLesson7();
+}
+})();
+</script>
+</div>

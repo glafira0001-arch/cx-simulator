@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Запустите первый анализ Excel</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:10px;background:#f6f7f9;font-family:Arial,sans-serif;color:#202938}.app{max-width:560px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}.head,.screen,.result{padding:16px}.head{border-bottom:1px solid #e5e7eb}.k{font-size:12px;color:#2563eb;font-weight:700}.head h2{font-size:18px;margin:5px 0 0}.bar{height:5px;background:#eef2f6;margin-top:12px;border-radius:9px;overflow:hidden}.bar div{height:100%;background:#2563eb}.meta{font-size:12px;color:#667085;margin-bottom:8px}.screen h3{font-size:16px;margin:0 0 10px}.note,.ai{padding:10px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.45;margin:9px 0}.ai b{display:block;font-size:11px;color:#667085;margin-bottom:4px}.tabs{display:flex;gap:6px}.tabs span{padding:5px 8px;background:#eef2f6;border-radius:20px;font-size:11px}.opts{display:grid;gap:8px;margin:12px 0}.opt{padding:10px;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.4;cursor:pointer}.opt.sel{border-color:#7ca5ff;background:#f6f9ff}.opt input{margin-right:7px}.fb{display:none;padding:10px;border-radius:11px;font-size:13px;line-height:1.45}.fb.ok{display:block;background:#ecfdf3;color:#065f46}.fb.bad{display:block;background:#fff1f0;color:#8a1c13}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}button{padding:8px 10px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;cursor:pointer;font-weight:600}button.primary{background:#2563eb;color:#fff;border-color:#2563eb}button:disabled{opacity:.4}.score{font-size:30px;font-weight:800}.row{display:flex;justify-content:space-between;padding:8px;border:1px solid #e5e7eb;border-radius:9px;margin:6px 0;font-size:12px}.good{color:#067647;font-weight:700}.badtext{color:#b42318;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="head"><div class="k">Практикум · Урок 4</div><h2>Запустите первый анализ Excel</h2><div class="bar"><div id="bar"></div></div></div>
+<div class="screen" id="screen">
+<div class="meta" id="meta"></div><h3 id="title"></h3><div id="scenario"></div><p id="question"></p>
+<div class="opts" id="opts"></div><div class="fb" id="fb"></div>
+<div class="actions"><button id="back">Назад</button><button class="primary" id="check">Проверить</button><button id="edit">Изменить ответ</button><button class="primary" id="next">Далее</button></div>
+</div>
+<div class="result" id="result" style="display:none"><div class="meta">Результат</div><div class="score" id="score"></div><div id="rows"></div><div class="note"><b>Рабочая логика:</b> структура файла → значение показателей → первая задача → проверка важного вывода.</div><div class="actions"><button id="error">Вернуться к ошибке</button><button class="primary" id="restart">Пройти заново</button></div></div>
+</div>
+<script>
+const Q=[
+{t:"Проверьте, что ИИ понял файл",s:`<div class="tabs"><span>Продажи</span><span>План</span><span>Сводка</span></div><div class="ai"><b>ИИ</b>Файл получен. Могу найти проблемные сегменты и причины отклонений.</div>`,q:"Что лучше сделать перед содержательным анализом?",o:["Попросить назвать три самых слабых сегмента.","Попросить перечислить листы, показатели и период данных.","Сразу запросить причины невыполнения плана.","Попросить построить прогноз на следующий месяц."],c:1,e:"Сначала нужно проверить, как ИИ понял структуру книги. Иначе дальнейший вывод может быть построен не на том листе, периоде или показателе.",sh:"Структура файла"},
+{t:"Уточните неоднозначный показатель",s:`<div class="ai"><b>ИИ</b>Вижу поля «Демонстрации», «Сделки» и «Конверсия». Формула конверсии не указана.</div>`,q:"Как лучше продолжить?",o:["Исключить конверсию из анализа.","Попросить ИИ вывести формулу из значений.","Задать бизнес-определение конверсии явно.","Оставить трактовку на усмотрение ИИ."],c:2,e:"Если показатель можно трактовать по-разному, его определение нужно задать до анализа. ИИ не должен угадывать бизнес-логику.",sh:"Смысл метрики"},
+{t:"Поставьте первую задачу",s:`<div class="note">Нужно быстро понять состояние продаж за неделю. Причины пока искать не требуется.</div>`,q:"Какой запрос лучше подходит?",o:["Проанализируй продажи и скажи, что здесь не так.","Найди причины и предложи решения.","Сравни результаты по сегментам и покажи заметные отклонения с цифрами.","Проведи полный аудит продаж и менеджеров."],c:2,e:"На первом этапе лучше ограничиться результатами и отклонениями. Причины и решения требуют отдельной проверки.",sh:"Первая задача"},
+{t:"Проверьте один вывод",s:`<div class="ai"><b>ИИ</b>Малый бизнес требует внимания: выполнение плана ниже остальных сегментов.</div>`,q:"Какой следующий запрос полезнее?",o:["Ты уверен в выводе?","Предложи три способа увеличить продажи.","Покажи план, факт, расчёт и сегменты для сравнения.","Объясни, почему сегмент слабый."],c:2,e:"Нужна цепочка «вывод → исходные цифры → сравнение», а не повторное подтверждение модели.",sh:"Основание вывода"}];
+
+let i=0,a=[],checked=[];
+function ok(n){return a[n]===Q[n].c}
+function render(){
+result.style.display="none";screen.style.display="block";
+meta.textContent=`Экран ${i+1} из ${Q.length}`;title.textContent=Q[i].t;scenario.innerHTML=Q[i].s;question.textContent=Q[i].q;
+opts.innerHTML="";
+Q[i].o.forEach((x,n)=>{let l=document.createElement("label");l.className="opt"+(a[i]===n?" sel":"");l.innerHTML=`<input type="radio" name="a" ${a[i]===n?"checked":""}>${x}`;l.onclick=()=>{a[i]=n;render()};opts.append(l)});
+fb.className="fb";fb.innerHTML="";
+if(checked[i]){fb.classList.add(ok(i)?"ok":"bad");fb.innerHTML=`<b>${ok(i)?"Верно":"Не совсем"}</b><br>${Q[i].e}`}
+back.disabled=i===0;check.style.display=checked[i]?"none":"inline-block";edit.style.display=checked[i]?"inline-block":"none";next.style.display=checked[i]?"inline-block":"none";next.textContent=i===Q.length-1?"Посмотреть результат":"Далее";bar.style.width=((i+1)/Q.length*100)+"%";
+}
+check.onclick=()=>{if(a[i]===undefined)return alert("Выберите ответ.");checked[i]=true;render()};
+edit.onclick=()=>{checked[i]=false;render()};back.onclick=()=>{if(i){i--;render()}};
+next.onclick=()=>{if(i<Q.length-1){i++;render()}else showResult()};
+function showResult(){screen.style.display="none";result.style.display="block";let n=Q.filter((_,j)=>ok(j)).length;score.textContent=`${n} / ${Q.length}`;rows.innerHTML="";Q.forEach((x,j)=>rows.innerHTML+=`<div class="row"><span>${j+1}. ${x.sh}</span><span class="${ok(j)?"good":"badtext"}">${ok(j)?"верно":"ошибка"}</span></div>`);error.style.display=n===Q.length?"none":"inline-block"}
+error.onclick=()=>{i=Q.findIndex((_,j)=>!ok(j));render()};restart.onclick=()=>{i=0;a=[];checked=[];render()};render();
+</script>
+</body>
+</html>

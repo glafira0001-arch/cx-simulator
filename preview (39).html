@@ -1,0 +1,230 @@
+<div id="aiLesson9">
+<style>
+#aiLesson9{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#aiLesson9 *{box-sizing:border-box}
+#aiLesson9 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#aiLesson9 .header,#aiLesson9 .screen,#aiLesson9 .result{padding:16px}
+#aiLesson9 .header{border-bottom:1px solid #e5e7eb}
+#aiLesson9 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#aiLesson9 h3{margin:0;font-size:18px}
+#aiLesson9 .progress{height:5px;margin-top:12px;background:#eef2f6;border-radius:9px;overflow:hidden}
+#aiLesson9 .progress-fill{height:100%;background:#2563eb}
+#aiLesson9 .meta{font-size:12px;color:#667085;margin-bottom:8px}
+#aiLesson9 .question-title{font-size:16px;font-weight:700;margin-bottom:10px}
+#aiLesson9 .box{padding:10px 11px;border:1px solid #e5e7eb;border-radius:11px;background:#f8fafc;font-size:13px;line-height:1.45;margin:9px 0}
+#aiLesson9 .question{font-size:14px;line-height:1.45;margin:11px 0}
+#aiLesson9 .options{display:grid;gap:8px}
+#aiLesson9 .option{padding:10px 11px;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.4;cursor:pointer}
+#aiLesson9 .option.selected{border-color:#7ca5ff;background:#f5f8ff}
+#aiLesson9 .feedback{display:none;margin-top:11px;padding:10px 11px;border-radius:11px;font-size:13px;line-height:1.45}
+#aiLesson9 .feedback.correct{display:block;background:#ecfdf3;color:#065f46;border:1px solid #abefc6}
+#aiLesson9 .feedback.wrong{display:block;background:#fff1f0;color:#7a271a;border:1px solid #fecdca}
+#aiLesson9 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#aiLesson9 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#aiLesson9 button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#aiLesson9 button:disabled{opacity:.4}
+#aiLesson9 .score{font-size:30px;font-weight:800}
+#aiLesson9 .row{display:flex;justify-content:space-between;padding:8px 9px;border:1px solid #e5e7eb;border-radius:9px;margin:7px 0;font-size:12px}
+#aiLesson9 .ok{color:#067647;font-weight:700}
+#aiLesson9 .bad{color:#b42318;font-weight:700}
+#aiLesson9 .final{margin-top:12px;padding:10px 11px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.45}
+</style>
+
+<div class="card">
+<div class="header">
+<div class="label">Практикум · Урок 9</div>
+<h3>Превратите выводы в действия</h3>
+<div class="progress"><div class="progress-fill" id="l9Progress"></div></div>
+</div>
+
+<div class="screen" id="l9Screen">
+<div class="meta" id="l9Meta"></div>
+<div class="question-title" id="l9Title"></div>
+<div id="l9Scenario"></div>
+<div class="question" id="l9Question"></div>
+<div class="options" id="l9Options"></div>
+<div class="feedback" id="l9Feedback"></div>
+
+<div class="actions">
+<button id="l9Back">Назад</button>
+<button class="primary" id="l9Check">Проверить</button>
+<button id="l9Edit">Изменить ответ</button>
+<button class="primary" id="l9Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="l9Result" style="display:none">
+<div class="meta">Результат симулятора</div>
+<div class="score" id="l9Score"></div>
+<div id="l9Rows"></div>
+<div class="final"><strong>Рабочая цепочка:</strong><br>проверенный факт → диагностика → подтверждённая причина → действие → контроль результата.</div>
+<div class="actions">
+<button id="l9Error">Вернуться к ошибке</button>
+<button class="primary" id="l9Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function startLesson9(){
+
+const questions=[
+{
+ title:"Не лечите причину, которую ещё не нашли",
+ scenario:'<div class="box">Подтверждено: конверсия малого бизнеса снизилась с 21% до 17%. Количество демонстраций почти не изменилось.</div>',
+ question:"Какой следующий шаг лучше всего обоснован данными?",
+ options:[
+   "Провести обучение менеджеров.",
+   "Изменить скрипт.",
+   "Разобрать потерянные сделки и классифицировать причины отказов.",
+   "Снизить план продаж."
+ ],
+ correct:2,
+ explanation:"Снижение конверсии подтверждено, но причина ещё неизвестна. Поэтому сначала нужна диагностика.",
+ short:"Диагностика"
+},
+{
+ title:"Перейдите от диагностики к действию",
+ scenario:'<div class="box">После разбора выяснилось: 46% потерянных сделок содержат одно и то же возражение о сроках поставки.</div>',
+ question:"Какой следующий шаг уже является корректирующим действием?",
+ options:[
+   "Повторно пересчитать конверсию.",
+   "Подготовить и протестировать новый сценарий ответа на это возражение.",
+   "Попросить ИИ придумать дополнительные причины отказов.",
+   "Повторно выгрузить те же сделки."
+ ],
+ correct:1,
+ explanation:"Теперь конкретная зона потерь подтверждена данными. Можно переходить к изменению процесса и тестированию.",
+ short:"Корректирующее действие"
+},
+{
+ title:"Не позволяйте ИИ придумывать KPI",
+ scenario:'<div class="box">Текущая конверсия — 17%. Утверждённого целевого значения в компании нет.</div>',
+ question:"Что записать в поле «Целевой показатель»?",
+ options:[
+   "25% — как заметное улучшение.",
+   "21% — вернуть прошлое значение.",
+   "Нужно определить руководителю.",
+   "19% — компромиссный вариант."
+ ],
+ correct:2,
+ explanation:"Прошлое значение или произвольное улучшение не становятся автоматически целевым KPI.",
+ short:"Целевой показатель"
+},
+{
+ title:"Сформулируйте рабочее поручение",
+ scenario:'<div class="box">Подтверждено повторяющееся возражение клиентов о сроках поставки.</div>',
+ question:"Какое поручение сформулировано лучше?",
+ options:[
+   "Улучшить работу со сроками.",
+   "Активнее отрабатывать возражения.",
+   "Руководителю группы протестировать новый ответ на возражение и затем сравнить долю отказов по этой причине.",
+   "Повысить конверсию малого бизнеса."
+ ],
+ correct:2,
+ explanation:"Есть конкретное действие и способ проверки. Остальные варианты описывают желаемое улучшение, но не управляемую работу.",
+ short:"Поручение"
+}
+];
+
+const E=id=>document.getElementById(id);
+
+const screen=E("l9Screen"),result=E("l9Result"),progress=E("l9Progress"),
+meta=E("l9Meta"),title=E("l9Title"),scenario=E("l9Scenario"),
+question=E("l9Question"),options=E("l9Options"),feedback=E("l9Feedback"),
+back=E("l9Back"),check=E("l9Check"),edit=E("l9Edit"),next=E("l9Next"),
+score=E("l9Score"),rows=E("l9Rows"),error=E("l9Error"),restart=E("l9Restart");
+
+let current=0,answers=[],checked=[];
+
+function good(i){return answers[i]===questions[i].correct}
+
+function render(){
+ screen.style.display="block";
+ result.style.display="none";
+
+ const q=questions[current];
+
+ meta.textContent="Экран "+(current+1)+" из "+questions.length;
+ title.textContent=q.title;
+ scenario.innerHTML=q.scenario;
+ question.textContent=q.question;
+ options.innerHTML="";
+
+ q.options.forEach(function(text,index){
+   const el=document.createElement("div");
+   el.className="option"+(answers[current]===index?" selected":"");
+   el.textContent=text;
+   el.onclick=function(){answers[current]=index;render()};
+   options.appendChild(el);
+ });
+
+ feedback.className="feedback";
+ feedback.innerHTML="";
+
+ if(checked[current]){
+   const ok=good(current);
+   feedback.classList.add(ok?"correct":"wrong");
+   feedback.innerHTML="<strong>"+(ok?"Верно":"Не совсем")+"</strong><br>"+q.explanation;
+ }
+
+ back.disabled=current===0;
+ check.style.display=checked[current]?"none":"inline-block";
+ edit.style.display=checked[current]?"inline-block":"none";
+ next.style.display=checked[current]?"inline-block":"none";
+ next.textContent=current===questions.length-1?"Посмотреть результат":"Далее";
+ progress.style.width=((current+1)/questions.length*100)+"%";
+}
+
+check.onclick=function(){
+ if(answers[current]===undefined){alert("Сначала выберите ответ.");return}
+ checked[current]=true;render();
+};
+
+edit.onclick=function(){checked[current]=false;render()};
+back.onclick=function(){if(current>0){current--;render()}};
+next.onclick=function(){
+ if(current<questions.length-1){current++;render()}
+ else showResult();
+};
+
+function showResult(){
+ screen.style.display="none";
+ result.style.display="block";
+
+ let count=0;
+ rows.innerHTML="";
+
+ questions.forEach(function(q,index){
+   const ok=good(index);
+   if(ok)count++;
+
+   const row=document.createElement("div");
+   row.className="row";
+   row.innerHTML="<span>"+(index+1)+". "+q.short+"</span><span class='"+(ok?"ok":"bad")+"'>"+(ok?"верно":"ошибка")+"</span>";
+   rows.appendChild(row);
+ });
+
+ score.textContent=count+" / "+questions.length;
+ error.style.display=count===questions.length?"none":"inline-block";
+}
+
+error.onclick=function(){
+ const first=questions.findIndex(function(_,i){return !good(i)});
+ if(first!==-1){current=first;render()}
+};
+
+restart.onclick=function(){current=0;answers=[];checked=[];render()};
+
+render();
+}
+
+if(document.readyState==="loading"){
+ document.addEventListener("DOMContentLoaded",startLesson9);
+}else{
+ startLesson9();
+}
+})();
+</script>
+</div>

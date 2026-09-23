@@ -1,0 +1,668 @@
+<div id="aiLesson4">
+  <style>
+    #aiLesson4 {
+      max-width: 560px;
+      margin: 0 auto;
+      font-family: Arial, sans-serif;
+      color: #202938;
+    }
+
+    #aiLesson4 * {
+      box-sizing: border-box;
+    }
+
+    #aiLesson4 .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #aiLesson4 .header {
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    #aiLesson4 .label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 5px;
+    }
+
+    #aiLesson4 h3 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    #aiLesson4 .progress {
+      height: 5px;
+      margin-top: 12px;
+      background: #eef2f6;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #aiLesson4 .progress-fill {
+      height: 100%;
+      width: 25%;
+      background: #2563eb;
+      transition: width .2s ease;
+    }
+
+    #aiLesson4 .screen,
+    #aiLesson4 .result {
+      padding: 16px;
+    }
+
+    #aiLesson4 .meta {
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #667085;
+    }
+
+    #aiLesson4 .question-title {
+      margin: 0 0 10px;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    #aiLesson4 .scenario {
+      margin-bottom: 10px;
+    }
+
+    #aiLesson4 .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 9px;
+    }
+
+    #aiLesson4 .tab {
+      padding: 5px 8px;
+      background: #eef2f6;
+      border-radius: 20px;
+      font-size: 11px;
+      color: #475467;
+    }
+
+    #aiLesson4 .ai-box,
+    #aiLesson4 .note {
+      padding: 10px 11px;
+      border: 1px solid #e5e7eb;
+      border-radius: 11px;
+      background: #f8fafc;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #aiLesson4 .ai-title {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #667085;
+      text-transform: uppercase;
+    }
+
+    #aiLesson4 .question {
+      margin: 11px 0;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    #aiLesson4 .options {
+      display: grid;
+      gap: 8px;
+    }
+
+    #aiLesson4 .option {
+      padding: 10px 11px;
+      border: 1px solid #e5e7eb;
+      border-radius: 11px;
+      background: #fff;
+      font-size: 13px;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+
+    #aiLesson4 .option:hover {
+      border-color: #aab8cc;
+    }
+
+    #aiLesson4 .option.selected {
+      border-color: #7ca5ff;
+      background: #f5f8ff;
+    }
+
+    #aiLesson4 .feedback {
+      display: none;
+      margin-top: 11px;
+      padding: 10px 11px;
+      border-radius: 11px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #aiLesson4 .feedback.correct {
+      display: block;
+      background: #ecfdf3;
+      color: #065f46;
+      border: 1px solid #abefc6;
+    }
+
+    #aiLesson4 .feedback.wrong {
+      display: block;
+      background: #fff1f0;
+      color: #7a271a;
+      border: 1px solid #fecdca;
+    }
+
+    #aiLesson4 .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 14px;
+    }
+
+    #aiLesson4 button {
+      padding: 8px 11px;
+      border: 1px solid #d0d5dd;
+      border-radius: 9px;
+      background: #fff;
+      color: #202938;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #aiLesson4 button.primary {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #fff;
+    }
+
+    #aiLesson4 button:disabled {
+      opacity: .4;
+      cursor: default;
+    }
+
+    #aiLesson4 .score {
+      margin: 3px 0 10px;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    #aiLesson4 .result-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+      padding: 8px 9px;
+      border: 1px solid #e5e7eb;
+      border-radius: 9px;
+      font-size: 12px;
+    }
+
+    #aiLesson4 .status-ok {
+      color: #067647;
+      font-weight: 700;
+    }
+
+    #aiLesson4 .status-bad {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    #aiLesson4 .final-note {
+      margin-top: 12px;
+      padding: 10px 11px;
+      border-radius: 11px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+  </style>
+
+  <div class="card">
+    <div class="header">
+      <div class="label">Практикум · Урок 4</div>
+      <h3>Запустите первый анализ Excel</h3>
+
+      <div class="progress">
+        <div class="progress-fill" id="l4Progress"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="l4Screen">
+      <div class="meta" id="l4Meta"></div>
+
+      <div class="question-title" id="l4Title"></div>
+
+      <div class="scenario" id="l4Scenario"></div>
+
+      <div class="question" id="l4Question"></div>
+
+      <div class="options" id="l4Options"></div>
+
+      <div class="feedback" id="l4Feedback"></div>
+
+      <div class="actions">
+        <button id="l4Back">Назад</button>
+        <button class="primary" id="l4Check">Проверить</button>
+        <button id="l4Edit">Изменить ответ</button>
+        <button class="primary" id="l4Next">Далее</button>
+      </div>
+    </div>
+
+    <div class="result" id="l4Result" style="display:none;">
+      <div class="meta">Результат симулятора</div>
+
+      <div class="score" id="l4Score"></div>
+
+      <div id="l4ResultRows"></div>
+
+      <div class="final-note">
+        <strong>Правильная последовательность:</strong><br>
+        проверить структуру файла → уточнить неоднозначные показатели →
+        поставить первую управленческую задачу → проверить основание важного вывода.
+      </div>
+
+      <div class="actions">
+        <button id="l4ReturnError">Вернуться к ошибке</button>
+        <button class="primary" id="l4Restart">Пройти заново</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  function startLesson4() {
+
+    const questions = [
+      {
+        title: "Проверьте, что ИИ понял файл",
+
+        scenario:
+          '<div class="tabs">' +
+            '<span class="tab">Продажи</span>' +
+            '<span class="tab">План</span>' +
+            '<span class="tab">Сводка</span>' +
+          '</div>' +
+          '<div class="ai-box">' +
+            '<span class="ai-title">ИИ</span>' +
+            'Файл получен. Могу найти проблемные сегменты и причины отклонений.' +
+          '</div>',
+
+        question:
+          "Что лучше сделать перед содержательным анализом?",
+
+        options: [
+          "Попросить назвать три самых слабых сегмента.",
+          "Попросить перечислить листы, основные показатели и период данных.",
+          "Сразу запросить причины невыполнения плана.",
+          "Попросить построить прогноз на следующий месяц."
+        ],
+
+        correct: 1,
+
+        explanation:
+          "Сначала нужно проверить, как ИИ понял структуру книги. " +
+          "Иначе дальнейший вывод может быть логичным, но относиться не к тому листу, периоду или показателю.",
+
+        short: "Структура файла"
+      },
+
+      {
+        title: "Уточните неоднозначный показатель",
+
+        scenario:
+          '<div class="ai-box">' +
+            '<span class="ai-title">ИИ</span>' +
+            'На листе «Продажи» вижу поля «Демонстрации», «Сделки» и «Конверсия». ' +
+            'Формула конверсии явно не указана.' +
+          '</div>',
+
+        question:
+          "Как лучше продолжить?",
+
+        options: [
+          "Исключить конверсию из анализа.",
+          "Попросить ИИ самостоятельно восстановить формулу по значениям.",
+          "Задать бизнес-определение конверсии явно.",
+          "Оставить трактовку показателя на усмотрение ИИ."
+        ],
+
+        correct: 2,
+
+        explanation:
+          "Одинаково названная метрика может рассчитываться по разной логике. " +
+          "Если её смысл неоднозначен, определение нужно задать до анализа.",
+
+        short: "Смысл метрики"
+      },
+
+      {
+        title: "Поставьте первую управленческую задачу",
+
+        scenario:
+          '<div class="note">' +
+            'Нужно быстро понять состояние продаж за неделю. ' +
+            'Причины отклонений пока искать не требуется.' +
+          '</div>',
+
+        question:
+          "Какой запрос лучше подходит для первого анализа?",
+
+        options: [
+          "Проанализируй продажи и скажи, что здесь не так.",
+          "Найди причины невыполнения плана и предложи решения.",
+          "Сравни результаты недели по сегментам и покажи заметные отклонения с цифрами.",
+          "Проведи полный аудит продаж, менеджеров и воронки."
+        ],
+
+        correct: 2,
+
+        explanation:
+          "Первый анализ лучше ограничить результатами и заметными отклонениями. " +
+          "Причины и рекомендации потребуют отдельной проверки.",
+
+        short: "Первая задача"
+      },
+
+      {
+        title: "Проверьте основание вывода",
+
+        scenario:
+          '<div class="ai-box">' +
+            '<span class="ai-title">ИИ</span>' +
+            'Малый бизнес требует внимания: выполнение плана ниже остальных сегментов.' +
+          '</div>',
+
+        question:
+          "Какой следующий запрос полезнее?",
+
+        options: [
+          "Ты уверен в этом выводе?",
+          "Предложи три способа улучшить продажи.",
+          "Покажи план, факт, расчёт выполнения плана и сегменты, с которыми ты сравнивал.",
+          "Объясни подробнее, почему малый бизнес работает хуже."
+        ],
+
+        correct: 2,
+
+        explanation:
+          "Нужно восстановить цепочку «вывод → исходные цифры → сравнение». " +
+          "Вопрос «ты уверен?» не даёт такой проверки.",
+
+        short: "Основание вывода"
+      }
+    ];
+
+
+    const screen = document.getElementById("l4Screen");
+    const result = document.getElementById("l4Result");
+
+    const progress = document.getElementById("l4Progress");
+    const meta = document.getElementById("l4Meta");
+    const title = document.getElementById("l4Title");
+    const scenario = document.getElementById("l4Scenario");
+    const question = document.getElementById("l4Question");
+    const options = document.getElementById("l4Options");
+    const feedback = document.getElementById("l4Feedback");
+
+    const backButton = document.getElementById("l4Back");
+    const checkButton = document.getElementById("l4Check");
+    const editButton = document.getElementById("l4Edit");
+    const nextButton = document.getElementById("l4Next");
+
+    const score = document.getElementById("l4Score");
+    const resultRows = document.getElementById("l4ResultRows");
+
+    const returnErrorButton = document.getElementById("l4ReturnError");
+    const restartButton = document.getElementById("l4Restart");
+
+
+    let current = 0;
+    let answers = [];
+    let checked = [];
+
+
+    function isCorrect(index) {
+      return answers[index] === questions[index].correct;
+    }
+
+
+    function chooseAnswer(index) {
+      answers[current] = index;
+      render();
+    }
+
+
+    function render() {
+
+      const item = questions[current];
+
+      screen.style.display = "block";
+      result.style.display = "none";
+
+      meta.textContent =
+        "Экран " + (current + 1) + " из " + questions.length;
+
+      title.textContent = item.title;
+
+      scenario.innerHTML = item.scenario;
+
+      question.textContent = item.question;
+
+      options.innerHTML = "";
+
+
+      item.options.forEach(function (optionText, index) {
+
+        const option = document.createElement("div");
+
+        option.className = "option";
+
+        if (answers[current] === index) {
+          option.classList.add("selected");
+        }
+
+        option.textContent = optionText;
+
+        option.addEventListener("click", function () {
+          chooseAnswer(index);
+        });
+
+        options.appendChild(option);
+      });
+
+
+      feedback.className = "feedback";
+      feedback.innerHTML = "";
+
+
+      if (checked[current]) {
+
+        const correct = isCorrect(current);
+
+        feedback.classList.add(
+          correct ? "correct" : "wrong"
+        );
+
+        feedback.innerHTML =
+          "<strong>" +
+          (correct ? "Верно" : "Не совсем") +
+          "</strong><br>" +
+          item.explanation;
+      }
+
+
+      backButton.disabled = current === 0;
+
+
+      checkButton.style.display =
+        checked[current] ? "none" : "inline-block";
+
+
+      editButton.style.display =
+        checked[current] ? "inline-block" : "none";
+
+
+      nextButton.style.display =
+        checked[current] ? "inline-block" : "none";
+
+
+      nextButton.textContent =
+        current === questions.length - 1
+          ? "Посмотреть результат"
+          : "Далее";
+
+
+      progress.style.width =
+        ((current + 1) / questions.length * 100) + "%";
+    }
+
+
+    checkButton.addEventListener("click", function () {
+
+      if (answers[current] === undefined) {
+        alert("Сначала выберите ответ.");
+        return;
+      }
+
+      checked[current] = true;
+
+      render();
+    });
+
+
+    editButton.addEventListener("click", function () {
+
+      checked[current] = false;
+
+      render();
+    });
+
+
+    backButton.addEventListener("click", function () {
+
+      if (current > 0) {
+        current--;
+        render();
+      }
+    });
+
+
+    nextButton.addEventListener("click", function () {
+
+      if (current < questions.length - 1) {
+
+        current++;
+        render();
+
+      } else {
+
+        showResult();
+      }
+    });
+
+
+    function showResult() {
+
+      screen.style.display = "none";
+      result.style.display = "block";
+
+      let correctCount = 0;
+
+      resultRows.innerHTML = "";
+
+
+      questions.forEach(function (item, index) {
+
+        const correct = isCorrect(index);
+
+        if (correct) {
+          correctCount++;
+        }
+
+
+        const row = document.createElement("div");
+
+        row.className = "result-row";
+
+        row.innerHTML =
+          "<span>" +
+          (index + 1) +
+          ". " +
+          item.short +
+          "</span>" +
+          '<span class="' +
+          (correct ? "status-ok" : "status-bad") +
+          '">' +
+          (correct ? "верно" : "ошибка") +
+          "</span>";
+
+        resultRows.appendChild(row);
+      });
+
+
+      score.textContent =
+        correctCount + " / " + questions.length;
+
+
+      returnErrorButton.style.display =
+        correctCount === questions.length
+          ? "none"
+          : "inline-block";
+    }
+
+
+    returnErrorButton.addEventListener("click", function () {
+
+      const firstError =
+        questions.findIndex(function (_, index) {
+          return !isCorrect(index);
+        });
+
+      if (firstError !== -1) {
+
+        current = firstError;
+
+        render();
+      }
+    });
+
+
+    restartButton.addEventListener("click", function () {
+
+      current = 0;
+      answers = [];
+      checked = [];
+
+      render();
+    });
+
+
+    render();
+  }
+
+
+  if (document.readyState === "loading") {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      startLesson4
+    );
+
+  } else {
+
+    startLesson4();
+  }
+
+})();
+</script>

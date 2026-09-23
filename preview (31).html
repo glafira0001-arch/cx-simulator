@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Симулятор — структура отчёта</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif;color:#182230}
+body{display:flex;justify-content:center}
+.app{width:100%;max-width:560px;padding:16px}
+.card{background:white;border:1px solid #e4e7ec;border-radius:16px;padding:20px;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+.top{display:flex;justify-content:space-between;margin-bottom:10px}
+.small{font-size:13px;color:#667085;font-weight:700}
+.progress{height:5px;background:#eaecf0;border-radius:99px;overflow:hidden;margin-bottom:18px}
+.progress div{height:100%;background:#2563eb;transition:.25s}
+h2{font-size:21px;margin:0 0 10px}
+p{font-size:15px;line-height:1.45;color:#344054}
+.context{background:#f8fafc;border-radius:11px;padding:12px;margin:12px 0;font-size:14px;line-height:1.4}
+.option{border:1px solid #d0d5dd;border-radius:10px;padding:11px;margin:8px 0;font-size:14px;cursor:pointer}
+.option.selected{border:2px solid #2563eb;background:#eff6ff;padding:10px}
+.layout{border:1px solid #d0d5dd;border-radius:11px;padding:10px;margin:8px 0;cursor:pointer}
+.layout.selected{border:2px solid #2563eb;background:#eff6ff;padding:9px}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.chip{background:#eef2f6;border-radius:5px;padding:5px 6px;font-size:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:9px;padding:10px 13px;font-size:13px;font-weight:700;cursor:pointer}
+.primary{background:#2563eb;color:white}
+.secondary{background:#f2f4f7;color:#344054}
+.link{background:#fff;border:1px solid #d0d5dd;color:#344054}
+.feedback{margin-top:13px;border-radius:11px;padding:12px;font-size:14px;line-height:1.45}
+.correct{background:#ecfdf3;color:#05603a}
+.wrong{background:#fffaeb;color:#93370d}
+.hidden{display:none}
+.result-row{border-bottom:1px solid #eaecf0;padding:9px 0;font-size:14px}
+.good{color:#067647;font-weight:700}.bad{color:#b54708;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="card">
+
+<div class="top">
+<span class="small" id="label">Этап 1 из 3</span>
+</div>
+
+<div class="progress"><div id="progress" style="width:33%"></div></div>
+
+<section id="s1">
+<h2>Что означает одна строка?</h2>
+
+<div class="context">
+Новый продукт продаётся в трёх сегментах. Руководителю нужно каждый день сравнивать результаты этих сегментов.
+</div>
+
+<div class="option" data-q="grain" data-v="deal">Одна строка = одна сделка</div>
+<div class="option" data-q="grain" data-v="day">Одна строка = один день</div>
+<div class="option" data-q="grain" data-v="dayseg">Одна строка = один день × один сегмент</div>
+
+<div class="actions"><button class="primary" onclick="check1()">Проверить</button></div>
+<div id="f1"></div>
+</section>
+
+<section id="s2" class="hidden">
+<h2>Какой вариант удобнее для анализа?</h2>
+<p>Выберите структуру, в которой связанные показатели можно быстро сопоставить.</p>
+
+<div class="layout" data-layout="a">
+<b>Вариант A</b>
+<div class="chips">
+<span class="chip">Период</span><span class="chip">Конверсия</span>
+<span class="chip">План</span><span class="chip">Возражение</span>
+<span class="chip">Факт</span><span class="chip">Сделки</span>
+</div>
+</div>
+
+<div class="layout" data-layout="b">
+<b>Вариант B</b>
+<div class="chips">
+<span class="chip">Период</span><span class="chip">Сегмент</span>
+<span class="chip">План</span><span class="chip">Факт</span>
+<span class="chip">% плана</span><span class="chip">Демонстрации</span>
+<span class="chip">Сделки</span><span class="chip">Конверсия</span>
+</div>
+</div>
+
+<div class="layout" data-layout="c">
+<b>Вариант C</b>
+<div class="chips">
+<span class="chip">План</span><span class="chip">Клиент</span>
+<span class="chip">Демонстрации</span><span class="chip">Период</span>
+<span class="chip">Факт</span><span class="chip">Возражение</span>
+</div>
+</div>
+
+<div class="actions">
+<button class="link" onclick="show(1)">Назад</button>
+<button class="primary" onclick="check2()">Проверить</button>
+</div>
+<div id="f2"></div>
+</section>
+
+<section id="s3" class="hidden">
+<h2>Одинаковый столбец — разные цифры</h2>
+
+<div class="context">
+Менеджер А считает «сделкой» подписанный договор. Менеджер Б — поступившую оплату. Оба заполняют столбец «Количество сделок».
+</div>
+
+<div class="option" data-q="definition" data-v="use">Можно использовать отчёт: заголовок у всех одинаковый</div>
+<div class="option" data-q="definition" data-v="rule">Сначала нужно зафиксировать единое правило заполнения</div>
+<div class="option" data-q="definition" data-v="rename">Достаточно переименовать столбец</div>
+
+<div class="actions">
+<button class="link" onclick="show(2)">Назад</button>
+<button class="primary" onclick="check3()">Проверить</button>
+</div>
+<div id="f3"></div>
+</section>
+
+<section id="result" class="hidden">
+<h2>Результат</h2>
+<div id="summary"></div>
+<div class="actions">
+<button class="link" id="backError" onclick="toError()">Вернуться к ошибке</button>
+<button class="secondary" onclick="location.reload()">Пройти заново</button>
+</div>
+</section>
+
+</div>
+</div>
+
+<script>
+let answers={grain:null,layout:null,definition:null};
+let checked={grain:false,layout:false,definition:false};
+
+function choose(selector,key,value){
+ if(checked[key])return;
+ document.querySelectorAll(selector).forEach(x=>x.classList.remove('selected'));
+ const el=[...document.querySelectorAll(selector)].find(x=>
+  (x.dataset.v||x.dataset.layout)===value);
+ el.classList.add('selected');
+ answers[key]=value;
+}
+
+document.querySelectorAll('[data-q="grain"]').forEach(x=>
+ x.onclick=()=>choose('[data-q="grain"]','grain',x.dataset.v));
+
+document.querySelectorAll('[data-layout]').forEach(x=>
+ x.onclick=()=>choose('[data-layout]','layout',x.dataset.layout));
+
+document.querySelectorAll('[data-q="definition"]').forEach(x=>
+ x.onclick=()=>choose('[data-q="definition"]','definition',x.dataset.v));
+
+function check1(){
+ if(!answers.grain)return;
+ checked.grain=true;
+ const ok=answers.grain==='dayseg';
+
+ f1.innerHTML='<div class="feedback '+(ok?'correct':'wrong')+'">'+
+ (ok
+  ? '<b>Верно.</b> Каждая строка относится к одному периоду и одному сегменту. Данные можно сравнивать без смешивания уровней.'
+  : answers.grain==='day'
+    ? '<b>Слишком крупный уровень.</b> Итог дня будет виден, но станет непонятно, какой сегмент дал отклонение.'
+    : '<b>Слишком мелкий уровень.</b> План и итоговая конверсия относятся к периоду, а не к одной сделке.')+
+ '</div>'+buttons(1);
+
+ replaceCheckButton('s1');
+}
+
+function check2(){
+ if(!answers.layout)return;
+ checked.layout=true;
+ const ok=answers.layout==='b';
+
+ f2.innerHTML='<div class="feedback '+(ok?'correct':'wrong')+'">'+
+ (ok
+  ? '<b>Верно.</b> План, факт и выполнение плана расположены рядом, а показатели воронки образуют отдельный блок.'
+  : '<b>Структура усложняет сравнение.</b> Связанные показатели разнесены, поэтому руководителю придётся постоянно искать их в разных частях строки.')+
+ '</div>'+buttons(2);
+
+ replaceCheckButton('s2');
+}
+
+function check3(){
+ if(!answers.definition)return;
+ checked.definition=true;
+ const ok=answers.definition==='rule';
+
+ f3.innerHTML='<div class="feedback '+(ok?'correct':'wrong')+'">'+
+ (ok
+  ? '<b>Верно.</b> Одинаковое название столбца не гарантирует одинакового смысла. Нужно сначала определить, какое событие считается сделкой.'
+  : '<b>Нет.</b> Пока сотрудники считают разные события, их показатели нельзя корректно сравнивать.')+
+ '</div>'+
+ '<div class="actions"><button class="secondary" onclick="edit(3)">Изменить ответ</button><button class="primary" onclick="showResult()">Посмотреть результат</button></div>';
+
+ replaceCheckButton('s3');
+}
+
+function buttons(n){
+ return '<div class="actions"><button class="secondary" onclick="edit('+n+')">Изменить ответ</button><button class="primary" onclick="show('+(n+1)+')">Далее</button></div>';
+}
+
+function replaceCheckButton(id){
+ const sec=document.getElementById(id);
+ const firstActions=sec.querySelector('.actions');
+ if(firstActions)firstActions.classList.add('hidden');
+}
+
+function edit(n){
+ const keys=['grain','layout','definition'];
+ const key=keys[n-1];
+ checked[key]=false;
+
+ document.getElementById('f'+n).innerHTML='';
+
+ const section=document.getElementById('s'+n);
+ section.querySelectorAll('.actions')[0].classList.remove('hidden');
+}
+
+function show(n){
+ ['s1','s2','s3','result'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+ document.getElementById('s'+n).classList.remove('hidden');
+ label.textContent='Этап '+n+' из 3';
+ progress.style.width=(n*33.33)+'%';
+}
+
+function showResult(){
+ ['s1','s2','s3'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+ result.classList.remove('hidden');
+ label.textContent='Итог';
+ progress.style.width='100%';
+
+ const r=[
+  answers.grain==='dayseg',
+  answers.layout==='b',
+  answers.definition==='rule'
+ ];
+
+ const score=r.filter(Boolean).length;
+
+ summary.innerHTML=
+ '<div class="feedback '+(score===3?'correct':'wrong')+'"><b>'+score+' из 3 решений корректны.</b></div>'+
+ row(r[0],'Уровень детализации','Одна строка должна соответствовать одному понятному объекту наблюдения.')+
+ row(r[1],'Структура','Связанные показатели должны находиться рядом.')+
+ row(r[2],'Правила заполнения','Смысл каждого показателя должен быть одинаковым для всех сотрудников.')+
+ '<div class="context"><b>Главный вывод:</b> хороший шаблон — это не только набор столбцов. Он задаёт единый способ записи и сравнения данных.</div>';
+
+ backError.style.display=score===3?'none':'inline-block';
+}
+
+function row(ok,title,text){
+ return '<div style="padding:9px 0;border-bottom:1px solid #eaecf0;font-size:14px">'+
+ '<span class="'+(ok?'good':'bad')+'">'+(ok?'✓ ':'△ ')+title+'</span><br>'+text+'</div>';
+}
+
+function toError(){
+ if(answers.grain!=='dayseg')return show(1);
+ if(answers.layout!=='b')return show(2);
+ show(3);
+}
+</script>
+</body>
+</html>
