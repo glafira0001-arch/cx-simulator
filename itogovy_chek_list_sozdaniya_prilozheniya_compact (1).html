@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Чек-лист создания приложения — Актион Диджитал</title>
+<style>
+  :root{
+    --ink:#151922;
+    --muted:#667085;
+    --line:#D9DEE7;
+    --soft:#F6F7F9;
+    --accent:#4A56E2;
+    --paper:#fff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#EEF1F5;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{font-size:12px;line-height:1.28}
+  .actions{
+    position:sticky;top:0;z-index:5;display:flex;gap:8px;justify-content:center;
+    padding:8px;background:rgba(238,241,245,.96);border-bottom:1px solid #DDE2EA;
+  }
+  button{border:0;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
+  .primary{background:var(--ink);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .sheet{
+    width:560px;max-width:calc(100% - 20px);margin:14px auto 28px;background:var(--paper);
+    box-shadow:0 8px 24px rgba(18,24,40,.10);border-radius:12px;overflow:hidden;
+  }
+  .topbar{
+    min-height:58px;background:#171A21;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .logo{width:138px;max-height:32px;object-fit:contain;object-position:left center;display:block}
+  .logo-fallback{display:none;font-size:17px;font-weight:800}
+  .tag{text-align:right;font-size:9px;line-height:1.25;text-transform:uppercase;letter-spacing:.08em;opacity:.72}
+  .intro{padding:14px 16px 11px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+  h1{font-size:20px;line-height:1.05;margin:0 0 6px}
+  .lead{margin:0;color:#505969;font-size:11px}
+  .meta{display:grid;grid-template-columns:1.5fr .9fr .8fr;gap:7px;margin-top:10px}
+  .field label{display:block;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
+  .field input{width:100%;height:28px;border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:11px;background:#fff}
+  .progress-wrap{padding:8px 16px;background:#FBFCFD;border-bottom:1px solid var(--line)}
+  .progress-head{display:flex;justify-content:space-between;font-size:10px;font-weight:700;margin-bottom:4px}
+  .progress{height:5px;background:#E7EAF0;border-radius:99px;overflow:hidden}.progress>div{height:100%;width:0;background:var(--accent)}
+  main{padding:12px 12px 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .step{border:1px solid var(--line);border-radius:9px;padding:9px;break-inside:avoid;page-break-inside:avoid;background:#fff}
+  .step-head{display:flex;gap:7px;align-items:flex-start;margin-bottom:5px}
+  .num{flex:0 0 22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:800}
+  h2{font-size:12px;line-height:1.15;margin:1px 0 0}
+  .item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-top:1px solid #EEF1F4}
+  .item:first-child{border-top:0}
+  .item input{width:14px;height:14px;flex:0 0 14px;margin:0;accent-color:var(--accent)}
+  .item label{font-size:10.5px;line-height:1.22;cursor:pointer}
+  .gate{margin-top:9px;border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
+  .gate-title{background:var(--ink);color:#fff;padding:7px 9px;font-size:11px;font-weight:800}
+  .gate-body{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;padding:6px 9px}
+  .gate .item{padding:4px 0}
+  .notes-row{display:grid;grid-template-columns:1fr 150px;gap:8px;margin-top:9px}
+  textarea{width:100%;height:46px;resize:vertical;border:1px dashed #B8C0CC;border-radius:7px;padding:6px 7px;font:10.5px Arial,Helvetica,sans-serif}
+  .sign{border:1px solid var(--line);border-radius:7px;padding:6px 7px;font-size:9px;color:var(--muted);display:flex;flex-direction:column;justify-content:space-between}
+  .sign-line{border-top:1px solid #9AA2AF;padding-top:4px;margin-top:12px}
+  footer{padding:8px 16px 10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:8.5px}
+  @media(max-width:590px){
+    .sheet{max-width:calc(100% - 12px);margin-top:6px;border-radius:8px}
+    .grid{grid-template-columns:1fr}
+    .meta{grid-template-columns:1fr 1fr}.meta .field:first-child{grid-column:1/-1}
+    .gate-body{grid-template-columns:1fr}.notes-row{grid-template-columns:1fr}
+  }
+  @page{size:A4;margin:10mm}
+  @media print{
+    html,body{background:#fff}.actions,.progress-wrap{display:none!important}
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sheet{width:560px;max-width:560px;margin:0 auto;box-shadow:none;border-radius:0}
+    .topbar{padding:10px 14px;min-height:48px}.logo{width:125px;max-height:28px}
+    .intro{padding:10px 14px 8px}h1{font-size:18px}.lead{font-size:9.5px}
+    .meta{margin-top:7px}.field input{height:24px;font-size:9.5px}
+    main{padding:9px}.grid{gap:6px}.step{padding:7px}.item{padding:3px 0}.item label{font-size:9px}
+    .item input{width:12px;height:12px;flex-basis:12px}.gate{margin-top:7px}.gate-title{font-size:10px}
+    textarea{height:36px;font-size:9px}footer{padding:6px 12px 0;font-size:7.5px}
+  }
+</style>
+</head>
+<body>
+<div class="actions">
+  <button class="primary" onclick="window.print()">Печать / PDF</button>
+  <button class="secondary" onclick="resetChecklist()">Сбросить</button>
+</div>
+
+<section class="sheet">
+  <header class="topbar">
+    <div>
+      <img class="logo" src="https://action-digital.ru/local/templates/main/img/actiondigitalwhite.svg" alt="Актион Диджитал" onerror="this.style.display='none';document.querySelector('.logo-fallback').style.display='block'">
+      <div class="logo-fallback">Актион Диджитал</div>
+    </div>
+    <div class="tag">Вайбкодинг с нуля<br>и до личного приложения</div>
+  </header>
+
+  <section class="intro">
+    <div class="eyebrow">Итоговый рабочий инструмент</div>
+    <h1>Чек-лист создания приложения</h1>
+    <p class="lead">Отметьте ключевые проверки перед публикацией. Только необходимые пункты — без длинных пояснений.</p>
+    <div class="meta">
+      <div class="field"><label for="project">Проект</label><input id="project" data-persist="project" placeholder="Название"></div>
+      <div class="field"><label for="owner">Ответственный</label><input id="owner" data-persist="owner" placeholder="Имя"></div>
+      <div class="field"><label for="date">Дата</label><input id="date" data-persist="date" type="date"></div>
+    </div>
+  </section>
+
+  <div class="progress-wrap">
+    <div class="progress-head"><span>Готовность проекта</span><span id="progressText">0%</span></div>
+    <div class="progress"><div id="progressBar"></div></div>
+  </div>
+
+  <main>
+    <div class="grid">
+      <section class="step">
+        <div class="step-head"><div class="num">1</div><h2>Цель и аудитория</h2></div>
+        <div class="item"><input type="checkbox" id="c1"><label for="c1">Сформулирована главная задача приложения.</label></div>
+        <div class="item"><input type="checkbox" id="c2"><label for="c2">Определено, кто будет им пользоваться.</label></div>
+        <div class="item"><input type="checkbox" id="c3"><label for="c3">Определено главное действие пользователя.</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">2</div><h2>Структура и ТЗ</h2></div>
+        <div class="item"><input type="checkbox" id="c4"><label for="c4">Определены экраны, разделы и переходы.</label></div>
+        <div class="item"><input type="checkbox" id="c5"><label for="c5">Подготовлено ТЗ для AI-разработчика.</label></div>
+        <div class="item"><input type="checkbox" id="c6"><label for="c6">Для сложных задач сначала проверен Plan.</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">3</div><h2>Фронтенд</h2></div>
+        <div class="item"><input type="checkbox" id="c7"><label for="c7">Собраны ключевые экраны и формы.</label></div>
+        <div class="item"><input type="checkbox" id="c8"><label for="c8">Интерфейс проверен на компьютере и телефоне.</label></div>
+        <div class="item"><input type="checkbox" id="c9"><label for="c9">Правки вносятся точечно: «остальное не трогай».</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">4</div><h2>База данных</h2></div>
+        <div class="item"><input type="checkbox" id="c10"><label for="c10">Выбрана и подключена нужная база.</label></div>
+        <div class="item"><input type="checkbox" id="c11"><label for="c11">Добавление, изменение и удаление данных работают.</label></div>
+        <div class="item"><input type="checkbox" id="c12"><label for="c12">RLS / доступы разделяют данные пользователей.</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">5</div><h2>Регистрация и роли</h2></div>
+        <div class="item"><input type="checkbox" id="c13"><label for="c13">Регистрация, вход и выход работают.</label></div>
+        <div class="item"><input type="checkbox" id="c14"><label for="c14">После выхода закрытые страницы недоступны.</label></div>
+        <div class="item"><input type="checkbox" id="c15"><label for="c15">Права пользователя и администратора разделены.</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">6</div><h2>Внешние сервисы</h2></div>
+        <div class="item"><input type="checkbox" id="c16"><label for="c16">Каждая интеграция решает понятную задачу.</label></div>
+        <div class="item"><input type="checkbox" id="c17"><label for="c17">Интеграции протестированы на реальном сценарии.</label></div>
+        <div class="item"><input type="checkbox" id="c18"><label for="c18">Секреты и API-ключи не лежат в открытом коде.</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">7</div><h2>Тестирование и безопасность</h2></div>
+        <div class="item"><input type="checkbox" id="c19"><label for="c19">Пройден основной пользовательский сценарий.</label></div>
+        <div class="item"><input type="checkbox" id="c20"><label for="c20">Проверены пустые поля, неверные данные и повторные нажатия.</label></div>
+        <div class="item"><input type="checkbox" id="c21"><label for="c21">Security Findings / сканирование проверены и критичные ошибки исправлены.</label></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><div class="num">8</div><h2>GitHub и публикация</h2></div>
+        <div class="item"><input type="checkbox" id="c22"><label for="c22">Актуальный код сохранен на GitHub.</label></div>
+        <div class="item"><input type="checkbox" id="c23"><label for="c23">В репозитории нет секретных данных.</label></div>
+        <div class="item"><input type="checkbox" id="c24"><label for="c24">После публикации еще раз проверен основной сценарий.</label></div>
+      </section>
+    </div>
+
+    <section class="gate">
+      <div class="gate-title">Финальный допуск к публикации</div>
+      <div class="gate-body">
+        <div class="item"><input type="checkbox" id="g1"><label for="g1"><strong>Критичных ошибок нет.</strong></label></div>
+        <div class="item"><input type="checkbox" id="g2"><label for="g2"><strong>Данные пользователей защищены.</strong></label></div>
+        <div class="item"><input type="checkbox" id="g3"><label for="g3"><strong>Секреты не находятся в коде.</strong></label></div>
+        <div class="item"><input type="checkbox" id="g4"><label for="g4"><strong>Сценарий работает на компьютере и смартфоне.</strong></label></div>
+        <div class="item"><input type="checkbox" id="g5"><label for="g5"><strong>Актуальная версия проекта сохранена.</strong></label></div>
+      </div>
+    </section>
+
+    <div class="notes-row">
+      <textarea data-persist="notes" placeholder="Короткие заметки / что исправить перед публикацией"></textarea>
+      <div class="sign">Ответственный<div class="sign-line">Подпись / дата</div></div>
+    </div>
+  </main>
+
+  <footer>
+    <div>Заполняется в браузере · отметки сохраняются на устройстве</div>
+    <div>Актион Диджитал</div>
+  </footer>
+</section>
+
+<script>
+(function(){
+  const checks=[...document.querySelectorAll('input[type="checkbox"]')];
+  const persist=[...document.querySelectorAll('[data-persist]')];
+  const key=el=>'action-compact-checklist:'+(el.id||el.dataset.persist);
+  checks.forEach(el=>{
+    const saved=localStorage.getItem(key(el));
+    if(saved!==null)el.checked=saved==='1';
+    el.addEventListener('change',()=>{localStorage.setItem(key(el),el.checked?'1':'0');updateProgress();});
+  });
+  persist.forEach(el=>{
+    const saved=localStorage.getItem(key(el));
+    if(saved!==null)el.value=saved;
+    el.addEventListener('input',()=>localStorage.setItem(key(el),el.value));
+  });
+  window.updateProgress=function(){
+    const done=checks.filter(c=>c.checked).length;
+    const pct=Math.round(done/checks.length*100);
+    document.getElementById('progressText').textContent=pct+'%';
+    document.getElementById('progressBar').style.width=pct+'%';
+  };
+  window.resetChecklist=function(){
+    if(!confirm('Сбросить отметки и поля?'))return;
+    checks.forEach(el=>{el.checked=false;localStorage.removeItem(key(el));});
+    persist.forEach(el=>{el.value='';localStorage.removeItem(key(el));});
+    updateProgress();
+  };
+  updateProgress();
+})();
+</script>
+</body>
+</html>
