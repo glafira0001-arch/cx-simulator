@@ -1,0 +1,231 @@
+<div id="riskAudit5">
+<style>
+#riskAudit5{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#riskAudit5 *{box-sizing:border-box}
+#riskAudit5 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#riskAudit5 .head,#riskAudit5 .body,#riskAudit5 .result{padding:16px}
+#riskAudit5 .head{border-bottom:1px solid #e5e7eb}
+#riskAudit5 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#riskAudit5 h3{margin:0;font-size:18px}
+#riskAudit5 .meta{font-size:12px;color:#667085;margin-bottom:9px}
+#riskAudit5 .condition{padding:12px;border:1px solid #e5e7eb;border-radius:11px;background:#f8fafc;font-size:13px;line-height:1.5;margin-bottom:12px}
+#riskAudit5 .group{margin-bottom:11px}
+#riskAudit5 .group-title{font-size:12px;font-weight:700;margin-bottom:6px}
+#riskAudit5 .buttons{display:grid;gap:6px}
+#riskAudit5 .pick{padding:8px 9px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:12px;text-align:left;cursor:pointer}
+#riskAudit5 .pick.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
+#riskAudit5 .feedback{display:none;padding:10px 11px;border-radius:10px;font-size:13px;line-height:1.45;margin-top:10px}
+#riskAudit5 .feedback.ok{display:block;background:#ecfdf3;color:#065f46;border:1px solid #abefc6}
+#riskAudit5 .feedback.bad{display:block;background:#fff1f0;color:#7a271a;border:1px solid #fecdca}
+#riskAudit5 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#riskAudit5 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#riskAudit5 button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#riskAudit5 button:disabled{opacity:.4}
+#riskAudit5 .reg{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;font-size:12px;line-height:1.5}
+#riskAudit5 .tag{display:inline-block;padding:3px 6px;background:#eef2f6;border-radius:6px;margin-top:5px}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практикум · Урок 5</div>
+  <h3>Проведите аудит рисков</h3>
+</div>
+
+<div class="body" id="ra5Body">
+  <div class="meta" id="ra5Meta"></div>
+  <div class="condition" id="ra5Condition"></div>
+
+  <div class="group">
+    <div class="group-title">Как классифицировать пункт?</div>
+    <div class="buttons" id="ra5Statuses"></div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Что делать дальше?</div>
+    <div class="buttons" id="ra5Actions"></div>
+  </div>
+
+  <div class="feedback" id="ra5Feedback"></div>
+
+  <div class="actions">
+    <button id="ra5Back">Назад</button>
+    <button class="primary" id="ra5Check">Проверить решение</button>
+    <button id="ra5Edit">Изменить</button>
+    <button class="primary" id="ra5Next">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="ra5Result" style="display:none">
+  <h3>Реестр рисков сформирован</h3>
+  <div id="ra5Summary"></div>
+  <div id="ra5Register"></div>
+  <div class="actions">
+    <button id="ra5Error">Вернуться к спорному пункту</button>
+    <button class="primary" id="ra5Restart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function startRA5(){
+
+const statuses=[
+ ["confirmed","Подтверждённый риск"],
+ ["potential","Потенциальный риск"],
+ ["unclear","Неясность"],
+ ["none","Не риск"]
+];
+
+const actions=[
+ ["client","Уточнить у клиента"],
+ ["legal","Передать юристу"],
+ ["finance","Передать финансисту"],
+ ["ops","Проверить операционную готовность"],
+ ["requirements","Оставить в карте требований"]
+];
+
+const cases=[
+ {
+  text:"Страховой полис должен быть оформлен до передачи имущества. Без полиса имущество не передаётся.",
+  status:"confirmed",action:"ops",
+  why:"И условие, и последствие прямо указаны. Руководителю важно проверить, реально ли оформить полис к нужному моменту."
+ },
+ {
+  text:"Платёж должен быть внесён в течение пяти рабочих дней. Последствия просрочки в документе не указаны.",
+  status:"potential",action:"client",
+  why:"Сам срок подтверждён, но последствия нарушения неизвестны. Их нельзя придумывать — нужно уточнить."
+ },
+ {
+  text:"Дополнительные расходы по доставке возлагаются на вашу компанию. Предварительный внутренний расчёт — 300 000 ₽.",
+  status:"confirmed",action:"finance",
+  why:"Дополнительная стоимость подтверждена условием, а её существенность нужно оценить в экономике сделки."
+ },
+ {
+  text:"Условия досрочного расторжения допускают несколько трактовок и могут повлечь финансовые последствия.",
+  status:"unclear",action:"legal",
+  why:"Здесь сначала нужна профессиональная трактовка юридического условия, а не решение модели."
+ },
+ {
+  text:"Акт приёмки подписывается в течение трёх рабочих дней после поставки. Других последствий документ не устанавливает.",
+  status:"none",action:"requirements",
+  why:"Это обычное обязательное условие. Без дополнительных неблагоприятных последствий его достаточно сохранить в карте требований."
+ }
+];
+
+let current=0;
+let answers=cases.map(()=>({status:null,action:null}));
+let checked=[];
+
+const E=id=>document.getElementById(id);
+const body=E("ra5Body"),result=E("ra5Result"),meta=E("ra5Meta"),
+condition=E("ra5Condition"),statusesBox=E("ra5Statuses"),actionsBox=E("ra5Actions"),
+feedback=E("ra5Feedback"),back=E("ra5Back"),check=E("ra5Check"),
+edit=E("ra5Edit"),next=E("ra5Next"),summary=E("ra5Summary"),
+register=E("ra5Register"),error=E("ra5Error"),restart=E("ra5Restart");
+
+function good(i){
+ return answers[i].status===cases[i].status && answers[i].action===cases[i].action;
+}
+
+function makeButtons(box,data,key){
+ box.innerHTML="";
+ data.forEach(pair=>{
+   const b=document.createElement("button");
+   b.className="pick"+(answers[current][key]===pair[0]?" active":"");
+   b.textContent=pair[1];
+   b.disabled=!!checked[current];
+   b.onclick=function(){
+     answers[current][key]=pair[0];
+     render();
+   };
+   box.appendChild(b);
+ });
+}
+
+function labelOf(data,value){
+ const x=data.find(a=>a[0]===value);
+ return x?x[1]:"";
+}
+
+function render(){
+ body.style.display="block";result.style.display="none";
+ const c=cases[current];
+
+ meta.textContent="Пункт "+(current+1)+" из "+cases.length;
+ condition.textContent=c.text;
+
+ makeButtons(statusesBox,statuses,"status");
+ makeButtons(actionsBox,actions,"action");
+
+ feedback.className="feedback";
+ feedback.innerHTML="";
+ if(checked[current]){
+   const ok=good(current);
+   feedback.classList.add(ok?"ok":"bad");
+   feedback.innerHTML="<strong>"+(ok?"Решение обосновано.":"Связку стоит пересмотреть.")+"</strong> "+c.why;
+ }
+
+ back.disabled=current===0;
+ check.style.display=checked[current]?"none":"inline-block";
+ edit.style.display=checked[current]?"inline-block":"none";
+ next.style.display=checked[current]?"inline-block":"none";
+ next.textContent=current===cases.length-1?"Сформировать реестр":"Далее";
+}
+
+check.onclick=function(){
+ if(!answers[current].status||!answers[current].action){
+   alert("Выберите статус и дальнейшее действие.");
+   return;
+ }
+ checked[current]=true;render();
+};
+
+edit.onclick=function(){checked[current]=false;render()};
+back.onclick=function(){if(current>0){current--;render()}};
+next.onclick=function(){
+ if(current<cases.length-1){current++;render()}
+ else showResult();
+};
+
+function showResult(){
+ body.style.display="none";result.style.display="block";
+ const wrong=cases.filter((c,i)=>!good(i)).length;
+
+ summary.innerHTML=wrong
+   ? "<p>Реестр собран, но <strong>"+wrong+"</strong> пункт(а) требуют повторной оценки.</p>"
+   : "<p><strong>Реестр готов.</strong> Риски отделены от неясностей и обычных требований, а для каждого пункта назначено следующее действие.</p>";
+
+ register.innerHTML="";
+ cases.forEach((c,i)=>{
+   const d=document.createElement("div");
+   d.className="reg";
+   d.innerHTML=
+     "<strong>"+c.text+"</strong><br>"+
+     "<span class='tag'>"+labelOf(statuses,answers[i].status)+"</span> "+
+     "<span class='tag'>"+labelOf(actions,answers[i].action)+"</span>";
+   register.appendChild(d);
+ });
+
+ error.style.display=wrong?"inline-block":"none";
+}
+
+error.onclick=function(){
+ const i=cases.findIndex((c,n)=>!good(n));
+ if(i!==-1){current=i;checked[i]=false;render()}
+};
+
+restart.onclick=function(){
+ current=0;
+ answers=cases.map(()=>({status:null,action:null}));
+ checked=[];
+ render();
+};
+
+render();
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",startRA5)}
+else{startRA5()}
+})();
+</script>
+</div>

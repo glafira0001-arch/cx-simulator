@@ -1,0 +1,217 @@
+<div id="chainSim3">
+<style>
+#chainSim3{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#chainSim3 *{box-sizing:border-box}
+#chainSim3 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#chainSim3 .head,#chainSim3 .body,#chainSim3 .result{padding:16px}
+#chainSim3 .head{border-bottom:1px solid #e5e7eb}
+#chainSim3 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#chainSim3 h3{margin:0;font-size:18px}
+#chainSim3 .meta{font-size:12px;color:#667085;margin-bottom:10px}
+#chainSim3 .scenario{padding:10px 11px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:11px;font-size:13px;line-height:1.45;margin-bottom:12px}
+#chainSim3 .block{margin-bottom:10px}
+#chainSim3 .block label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#chainSim3 select{width:100%;padding:9px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px}
+#chainSim3 .arrow{text-align:center;color:#98a2b3;font-size:18px;line-height:1}
+#chainSim3 .feedback{display:none;margin-top:11px;padding:10px 11px;border-radius:10px;font-size:13px;line-height:1.45}
+#chainSim3 .feedback.ok{display:block;background:#ecfdf3;border:1px solid #abefc6;color:#065f46}
+#chainSim3 .feedback.bad{display:block;background:#fff1f0;border:1px solid #fecdca;color:#7a271a}
+#chainSim3 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#chainSim3 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#chainSim3 button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#chainSim3 .chain{padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:8px}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практикум · Урок 3</div>
+  <h3>Соберите карту персонализации</h3>
+</div>
+
+<div class="body" id="cs3Body">
+  <div class="meta" id="cs3Meta"></div>
+  <div class="scenario" id="cs3Scenario"></div>
+
+  <div class="block">
+    <label>1. Факт о клиенте</label>
+    <select id="cs3Fact"></select>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="block">
+    <label>2. Рабочая гипотеза</label>
+    <select id="cs3Hyp"></select>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="block">
+    <label>3. Что показать в продукте</label>
+    <select id="cs3Product"></select>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="block">
+    <label>4. Что сделать в контакте</label>
+    <select id="cs3Action"></select>
+  </div>
+
+  <div class="feedback" id="cs3Feedback"></div>
+
+  <div class="actions">
+    <button id="cs3Back">Назад</button>
+    <button class="primary" id="cs3Check">Проверить цепочку</button>
+    <button id="cs3Edit">Изменить</button>
+    <button class="primary" id="cs3Next">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="cs3Result" style="display:none">
+  <h3>Карта персонализации готова</h3>
+  <div id="cs3Chains"></div>
+  <div class="actions">
+    <button id="cs3Error">Вернуться к неточной цепочке</button>
+    <button class="primary" id="cs3Restart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function startCS3(){
+
+const cases=[
+{
+ context:"Вы предлагаете инструмент стандартизации и обучения распределённых команд.",
+ options:{
+  fact:["Компания открыла три региональных подразделения.","Компания основана в 2004 году.","На сайте опубликованы фотографии офиса."],
+  hyp:["При масштабировании может стать важнее единый подход к работе филиалов.","Компания точно потеряла контроль над филиалами.","Компания собирается закрыть центральный офис."],
+  product:["Единые программы обучения и стандарты для разных подразделений.","История нашей компании.","Все функции продукта без приоритета."],
+  action:["Уточнить, как сейчас поддерживают единые стандарты между регионами.","Сразу сообщить, что у клиента есть проблема управления.","Не упоминать тему масштабирования."]
+ },
+ correct:[0,0,0,0],
+ why:"Факт подтверждён, возможная потребность сформулирована как гипотеза, а продукт и вопрос логично связаны с ней."
+},
+{
+ context:"Компания набирает 15 новых менеджеров. Вы предлагаете систему адаптации и обучения продавцов.",
+ options:{
+  fact:["На карьерной странице открыто 15 вакансий менеджеров.","Коммерческий директор любит спорт.","Компания получила отраслевую награду."],
+  hyp:["При расширении команды может стать актуальной быстрая адаптация новичков.","Новые сотрудники обязательно работают хуже старых.","Компания не умеет обучать продавцов."],
+  product:["Программы онбординга и контроль прохождения обучения.","Модуль корпоративных новостей.","Полный каталог возможностей без привязки к задаче."],
+  action:["Уточнить, как сейчас устроен ввод новых продавцов в работу.","Сразу предложить заменить действующую систему обучения.","Сообщить, что найм доказывает проблемы с текучестью."]
+ },
+ correct:[0,0,0,0],
+ why:"Найм — факт. Потребность в ускоренной адаптации пока лишь гипотеза, которую нужно проверить вопросом."
+},
+{
+ context:"Руководитель публично говорил о необходимости сократить время подготовки коммерческих предложений. Вы предлагаете инструмент автоматизации КП.",
+ options:{
+  fact:["Руководитель публично назвал скорость подготовки КП приоритетом.","Компания работает в нескольких городах.","На сайте обновился дизайн."],
+  hyp:["Сокращение времени подготовки КП действительно может быть актуальной задачей.","Компания точно теряет сделки из-за медленных КП.","Менеджеры не умеют писать предложения."],
+  product:["Автоматизация подготовки черновика КП и шаблоны под типовые ситуации.","Общий рассказ об ИИ.","Набор функций, не связанных с коммерческими предложениями."],
+  action:["Связать демонстрацию продукта с заявленным приоритетом и уточнить текущий процесс.","Начать разговор с критики действующего процесса.","Не учитывать публичный приоритет руководителя."]
+ },
+ correct:[0,0,0,0],
+ why:"Здесь связь наиболее прямая: сам руководитель публично обозначил соответствующий рабочий приоритет."
+}
+];
+
+let current=0,answers=cases.map(()=>[null,null,null,null]),checked=[];
+const E=id=>document.getElementById(id);
+const body=E("cs3Body"),result=E("cs3Result"),meta=E("cs3Meta"),
+scenario=E("cs3Scenario"),fact=E("cs3Fact"),hyp=E("cs3Hyp"),
+product=E("cs3Product"),action=E("cs3Action"),feedback=E("cs3Feedback"),
+back=E("cs3Back"),check=E("cs3Check"),edit=E("cs3Edit"),next=E("cs3Next"),
+chains=E("cs3Chains"),error=E("cs3Error"),restart=E("cs3Restart");
+
+const selects=[fact,hyp,product,action];
+const keys=["fact","hyp","product","action"];
+
+function fillSelect(select,items,value){
+ select.innerHTML="<option value=''>Выберите вариант</option>";
+ items.forEach((t,i)=>{
+   const o=document.createElement("option");
+   o.value=i;o.textContent=t;
+   if(value===i)o.selected=true;
+   select.appendChild(o);
+ });
+}
+
+function isGood(i){
+ return answers[i].every((v,n)=>v===cases[i].correct[n]);
+}
+
+function render(){
+ body.style.display="block";result.style.display="none";
+ const c=cases[current];
+
+ meta.textContent="Ситуация "+(current+1)+" из "+cases.length;
+ scenario.textContent=c.context;
+
+ selects.forEach((s,n)=>{
+   fillSelect(s,c.options[keys[n]],answers[current][n]);
+   s.disabled=!!checked[current];
+   s.onchange=function(){
+     answers[current][n]=this.value===""?null:Number(this.value);
+   };
+ });
+
+ feedback.className="feedback";
+ feedback.innerHTML="";
+ if(checked[current]){
+   const ok=isGood(current);
+   feedback.classList.add(ok?"ok":"bad");
+   feedback.innerHTML="<strong>"+(ok?"Цепочка логична.":"В цепочке есть разрыв.")+"</strong> "+c.why;
+ }
+
+ back.disabled=current===0;
+ check.style.display=checked[current]?"none":"inline-block";
+ edit.style.display=checked[current]?"inline-block":"none";
+ next.style.display=checked[current]?"inline-block":"none";
+ next.textContent=current===cases.length-1?"Собрать карту":"Далее";
+}
+
+check.onclick=function(){
+ const vals=answers[current];
+ if(vals.some(v=>v===null)){alert("Заполните все четыре элемента цепочки.");return}
+ checked[current]=true;render();
+};
+edit.onclick=function(){checked[current]=false;render()};
+back.onclick=function(){if(current>0){current--;render()}};
+next.onclick=function(){
+ if(current<cases.length-1){current++;render()}
+ else showResult();
+};
+
+function showResult(){
+ body.style.display="none";result.style.display="block";
+ chains.innerHTML="";
+ cases.forEach((c,i)=>{
+   const a=answers[i];
+   const d=document.createElement("div");
+   d.className="chain";
+   d.innerHTML=
+     "<strong>Ситуация "+(i+1)+"</strong><br>"+
+     c.options.fact[a[0]]+" → "+
+     c.options.hyp[a[1]]+" → "+
+     c.options.product[a[2]]+" → "+
+     c.options.action[a[3]];
+   chains.appendChild(d);
+ });
+ error.style.display=cases.some((c,i)=>!isGood(i))?"inline-block":"none";
+}
+
+error.onclick=function(){
+ const i=cases.findIndex((c,n)=>!isGood(n));
+ if(i!==-1){current=i;checked[i]=false;render()}
+};
+restart.onclick=function(){
+ current=0;answers=cases.map(()=>[null,null,null,null]);checked=[];render();
+};
+
+render();
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",startCS3)}
+else{startCS3()}
+})();
+</script>
+</div>

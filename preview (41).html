@@ -1,0 +1,217 @@
+<div id="dossierSim1">
+<style>
+#dossierSim1{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#dossierSim1 *{box-sizing:border-box}
+#dossierSim1 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#dossierSim1 .head,#dossierSim1 .body,#dossierSim1 .result{padding:16px}
+#dossierSim1 .head{border-bottom:1px solid #e5e7eb}
+#dossierSim1 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#dossierSim1 h3{margin:0;font-size:18px;line-height:1.3}
+#dossierSim1 .progress{height:5px;background:#eef2f6;border-radius:10px;overflow:hidden;margin-top:12px}
+#dossierSim1 .bar{height:100%;background:#2563eb;transition:.2s}
+#dossierSim1 .hint{font-size:13px;line-height:1.45;color:#475467;margin-bottom:12px}
+#dossierSim1 .fact{padding:11px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;margin-bottom:10px}
+#dossierSim1 .fact-title{font-size:13px;font-weight:700;margin-bottom:5px}
+#dossierSim1 .source{font-size:12px;color:#667085;line-height:1.4;margin-bottom:9px}
+#dossierSim1 .choices{display:flex;gap:6px;flex-wrap:wrap}
+#dossierSim1 .choice{padding:7px 9px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px;cursor:pointer}
+#dossierSim1 .choice.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
+#dossierSim1 .feedback{display:none;padding:10px 11px;border-radius:10px;font-size:12px;line-height:1.45;margin-top:8px}
+#dossierSim1 .feedback.ok{display:block;background:#ecfdf3;border:1px solid #abefc6;color:#065f46}
+#dossierSim1 .feedback.bad{display:block;background:#fff1f0;border:1px solid #fecdca;color:#7a271a}
+#dossierSim1 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#dossierSim1 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#dossierSim1 button.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+#dossierSim1 button:disabled{opacity:.4}
+#dossierSim1 .result-title{font-size:20px;font-weight:800;margin-bottom:8px}
+#dossierSim1 .summary{padding:10px 11px;border:1px solid #e5e7eb;border-radius:11px;background:#f8fafc;font-size:13px;line-height:1.45;margin-bottom:10px}
+#dossierSim1 .result-item{padding:8px 9px;border:1px solid #e5e7eb;border-radius:9px;font-size:12px;margin-bottom:7px}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практикум · Урок 1</div>
+    <h3>Соберите досье компании</h3>
+    <div class="progress"><div class="bar" id="ds1Bar"></div></div>
+  </div>
+
+  <div class="body" id="ds1Body">
+    <div class="hint" id="ds1Hint"></div>
+    <div id="ds1Facts"></div>
+    <div class="actions">
+      <button id="ds1Back">Назад</button>
+      <button class="primary" id="ds1Check">Проверить экран</button>
+      <button id="ds1Edit">Изменить решения</button>
+      <button class="primary" id="ds1Next">Далее</button>
+    </div>
+  </div>
+
+  <div class="result" id="ds1Result" style="display:none">
+    <div class="result-title">Досье собрано</div>
+    <div class="summary" id="ds1Summary"></div>
+    <div id="ds1ResultList"></div>
+    <div class="actions">
+      <button id="ds1Return">Вернуться к неточностям</button>
+      <button class="primary" id="ds1Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function startDS1(){
+
+const facts=[
+ {text:"Компания запустила сервисный центр в Казани.",source:"Официальный пресс-релиз, 2 месяца назад",correct:"keep",why:"Свежий факт подтверждён официальным источником."},
+ {text:"Компания планирует выйти на рынок Казахстана.",source:"Пересказ интервью в агрегаторе, 2022 год; свежих подтверждений нет",correct:"check",why:"Источник старый, а текущий статус плана неизвестен."},
+ {text:"На карьерной странице открыты 7 вакансий менеджеров по продажам.",source:"Официальный сайт, обновлено 3 дня назад",correct:"keep",why:"Факт можно подтвердить напрямую. Причины найма при этом неизвестны."},
+ {text:"Выручка компании, вероятно, снизилась, поэтому она расширяет отдел продаж.",source:"Вывод ИИ без источника",correct:"drop",why:"Это интерпретация без подтверждающих данных."},
+ {text:"Коммерческий директор выступал на конференции о развитии региональных продаж.",source:"Сайт конференции, 4 месяца назад",correct:"keep",why:"Свежий профессиональный факт подтверждён открытым источником."},
+ {text:"Генеральный директор якобы покинул компанию.",source:"Пост неизвестного автора в соцсети",correct:"check",why:"Сведения значимы, но требуют подтверждения надёжным источником."},
+ {text:"Компания основана в 2004 году.",source:"Раздел «О компании» на официальном сайте",correct:"keep",why:"Базовый подтверждённый факт можно оставить в справочной части досье."},
+ {text:"Компания открыла новый склад.",source:"Новость 18-месячной давности; задача — события последних 12 месяцев",correct:"drop",why:"Факт может быть верным, но не соответствует заданному периоду текущего досье."}
+];
+
+const pages=[[0,1,2,3],[4,5,6,7]];
+const labels={keep:"В досье",check:"Проверить",drop:"Не использовать"};
+let page=0;
+let answers={};
+let checked={};
+
+const E=id=>document.getElementById(id);
+const body=E("ds1Body"),result=E("ds1Result"),bar=E("ds1Bar"),
+hint=E("ds1Hint"),factsBox=E("ds1Facts"),back=E("ds1Back"),
+check=E("ds1Check"),edit=E("ds1Edit"),next=E("ds1Next"),
+summary=E("ds1Summary"),resultList=E("ds1ResultList"),
+returnBtn=E("ds1Return"),restart=E("ds1Restart");
+
+function setAnswer(i,value){
+ answers[i]=value;
+ render();
+}
+
+function pageComplete(){
+ return pages[page].every(i=>answers[i]);
+}
+
+function pageCorrect(){
+ return pages[page].every(i=>answers[i]===facts[i].correct);
+}
+
+function render(){
+ body.style.display="block";
+ result.style.display="none";
+ hint.textContent="Экран "+(page+1)+" из 2. Для каждого найденного сведения выберите, что с ним делать.";
+ factsBox.innerHTML="";
+
+ pages[page].forEach(function(i){
+   const f=facts[i];
+   const wrap=document.createElement("div");
+   wrap.className="fact";
+
+   const title=document.createElement("div");
+   title.className="fact-title";
+   title.textContent=f.text;
+
+   const source=document.createElement("div");
+   source.className="source";
+   source.textContent=f.source;
+
+   const choices=document.createElement("div");
+   choices.className="choices";
+
+   ["keep","check","drop"].forEach(function(v){
+     const b=document.createElement("button");
+     b.className="choice"+(answers[i]===v?" active":"");
+     b.textContent=labels[v];
+     b.onclick=function(){setAnswer(i,v)};
+     choices.appendChild(b);
+   });
+
+   wrap.appendChild(title);
+   wrap.appendChild(source);
+   wrap.appendChild(choices);
+
+   if(checked[page]){
+     const fb=document.createElement("div");
+     const ok=answers[i]===f.correct;
+     fb.className="feedback "+(ok?"ok":"bad");
+     fb.innerHTML="<strong>"+(ok?"Решение подходит.":"Нужно пересмотреть.")+"</strong> "+f.why;
+     wrap.appendChild(fb);
+   }
+
+   factsBox.appendChild(wrap);
+ });
+
+ back.disabled=page===0;
+ check.style.display=checked[page]?"none":"inline-block";
+ edit.style.display=checked[page]?"inline-block":"none";
+ next.style.display=checked[page]?"inline-block":"none";
+ next.textContent=page===1?"Собрать досье":"Далее";
+ bar.style.width=((page+1)/2*100)+"%";
+}
+
+check.onclick=function(){
+ if(!pageComplete()){alert("Распределите все сведения на этом экране.");return}
+ checked[page]=true;
+ render();
+};
+
+edit.onclick=function(){
+ checked[page]=false;
+ render();
+};
+
+back.onclick=function(){
+ if(page>0){page--;render()}
+};
+
+next.onclick=function(){
+ if(page===0){page++;render()}
+ else showResult();
+};
+
+function showResult(){
+ body.style.display="none";
+ result.style.display="block";
+
+ const kept=facts.map((f,i)=>({f,i})).filter(x=>answers[x.i]==="keep");
+ const wrong=facts.map((f,i)=>i).filter(i=>answers[i]!==facts[i].correct);
+
+ summary.innerHTML=
+   "<strong>В рабочем досье: "+kept.length+" факта.</strong><br>"+
+   (wrong.length
+     ? "Часть решений пока требует пересмотра. Вернитесь к отмеченным сведениям и уточните их статус."
+     : "Все сведения распределены корректно: подтверждённые факты отделены от сомнительных и нерелевантных.");
+
+ resultList.innerHTML="";
+ kept.forEach(function(x){
+   const d=document.createElement("div");
+   d.className="result-item";
+   d.textContent=x.f.text;
+   resultList.appendChild(d);
+ });
+
+ returnBtn.style.display=wrong.length?"inline-block":"none";
+}
+
+returnBtn.onclick=function(){
+ const firstWrong=facts.findIndex((f,i)=>answers[i]!==f.correct);
+ if(firstWrong!==-1){
+   page=firstWrong<4?0:1;
+   checked[page]=false;
+   render();
+ }
+};
+
+restart.onclick=function(){
+ page=0;answers={};checked={};render();
+};
+
+render();
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",startDS1)}
+else{startDS1()}
+})();
+</script>
+</div>

@@ -1,0 +1,162 @@
+<div id="factSort2">
+<style>
+#factSort2{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#factSort2 *{box-sizing:border-box}
+#factSort2 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#factSort2 .head,#factSort2 .body,#factSort2 .result{padding:16px}
+#factSort2 .head{border-bottom:1px solid #e5e7eb}
+#factSort2 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#factSort2 h3{margin:0;font-size:18px}
+#factSort2 .counter{font-size:12px;color:#667085;margin:10px 0}
+#factSort2 .fact{padding:14px;border:1px solid #e5e7eb;border-radius:13px;background:#f8fafc;font-size:14px;line-height:1.5}
+#factSort2 .source{font-size:12px;color:#667085;margin-top:7px}
+#factSort2 .zones{display:grid;gap:8px;margin-top:12px}
+#factSort2 .zone{padding:10px;border:1px solid #d0d5dd;border-radius:10px;background:#fff;text-align:left;font-size:13px;cursor:pointer}
+#factSort2 .zone.active{border-color:#2563eb;background:#eff6ff}
+#factSort2 .feedback{display:none;margin-top:11px;padding:10px 11px;border-radius:10px;font-size:13px;line-height:1.45}
+#factSort2 .feedback.ok{display:block;background:#ecfdf3;border:1px solid #abefc6;color:#065f46}
+#factSort2 .feedback.bad{display:block;background:#fff1f0;border:1px solid #fecdca;color:#7a271a}
+#factSort2 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#factSort2 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#factSort2 button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#factSort2 button:disabled{opacity:.4}
+#factSort2 .summary{padding:10px;border-radius:10px;background:#f8fafc;border:1px solid #e5e7eb;font-size:13px;line-height:1.45;margin-bottom:10px}
+#factSort2 .mini{padding:8px 9px;border:1px solid #e5e7eb;border-radius:9px;font-size:12px;margin-bottom:7px}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практикум · Урок 2</div>
+  <h3>Разберите факты перед контактом</h3>
+</div>
+
+<div class="body" id="fs2Body">
+  <div class="counter" id="fs2Counter"></div>
+  <div class="fact" id="fs2Fact"></div>
+
+  <div class="zones">
+    <button class="zone" data-zone="use">Использовать при подготовке</button>
+    <button class="zone" data-zone="hyp">Гипотеза — уточнить</button>
+    <button class="zone" data-zone="bg">Оставить как фон</button>
+  </div>
+
+  <div class="feedback" id="fs2Feedback"></div>
+
+  <div class="actions">
+    <button id="fs2Back">Назад</button>
+    <button class="primary" id="fs2Check">Проверить</button>
+    <button id="fs2Edit">Изменить решение</button>
+    <button class="primary" id="fs2Next">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="fs2Result" style="display:none">
+  <h3>Карточка подготовки собрана</h3>
+  <div class="summary" id="fs2Summary"></div>
+  <div id="fs2List"></div>
+  <div class="actions">
+    <button id="fs2Error">Вернуться к первой неточности</button>
+    <button class="primary" id="fs2Restart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function startFS2(){
+
+const items=[
+ {text:"Компания открыла три региональных подразделения.",source:"Официальная новость компании",correct:"use",why:"Факт напрямую связан с масштабированием и может влиять на подготовку разговора о стандартизации."},
+ {text:"На сайте открыто 15 вакансий менеджеров по продажам.",source:"Раздел «Карьера»",correct:"hyp",why:"Расширение найма подтверждено, но причины и потребность в обучении ещё нужно уточнить."},
+ {text:"Коммерческий директор выступал о необходимости единых стандартов региональных продаж.",source:"Программа отраслевой конференции",correct:"use",why:"Это профессиональный контекст, прямо связанный с темой будущего разговора."},
+ {text:"Компания работает на рынке 18 лет.",source:"Официальный сайт",correct:"bg",why:"Факт полезен для общего понимания бизнеса, но сам по себе не меняет подготовку предложения."},
+ {text:"Руководитель участвовал в городском марафоне.",source:"Личная страница",correct:"bg",why:"Личная деталь не связана с профессиональной задачей контакта."},
+ {text:"За последний месяц компания опубликовала несколько вакансий руководителей групп продаж.",source:"Карьерный раздел",correct:"hyp",why:"Это может указывать на изменение структуры отдела, но вывод нужно проверить в разговоре."}
+];
+
+const zoneLabels={use:"Использовать",hyp:"Гипотеза",bg:"Фон"};
+
+let current=0,answers=[],checked=[];
+const E=id=>document.getElementById(id);
+const body=E("fs2Body"),result=E("fs2Result"),counter=E("fs2Counter"),
+fact=E("fs2Fact"),feedback=E("fs2Feedback"),back=E("fs2Back"),
+check=E("fs2Check"),edit=E("fs2Edit"),next=E("fs2Next"),
+summary=E("fs2Summary"),list=E("fs2List"),error=E("fs2Error"),restart=E("fs2Restart");
+const zoneButtons=[...document.querySelectorAll("#factSort2 .zone")];
+
+zoneButtons.forEach(b=>{
+ b.onclick=function(){
+   answers[current]=this.dataset.zone;
+   render();
+ }
+});
+
+function good(i){return answers[i]===items[i].correct}
+
+function render(){
+ body.style.display="block";result.style.display="none";
+ const item=items[current];
+
+ counter.textContent="Факт "+(current+1)+" из "+items.length;
+ fact.innerHTML="<strong>"+item.text+"</strong><div class='source'>"+item.source+"</div>";
+
+ zoneButtons.forEach(b=>b.classList.toggle("active",answers[current]===b.dataset.zone));
+
+ feedback.className="feedback";
+ feedback.innerHTML="";
+ if(checked[current]){
+   const ok=good(current);
+   feedback.classList.add(ok?"ok":"bad");
+   feedback.innerHTML="<strong>"+(ok?"Классификация подходит.":"Категорию стоит изменить.")+"</strong> "+item.why;
+ }
+
+ back.disabled=current===0;
+ check.style.display=checked[current]?"none":"inline-block";
+ edit.style.display=checked[current]?"inline-block":"none";
+ next.style.display=checked[current]?"inline-block":"none";
+ next.textContent=current===items.length-1?"Собрать карточку":"Далее";
+}
+
+check.onclick=function(){
+ if(!answers[current]){alert("Выберите категорию.");return}
+ checked[current]=true;render();
+};
+edit.onclick=function(){checked[current]=false;render()};
+back.onclick=function(){if(current>0){current--;render()}};
+next.onclick=function(){
+ if(current<items.length-1){current++;render()}
+ else showResult();
+};
+
+function showResult(){
+ body.style.display="none";result.style.display="block";
+
+ const wrong=items.map((x,i)=>i).filter(i=>!good(i));
+ summary.innerHTML=wrong.length
+   ? "<strong>Карточка собрана, но часть фактов распределена неточно.</strong><br>Исправьте категории, чтобы не превратить фон или гипотезу в основание для обращения."
+   : "<strong>Карточка готова.</strong><br>Факты для подготовки отделены от гипотез и общего фона.";
+
+ list.innerHTML="";
+ items.forEach((item,i)=>{
+   const d=document.createElement("div");
+   d.className="mini";
+   d.innerHTML="<strong>"+zoneLabels[answers[i]]+":</strong> "+item.text;
+   list.appendChild(d);
+ });
+
+ error.style.display=wrong.length?"inline-block":"none";
+}
+
+error.onclick=function(){
+ const i=items.findIndex((x,n)=>!good(n));
+ if(i!==-1){current=i;checked[i]=false;render()}
+};
+restart.onclick=function(){current=0;answers=[];checked=[];render()};
+
+render();
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",startFS2)}
+else{startFS2()}
+})();
+</script>
+</div>

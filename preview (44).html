@@ -1,0 +1,206 @@
+<div id="docMap4">
+<style>
+#docMap4{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#docMap4 *{box-sizing:border-box}
+#docMap4 .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden}
+#docMap4 .head,#docMap4 .body,#docMap4 .result{padding:16px}
+#docMap4 .head{border-bottom:1px solid #e5e7eb}
+#docMap4 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#docMap4 h3{margin:0;font-size:18px}
+#docMap4 .doc{padding:12px;border:1px solid #d0d5dd;border-radius:11px;background:#f8fafc;font-size:12px;line-height:1.55;margin-bottom:12px}
+#docMap4 .row{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:9px}
+#docMap4 .clause{font-size:13px;line-height:1.45;margin-bottom:8px}
+#docMap4 .fields{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#docMap4 select{width:100%;padding:8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px}
+#docMap4 .feedback{font-size:12px;line-height:1.4;margin-top:7px;padding:8px;border-radius:8px}
+#docMap4 .feedback.ok{background:#ecfdf3;color:#065f46}
+#docMap4 .feedback.bad{background:#fff1f0;color:#7a271a}
+#docMap4 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+#docMap4 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#docMap4 button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#docMap4 table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+#docMap4 th,#docMap4 td{padding:7px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практикум · Урок 4</div>
+  <h3>Извлеките требования из документа</h3>
+</div>
+
+<div class="body" id="dm4Body">
+  <div class="doc">
+    <strong>Фрагмент условий клиента</strong><br>
+    Ваша задача — не пересказать документ, а собрать рабочую карту требований.
+  </div>
+  <div id="dm4Rows"></div>
+
+  <div class="actions">
+    <button class="primary" id="dm4Check">Проверить карту</button>
+    <button id="dm4Edit">Изменить</button>
+    <button class="primary" id="dm4Build">Собрать итоговую таблицу</button>
+  </div>
+</div>
+
+<div class="result" id="dm4Result" style="display:none">
+  <h3>Карта требований</h3>
+  <div id="dm4Summary"></div>
+  <table>
+    <thead><tr><th>Пункт</th><th>Статус</th><th>Срок / условие</th></tr></thead>
+    <tbody id="dm4Table"></tbody>
+  </table>
+  <div class="actions">
+    <button id="dm4Back">Вернуться к документу</button>
+    <button class="primary" id="dm4Restart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function startDM4(){
+
+const rows=[
+ {
+  text:"Поставщик передаёт комплект регистрационных документов не позднее 5 рабочих дней после уведомления о допуске.",
+  type:"req",time:"5 рабочих дней после уведомления",
+  why:"Это обязательное действие с конкретным сроком и точкой отсчёта."
+ },
+ {
+  text:"Заказчик вправе запросить дополнительные сведения в ходе проверки.",
+  type:"cond",time:"—",
+  why:"Это условие процесса, но не самостоятельное обязательство с заранее установленным сроком."
+ },
+ {
+  text:"Изменения спецификации согласуются сторонами. Срок и форма согласования не определены.",
+  type:"clarify",time:"Не определено",
+  why:"Механизм согласования описан неполно, поэтому пункт требует уточнения."
+ },
+ {
+  text:"Поставка осуществляется партиями согласно заявкам заказчика.",
+  type:"cond",time:"По заявкам заказчика",
+  why:"Пункт описывает порядок исполнения, а не отдельное разовое требование."
+ },
+ {
+  text:"Акт приёмки подписывается в течение 3 рабочих дней после поставки.",
+  type:"req",time:"3 рабочих дня после поставки",
+  why:"Это обязательное действие с конкретным сроком, привязанным к поставке."
+ }
+];
+
+const typeLabels={req:"Обязательное требование",cond:"Условие процесса",clarify:"Требует уточнения"};
+const typeOptions=[
+ ["","Выберите статус"],
+ ["req","Обязательное требование"],
+ ["cond","Условие процесса"],
+ ["clarify","Требует уточнения"]
+];
+
+const timeChoices=[
+ ["","Выберите срок / условие"],
+ ["5 рабочих дней после уведомления","5 рабочих дней после уведомления"],
+ ["3 рабочих дня после поставки","3 рабочих дня после поставки"],
+ ["По заявкам заказчика","По заявкам заказчика"],
+ ["Не определено","Не определено"],
+ ["—","Срок не применяется"]
+];
+
+let answers=rows.map(()=>({type:"",time:""}));
+let checked=false;
+
+const E=id=>document.getElementById(id);
+const body=E("dm4Body"),result=E("dm4Result"),rowsBox=E("dm4Rows"),
+check=E("dm4Check"),edit=E("dm4Edit"),build=E("dm4Build"),
+summary=E("dm4Summary"),table=E("dm4Table"),back=E("dm4Back"),restart=E("dm4Restart");
+
+function render(){
+ body.style.display="block";result.style.display="none";
+ rowsBox.innerHTML="";
+
+ rows.forEach((r,i)=>{
+   const wrap=document.createElement("div");
+   wrap.className="row";
+
+   const clause=document.createElement("div");
+   clause.className="clause";
+   clause.innerHTML="<strong>"+(i+1)+".</strong> "+r.text;
+
+   const fields=document.createElement("div");
+   fields.className="fields";
+
+   const typeSel=document.createElement("select");
+   typeOptions.forEach(opt=>{
+     const o=document.createElement("option");
+     o.value=opt[0];o.textContent=opt[1];
+     if(answers[i].type===opt[0])o.selected=true;
+     typeSel.appendChild(o);
+   });
+
+   const timeSel=document.createElement("select");
+   timeChoices.forEach(opt=>{
+     const o=document.createElement("option");
+     o.value=opt[0];o.textContent=opt[1];
+     if(answers[i].time===opt[0])o.selected=true;
+     timeSel.appendChild(o);
+   });
+
+   typeSel.disabled=checked;
+   timeSel.disabled=checked;
+
+   typeSel.onchange=()=>answers[i].type=typeSel.value;
+   timeSel.onchange=()=>answers[i].time=timeSel.value;
+
+   fields.appendChild(typeSel);
+   fields.appendChild(timeSel);
+
+   wrap.appendChild(clause);
+   wrap.appendChild(fields);
+
+   if(checked){
+     const ok=answers[i].type===r.type && answers[i].time===r.time;
+     const fb=document.createElement("div");
+     fb.className="feedback "+(ok?"ok":"bad");
+     fb.textContent=r.why;
+     wrap.appendChild(fb);
+   }
+
+   rowsBox.appendChild(wrap);
+ });
+
+ check.style.display=checked?"none":"inline-block";
+ edit.style.display=checked?"inline-block":"none";
+ build.style.display=checked?"inline-block":"none";
+}
+
+check.onclick=function(){
+ if(answers.some(a=>!a.type||!a.time)){alert("Заполните статус и срок для каждого пункта.");return}
+ checked=true;render();
+};
+
+edit.onclick=function(){checked=false;render()};
+
+build.onclick=function(){
+ body.style.display="none";result.style.display="block";
+ const errors=rows.filter((r,i)=>answers[i].type!==r.type||answers[i].time!==r.time).length;
+ summary.innerHTML=errors
+   ? "<p>Карта собрана, но <strong>"+errors+"</strong> пункт(а) требуют повторного разбора.</p>"
+   : "<p><strong>Карта собрана корректно.</strong> Обязательные требования, условия процесса и неясности разделены.</p>";
+
+ table.innerHTML="";
+ rows.forEach((r,i)=>{
+   const tr=document.createElement("tr");
+   tr.innerHTML="<td>"+r.text+"</td><td>"+typeLabels[answers[i].type]+"</td><td>"+answers[i].time+"</td>";
+   table.appendChild(tr);
+ });
+};
+
+back.onclick=function(){checked=false;render()};
+restart.onclick=function(){answers=rows.map(()=>({type:"",time:""}));checked=false;render()};
+
+render();
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",startDM4)}
+else{startDM4()}
+})();
+</script>
+</div>
