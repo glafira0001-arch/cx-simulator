@@ -1,0 +1,129 @@
+<div id="offerBriefPractice">
+<style>
+#offerBriefPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#offerBriefPractice *{box-sizing:border-box}
+#offerBriefPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#offerBriefPractice .head,#offerBriefPractice .body,#offerBriefPractice .result{padding:16px}
+#offerBriefPractice .head{border-bottom:1px solid #e5e7eb}
+#offerBriefPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#offerBriefPractice h3{margin:0;font-size:18px}
+#offerBriefPractice .meta{font-size:12px;color:#667085;margin:10px 0}
+#offerBriefPractice .item{padding:11px;border:1px solid #e5e7eb;border-radius:11px;background:#f8fafc;margin-bottom:9px}
+#offerBriefPractice .txt{font-size:13px;line-height:1.45;margin-bottom:8px}
+#offerBriefPractice .choices{display:flex;gap:6px;flex-wrap:wrap}
+#offerBriefPractice .choice{padding:7px 9px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px;cursor:pointer}
+#offerBriefPractice .choice.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
+#offerBriefPractice .fb{display:none;margin-top:8px;padding:8px;border-radius:8px;font-size:12px;line-height:1.4}
+#offerBriefPractice .fb.ok{display:block;background:#ecfdf3;color:#065f46}
+#offerBriefPractice .fb.bad{display:block;background:#fff1f0;color:#7a271a}
+#offerBriefPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#offerBriefPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#offerBriefPractice button.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+#offerBriefPractice button:disabled{opacity:.4}
+#offerBriefPractice .summary{padding:11px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Проведите аудит карточки акции</h3>
+</div>
+
+<div class="body" id="obpBody">
+  <div class="meta" id="obpMeta"></div>
+  <div id="obpItems"></div>
+  <div class="actions">
+    <button id="obpBack">Назад</button>
+    <button class="primary" id="obpCheck">Проверить</button>
+    <button id="obpEdit">Изменить решение</button>
+    <button class="primary" id="obpNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="obpResult" style="display:none">
+  <h3>Карточка подготовлена к работе</h3>
+  <div class="summary" id="obpSummary"></div>
+  <div class="actions">
+    <button id="obpReturn">Вернуться к неточности</button>
+    <button class="primary" id="obpRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function startOBP(){
+const data=[
+[
+ {t:"Скидка — до 15%. Большую скидку финансовый директор не согласовал.",c:"ready",w:"Условие подтверждено и задаёт реальную границу для генерации."},
+ {t:"Акция должна помочь вернуть клиентов, которые не покупали больше четырёх месяцев.",c:"ready",w:"Цель и сегмент определены достаточно конкретно."},
+ {t:"Нейросеть может сама решить, нужен ли бонус к покупке.",c:"decide",w:"Бонус влияет на экономику акции. Его допустимость должна определить компания, а не модель."}
+],
+[
+ {t:"Продукт помогает руководителю повысить эффективность минимум на 40%.",c:"remove",w:"Если для 40% нет подтверждения, цифру нельзя использовать как основу оффера."},
+ {t:"Доступ к материалам сохраняется шесть месяцев.",c:"ready",w:"Это конкретная характеристика продукта, которую можно использовать."},
+ {t:"Срок акции ещё обсуждается: от 5 до 14 дней.",c:"decide",w:"Срок влияет на механику и срочность оффера, поэтому его лучше определить до генерации."}
+]
+];
+const labels={ready:"Передать ИИ",decide:"Сначала решить",remove:"Убрать"};
+let page=0,ans={},checked={};
+const E=id=>document.getElementById(id);
+const items=E("obpItems"),body=E("obpBody"),result=E("obpResult"),meta=E("obpMeta");
+function key(i){return page+"_"+i}
+function good(p,i){return ans[p+"_"+i]===data[p][i].c}
+function render(){
+ body.style.display="block";result.style.display="none";
+ meta.textContent="Экран "+(page+1)+" из 2";
+ items.innerHTML="";
+ data[page].forEach((x,i)=>{
+   const d=document.createElement("div");d.className="item";
+   d.innerHTML="<div class='txt'>"+x.t+"</div>";
+   const c=document.createElement("div");c.className="choices";
+   Object.keys(labels).forEach(v=>{
+     const b=document.createElement("button");
+     b.className="choice"+(ans[key(i)]===v?" active":"");
+     b.textContent=labels[v];
+     b.onclick=()=>{ans[key(i)]=v;render()};
+     c.appendChild(b);
+   });
+   d.appendChild(c);
+   if(checked[page]){
+     const f=document.createElement("div");
+     f.className="fb "+(good(page,i)?"ok":"bad");
+     f.textContent=x.w;
+     d.appendChild(f);
+   }
+   items.appendChild(d);
+ });
+ E("obpBack").disabled=page===0;
+ E("obpCheck").style.display=checked[page]?"none":"inline-block";
+ E("obpEdit").style.display=checked[page]?"inline-block":"none";
+ E("obpNext").style.display=checked[page]?"inline-block":"none";
+ E("obpNext").textContent=page===1?"Завершить":"Далее";
+}
+E("obpCheck").onclick=()=>{
+ if(data[page].some((x,i)=>!ans[key(i)])){alert("Примите решение по каждому пункту.");return}
+ checked[page]=true;render();
+};
+E("obpEdit").onclick=()=>{checked[page]=false;render()};
+E("obpBack").onclick=()=>{if(page>0){page--;render()}};
+E("obpNext").onclick=()=>{if(page<1){page++;render()}else showResult()};
+function showResult(){
+ body.style.display="none";result.style.display="block";
+ let wrong=0;
+ data.forEach((arr,p)=>arr.forEach((x,i)=>{if(!good(p,i))wrong++}));
+ E("obpSummary").innerHTML=wrong
+ ? "<strong>Карточка пока требует доработки.</strong><br>Есть решения, при которых ИИ получил бы неподтверждённое обещание или сам определял коммерческие условия."
+ : "<strong>Карточка готова.</strong><br>Факты отделены от управленческих решений и неподтверждённых обещаний.";
+ E("obpReturn").style.display=wrong?"inline-block":"none";
+}
+E("obpReturn").onclick=()=>{
+ for(let p=0;p<data.length;p++){for(let i=0;i<data[p].length;i++){if(!good(p,i)){page=p;checked[p]=false;render();return}}}
+};
+E("obpRestart").onclick=()=>{page=0;ans={};checked={};render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startOBP);else startOBP();
+})();
+</script>
+</div>

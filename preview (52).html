@@ -1,0 +1,57 @@
+<div id="kpAuditPractice">
+<style>
+#kpAuditPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#kpAuditPractice *{box-sizing:border-box}
+#kpAuditPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#kpAuditPractice .head,#kpAuditPractice .body,#kpAuditPractice .result{padding:16px}
+#kpAuditPractice .head{border-bottom:1px solid #e5e7eb}
+#kpAuditPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#kpAuditPractice h3{margin:0;font-size:18px}
+#kpAuditPractice .msg{padding:11px;border-radius:10px;background:#f8fafc;border:1px solid #e5e7eb;font-size:13px;line-height:1.45;margin-bottom:9px}
+#kpAuditPractice .choice{padding:9px;border:1px solid #d0d5dd;border-radius:9px;margin-bottom:6px;font-size:12px;cursor:pointer}
+#kpAuditPractice .choice.active{border-color:#2563eb;background:#eff6ff}
+#kpAuditPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;margin-top:10px;line-height:1.45}
+#kpAuditPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#kpAuditPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#kpAuditPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#kpAuditPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#kpAuditPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+</style>
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Проведите диагностику готового КП</h3></div>
+<div class="body" id="kapBody">
+ <div id="kapScreen"></div><div id="kapFeedback" class="fb"></div>
+ <div class="actions"><button id="kapBack">Назад</button><button class="primary" id="kapCheck">Проверить</button><button id="kapEdit">Изменить</button><button class="primary" id="kapNext">Далее</button></div>
+</div>
+<div class="result" id="kapResult" style="display:none">
+ <h3>Диагностический сценарий готов</h3>
+ <div class="msg">Проверить чтение файла → задать цель анализа → проверить смысловую структуру → получить карту проблем → только потом переходить к редактуре.</div>
+ <div class="actions"><button class="primary" id="kapRestart">Пройти заново</button></div>
+</div>
+</div>
+<script>
+(function(){
+function startKAP(){
+const s=[
+ {q:"Вы загрузили PDF на 12 страниц. Какой запрос сделать первым?",o:["Перепиши КП сильнее","Назови три главных недостатка","Опиши структуру документа и укажи, если какие-то страницы или блоки не прочитаны","Сделай предложение короче"],c:2,f:"Сначала нужно проверить, что модель действительно видит весь документ. Иначе дальнейшая диагностика может быть неполной."},
+ {q:"Файл прочитан полностью. Как лучше задать рамку анализа?",o:["Оцени, красиво ли написано","Проверь, понятны ли задача клиента, решение, выгоды, условия и следующий шаг","Найди как можно больше ошибок","Перепиши текст в более современном стиле"],c:1,f:"Рамка должна быть связана с функцией коммерческого предложения, а не только со стилем."},
+ {q:"ИИ нашёл десять замечаний. Что делать дальше?",o:["Попросить сразу новую версию документа","Свести замечания в карту: проблема, влияние, что требует доработки","Принять все рекомендации автоматически","Оставить только замечания по грамматике"],c:1,f:"Карта проблем позволяет отделить существенные смысловые недостатки от косметических правок."}
+];
+let p=0,a=[],ch=[];const E=id=>document.getElementById(id);
+function render(){
+ E("kapBody").style.display="block";E("kapResult").style.display="none";
+ const q=s[p],box=E("kapScreen");box.innerHTML="<div class='msg'><strong>"+q.q+"</strong></div>";
+ q.o.forEach((t,i)=>{const d=document.createElement("div");d.className="choice"+(a[p]===i?" active":"");d.textContent=t;d.onclick=()=>{if(!ch[p]){a[p]=i;render()}};box.appendChild(d)});
+ const fb=E("kapFeedback");fb.className="fb";fb.innerHTML="";if(ch[p]){fb.classList.add(a[p]===q.c?"ok":"bad");fb.textContent=q.f}
+ E("kapBack").disabled=p===0;E("kapCheck").style.display=ch[p]?"none":"inline-block";E("kapEdit").style.display=ch[p]?"inline-block":"none";E("kapNext").style.display=ch[p]?"inline-block":"none";E("kapNext").textContent=p===2?"Завершить":"Далее";
+}
+E("kapCheck").onclick=()=>{if(a[p]===undefined){alert("Выберите действие.");return}ch[p]=true;render()};
+E("kapEdit").onclick=()=>{ch[p]=false;render()};
+E("kapBack").onclick=()=>{if(p>0){p--;render()}};
+E("kapNext").onclick=()=>{if(p<2){p++;render()}else{E("kapBody").style.display="none";E("kapResult").style.display="block"}};
+E("kapRestart").onclick=()=>{p=0;a=[];ch=[];render()};render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startKAP);else startKAP();
+})();
+</script>
+</div>

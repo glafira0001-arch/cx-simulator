@@ -1,0 +1,58 @@
+<div id="kpImprovePractice">
+<style>
+#kpImprovePractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#kpImprovePractice *{box-sizing:border-box}
+#kpImprovePractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#kpImprovePractice .head,#kpImprovePractice .body,#kpImprovePractice .result{padding:16px}
+#kpImprovePractice .head{border-bottom:1px solid #e5e7eb}
+#kpImprovePractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#kpImprovePractice h3{margin:0;font-size:18px}
+#kpImprovePractice .problem{padding:10px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;font-size:13px;line-height:1.45;margin-bottom:9px}
+#kpImprovePractice .rec{padding:9px;border:1px solid #d0d5dd;border-radius:9px;margin-bottom:6px;font-size:12px;cursor:pointer}
+#kpImprovePractice .rec.active{border-color:#2563eb;background:#eff6ff}
+#kpImprovePractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#kpImprovePractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#kpImprovePractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#kpImprovePractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#kpImprovePractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#kpImprovePractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#kpImprovePractice .final{padding:11px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;font-size:13px;line-height:1.5}
+</style>
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Сформируйте редакторский backlog</h3></div>
+<div class="body" id="kipBody">
+ <div id="kipScreen"></div><div id="kipFeedback" class="fb"></div>
+ <div class="actions"><button id="kipBack">Назад</button><button class="primary" id="kipCheck">Проверить</button><button id="kipEdit">Изменить</button><button class="primary" id="kipNext">Далее</button></div>
+</div>
+<div class="result" id="kipResult" style="display:none">
+ <h3>ТЗ на доработку сформировано</h3>
+ <div class="final">1. Перестроить начало вокруг задачи клиента.<br>2. Связать выгоды с подтверждёнными характеристиками.<br>3. Сделать условия заметными.<br>4. Оставить один конкретный CTA.<br>5. Только после этого проводить стилистическую редактуру.</div>
+ <div class="actions"><button class="primary" id="kipRestart">Пройти заново</button></div>
+</div>
+</div>
+<script>
+(function(){
+function startKIP(){
+const s=[
+ {p:"Проблема: первые полстраницы посвящены компании, задача клиента появляется позже.",q:"Какую рекомендацию оставить в работе?",o:["Переписать всё КП в более эмоциональном стиле","Перенести контекст клиента в начало и сократить блок о компании","Добавить больше наград компании","Сделать заголовок крупнее"],c:1,f:"Рекомендация должна исправлять именно найденную структурную проблему."},
+ {p:"Проблема: ИИ предложил заменить «автоматизация трёх отчётов» на «полное избавление команды от ручной отчётности».",q:"Что сделать с рекомендацией?",o:["Принять — новая формулировка сильнее","Отклонить или ослабить: она обещает больше, чем подтверждено","Добавить процент экономии времени","Использовать только в заголовке"],c:1,f:"Редактура не должна усиливать обещание за пределы исходных данных."},
+ {p:"Проблемы найдены одновременно: слабое начало, общий CTA и тяжёлые предложения.",q:"В каком порядке действовать?",o:["Сначала стилистика, затем CTA, потом структура","Сначала структура и смысл, затем CTA и условия, потом стиль","Начать с замены отдельных слов","Исправлять всё одновременно одной генерацией"],c:1,f:"Сначала устраняют смысловые и структурные проблемы. Косметическая редактура имеет смысл после этого."}
+];
+let p=0,a=[],ch=[];const E=id=>document.getElementById(id);
+function render(){
+ E("kipBody").style.display="block";E("kipResult").style.display="none";
+ const q=s[p],box=E("kipScreen");box.innerHTML="<div class='problem'><strong>"+q.p+"</strong><br>"+q.q+"</div>";
+ q.o.forEach((t,i)=>{const d=document.createElement("div");d.className="rec"+(a[p]===i?" active":"");d.textContent=t;d.onclick=()=>{if(!ch[p]){a[p]=i;render()}};box.appendChild(d)});
+ const fb=E("kipFeedback");fb.className="fb";fb.innerHTML="";if(ch[p]){fb.classList.add(a[p]===q.c?"ok":"bad");fb.textContent=q.f}
+ E("kipBack").disabled=p===0;E("kipCheck").style.display=ch[p]?"none":"inline-block";E("kipEdit").style.display=ch[p]?"inline-block":"none";E("kipNext").style.display=ch[p]?"inline-block":"none";E("kipNext").textContent=p===2?"Сформировать ТЗ":"Далее";
+}
+E("kipCheck").onclick=()=>{if(a[p]===undefined){alert("Выберите решение.");return}ch[p]=true;render()};
+E("kipEdit").onclick=()=>{ch[p]=false;render()};
+E("kipBack").onclick=()=>{if(p>0){p--;render()}};
+E("kipNext").onclick=()=>{if(p<2){p++;render()}else{E("kipBody").style.display="none";E("kipResult").style.display="block"}};
+E("kipRestart").onclick=()=>{p=0;a=[];ch=[];render()};render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startKIP);else startKIP();
+})();
+</script>
+</div>

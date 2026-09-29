@@ -1,0 +1,106 @@
+<div id="offerVarietyPractice">
+<style>
+#offerVarietyPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#offerVarietyPractice *{box-sizing:border-box}
+#offerVarietyPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#offerVarietyPractice .head,#offerVarietyPractice .body,#offerVarietyPractice .result{padding:16px}
+#offerVarietyPractice .head{border-bottom:1px solid #e5e7eb}
+#offerVarietyPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#offerVarietyPractice h3{margin:0;font-size:18px}
+#offerVarietyPractice .offer{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.4}
+#offerVarietyPractice select{width:100%;margin-top:7px;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#offerVarietyPractice .fb{display:none;padding:9px;border-radius:9px;margin-top:10px;font-size:12px;line-height:1.45}
+#offerVarietyPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#offerVarietyPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#offerVarietyPractice .builder{padding:11px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:11px}
+#offerVarietyPractice .builder label{display:block;font-size:12px;font-weight:700;margin:8px 0 5px}
+#offerVarietyPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#offerVarietyPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#offerVarietyPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+</style>
+
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Разведите офферы по смыслу</h3></div>
+<div class="body" id="ovpBody">
+  <div id="ovpScreen"></div>
+  <div id="ovpFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="ovpBack">Назад</button>
+    <button class="primary" id="ovpCheck">Проверить</button>
+    <button id="ovpEdit">Изменить</button>
+    <button class="primary" id="ovpNext">Далее</button>
+  </div>
+</div>
+<div class="result" id="ovpResult" style="display:none">
+  <h3>Корректирующий запрос собран</h3>
+  <div id="ovpFinal" class="builder"></div>
+  <div class="actions"><button class="primary" id="ovpRestart">Пройти заново</button></div>
+</div>
+</div>
+
+<script>
+(function(){
+function startOVP(){
+const offers=[
+ "Получите программу со скидкой 15%",
+ "Сэкономьте 15% на программе для руководителей",
+ "8 практических инструментов для работы руководителя на специальных условиях",
+ "Только 7 дней — специальные условия на программу"
+];
+const right=["price","price","value","time"];
+let page=0,cls=[],checked=[false,false],builder={ban:"",goal:""};
+const E=id=>document.getElementById(id);
+function render(){
+ E("ovpBody").style.display="block";E("ovpResult").style.display="none";
+ const s=E("ovpScreen");s.innerHTML="";
+ if(page===0){
+   offers.forEach((o,i)=>{
+     const d=document.createElement("div");d.className="offer";
+     d.innerHTML="<strong>"+o+"</strong>";
+     const sel=document.createElement("select");
+     sel.innerHTML="<option value=''>Определите главный акцент</option><option value='price'>Цена</option><option value='value'>Практический результат</option><option value='time'>Ограниченный срок</option>";
+     sel.value=cls[i]||"";
+     sel.disabled=checked[0];
+     sel.onchange=()=>cls[i]=sel.value;
+     d.appendChild(sel);s.appendChild(d);
+   });
+ }else{
+   s.innerHTML="<div class='builder'><strong>Соберите корректирующий запрос</strong><label>Что нельзя повторять?</label><select id='ovpBan'><option value=''>Выберите</option><option value='price'>Не использовать скидку как главный акцент больше чем в одном новом варианте</option><option value='words'>Не повторять одинаковые слова</option></select><label>Что должна сделать модель?</label><select id='ovpGoal'><option value=''>Выберите</option><option value='new'>Предложить смыслово разные варианты в рамках тех же условий</option><option value='bright'>Сделать формулировки более эмоциональными</option></select></div>";
+   E("ovpBan").value=builder.ban||"";E("ovpGoal").value=builder.goal||"";
+   E("ovpBan").disabled=checked[1];E("ovpGoal").disabled=checked[1];
+   E("ovpBan").onchange=e=>builder.ban=e.target.value;
+   E("ovpGoal").onchange=e=>builder.goal=e.target.value;
+ }
+ const fb=E("ovpFeedback");fb.className="fb";fb.innerHTML="";
+ if(checked[page]){
+   const ok=page===0?right.every((x,i)=>cls[i]===x):(builder.ban==="price"&&builder.goal==="new");
+   fb.classList.add(ok?"ok":"bad");
+   fb.innerHTML=page===0
+   ? (ok?"Вы разделили смысловые направления. Первые два оффера — по сути один ценовой сценарий.":"Посмотрите не на слова, а на мотив предложения. Два первых варианта отличаются формулировкой, но не смыслом.")
+   : (ok?"Запрос ограничивает повторение ценового сценария и требует новых смысловых направлений.":"Корректирующий запрос должен менять логику генерации, а не только стиль текста.");
+ }
+ E("ovpBack").disabled=page===0;
+ E("ovpCheck").style.display=checked[page]?"none":"inline-block";
+ E("ovpEdit").style.display=checked[page]?"inline-block":"none";
+ E("ovpNext").style.display=checked[page]?"inline-block":"none";
+ E("ovpNext").textContent=page===1?"Завершить":"Далее";
+}
+E("ovpCheck").onclick=()=>{
+ if(page===0&&cls.length<4){alert("Определите акцент каждого оффера.");return}
+ if(page===1&&(!builder.ban||!builder.goal)){alert("Заполните оба поля.");return}
+ checked[page]=true;render();
+};
+E("ovpEdit").onclick=()=>{checked[page]=false;render()};
+E("ovpBack").onclick=()=>{if(page>0){page--;render()}};
+E("ovpNext").onclick=()=>{
+ if(page===0){page++;render();return}
+ E("ovpBody").style.display="none";E("ovpResult").style.display="block";
+ E("ovpFinal").innerHTML="<strong>Рабочая логика:</strong><br>Сохрани условия акции. Не используй скидку как главный акцент больше чем в одном новом варианте. Предложи смыслово разные версии, а не переформулировки одного оффера.";
+};
+E("ovpRestart").onclick=()=>{page=0;cls=[];checked=[false,false];builder={ban:"",goal:""};render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startOVP);else startOVP();
+})();
+</script>
+</div>

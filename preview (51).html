@@ -1,0 +1,72 @@
+<div id="onePagePractice">
+<style>
+#onePagePractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#onePagePractice *{box-sizing:border-box}
+#onePagePractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#onePagePractice .head,#onePagePractice .body,#onePagePractice .result{padding:16px}
+#onePagePractice .head{border-bottom:1px solid #e5e7eb}
+#onePagePractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#onePagePractice h3{margin:0;font-size:18px}
+#onePagePractice .fragment{padding:11px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;font-size:13px;line-height:1.45;margin-bottom:10px}
+#onePagePractice .choice{padding:9px;border:1px solid #d0d5dd;border-radius:9px;margin-bottom:6px;font-size:12px;cursor:pointer}
+#onePagePractice .choice.active{border-color:#2563eb;background:#eff6ff}
+#onePagePractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;margin-top:10px}
+#onePagePractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#onePagePractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#onePagePractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#onePagePractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#onePagePractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+</style>
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Сожмите КП без потери смысла</h3></div>
+<div class="body" id="oppBody">
+ <div id="oppScreen"></div>
+ <div id="oppFeedback" class="fb"></div>
+ <div class="actions">
+  <button id="oppBack">Назад</button><button class="primary" id="oppCheck">Проверить</button><button id="oppEdit">Изменить</button><button class="primary" id="oppNext">Далее</button>
+ </div>
+</div>
+<div class="result" id="oppResult" style="display:none">
+ <h3>Каркас одной страницы готов</h3>
+ <div class="fragment">Контекст клиента → решение → 2–3 релевантные выгоды → заметные условия → один конкретный следующий шаг.</div>
+ <div class="actions"><button class="primary" id="oppRestart">Пройти заново</button></div>
+</div>
+</div>
+<script>
+(function(){
+function startOPP(){
+const s=[
+ {q:"Из документа нужно убрать около трети объёма. Что сокращать первым?",
+  x:"Первые полстраницы рассказывают об истории компании, наградах и миссии. Далее идут задача клиента, решение и условия.",
+  o:["Сократить историю компании и оставить только подтверждение компетентности","Убрать условия, их можно обсудить позже","Сократить описание задачи клиента","Удалить призыв к действию"],c:0,
+  f:"Сначала убирают то, что не помогает клиенту понять предложение и принять следующий шаг."},
+ {q:"Какие три смысла стоит оставить в центре документа?",
+  x:"Клиент вручную сводит отчёты и не хочет менять CRM.",
+  o:["Автоматизация отчётов + работа с текущей CRM + срок запуска","История компании + сертификаты + полный список функций","Все технические характеристики системы","Максимальное количество преимуществ продукта"],c:0,
+  f:"Одностраничное КП должно удерживать несколько выгод, напрямую связанных с задачей клиента."},
+ {q:"Какой финал лучше оставить?",
+  x:"Цель менеджера — назначить демонстрацию решения.",
+  o:["Будем рады взаимовыгодному сотрудничеству","Свяжитесь с нами любым удобным способом","Предлагаем согласовать 30-минутную демонстрацию решения","Надеемся, предложение вас заинтересует"],c:2,
+  f:"CTA должен вести к одному конкретному следующему действию."}
+];
+let p=0,a=[],ch=[];
+const E=id=>document.getElementById(id);
+function render(){
+ E("oppBody").style.display="block";E("oppResult").style.display="none";
+ const q=s[p],box=E("oppScreen");box.innerHTML="<div class='fragment'><strong>"+q.q+"</strong><br>"+q.x+"</div>";
+ q.o.forEach((t,i)=>{const d=document.createElement("div");d.className="choice"+(a[p]===i?" active":"");d.textContent=t;d.onclick=()=>{if(!ch[p]){a[p]=i;render()}};box.appendChild(d)});
+ const fb=E("oppFeedback");fb.className="fb";fb.innerHTML="";
+ if(ch[p]){fb.classList.add(a[p]===q.c?"ok":"bad");fb.textContent=q.f}
+ E("oppBack").disabled=p===0;E("oppCheck").style.display=ch[p]?"none":"inline-block";E("oppEdit").style.display=ch[p]?"inline-block":"none";E("oppNext").style.display=ch[p]?"inline-block":"none";E("oppNext").textContent=p===2?"Завершить":"Далее";
+}
+E("oppCheck").onclick=()=>{if(a[p]===undefined){alert("Выберите решение.");return}ch[p]=true;render()};
+E("oppEdit").onclick=()=>{ch[p]=false;render()};
+E("oppBack").onclick=()=>{if(p>0){p--;render()}};
+E("oppNext").onclick=()=>{if(p<2){p++;render()}else{E("oppBody").style.display="none";E("oppResult").style.display="block"}};
+E("oppRestart").onclick=()=>{p=0;a=[];ch=[];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startOPP);else startOPP();
+})();
+</script>
+</div>

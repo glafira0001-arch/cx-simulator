@@ -1,0 +1,72 @@
+<div id="promptBuilderPractice">
+<style>
+#promptBuilderPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#promptBuilderPractice *{box-sizing:border-box}
+#promptBuilderPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#promptBuilderPractice .head,#promptBuilderPractice .body,#promptBuilderPractice .result{padding:16px}
+#promptBuilderPractice .head{border-bottom:1px solid #e5e7eb}
+#promptBuilderPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#promptBuilderPractice h3{margin:0;font-size:18px}
+#promptBuilderPractice .block{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:13px;cursor:pointer}
+#promptBuilderPractice .block.active{border-color:#2563eb;background:#eff6ff}
+#promptBuilderPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#promptBuilderPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#promptBuilderPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#promptBuilderPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#promptBuilderPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#promptBuilderPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#promptBuilderPractice .prompt{padding:11px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;font-size:12px;line-height:1.5}
+</style>
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Соберите техническое задание для ИИ</h3></div>
+<div class="body" id="pbpBody">
+ <div id="pbpScreen"></div>
+ <div id="pbpFeedback" class="fb"></div>
+ <div class="actions">
+  <button id="pbpBack">Назад</button>
+  <button class="primary" id="pbpCheck">Проверить</button>
+  <button id="pbpEdit">Изменить</button>
+  <button class="primary" id="pbpNext">Далее</button>
+ </div>
+</div>
+<div class="result" id="pbpResult" style="display:none">
+ <h3>Каркас промпта готов</h3>
+ <div class="prompt">Задача документа → контекст клиента → решение → подтверждённые выгоды → коммерческие условия → следующий шаг → ограничения для модели → формат результата.</div>
+ <div class="actions"><button class="primary" id="pbpRestart">Пройти заново</button></div>
+</div>
+</div>
+<script>
+(function(){
+function startPBP(){
+const screens=[
+ {q:"Выберите четыре блока, без которых ИИ не сможет подготовить содержательное КП.",
+  opts:["Контекст и задача клиента","Полная история вашей компании","Предлагаемое решение","Подтверждённые выгоды","Следующий шаг","Миссия и ценности компании"],
+  correct:[0,2,3,4],
+  f:"Для содержания критичны контекст клиента, решение, выгоды и следующий шаг. История и миссия могут быть полезны только в отдельных случаях."},
+ {q:"Выберите две инструкции, которые стоит добавить в промпт как ограничения.",
+  opts:["Не добавляй цифры и обещания, которых нет во вводных","Сделай текст максимально продающим","Не описывай гипотезы как подтверждённые проблемы клиента","Используй как можно больше профессиональных терминов"],
+  correct:[0,2],
+  f:"Ограничения должны снижать риск выдуманных данных и ложной персонализации, а не усиливать рекламность."}
+];
+let p=0,a=[[],[]],ch=[false,false];
+const E=id=>document.getElementById(id);
+function eq(x,y){return x.slice().sort().join(",")===y.slice().sort().join(",")}
+function render(){
+ E("pbpBody").style.display="block";E("pbpResult").style.display="none";
+ const s=screens[p],box=E("pbpScreen");box.innerHTML="<div style='font-size:13px;line-height:1.45;margin-bottom:10px'>"+s.q+"</div>";
+ s.opts.forEach((t,i)=>{const d=document.createElement("div");d.className="block"+(a[p].includes(i)?" active":"");d.textContent=t;d.onclick=()=>{if(ch[p])return;if(a[p].includes(i))a[p]=a[p].filter(x=>x!==i);else a[p].push(i);render()};box.appendChild(d)});
+ const fb=E("pbpFeedback");fb.className="fb";fb.innerHTML="";
+ if(ch[p]){fb.classList.add(eq(a[p],s.correct)?"ok":"bad");fb.textContent=s.f}
+ E("pbpBack").disabled=p===0;E("pbpCheck").style.display=ch[p]?"none":"inline-block";E("pbpEdit").style.display=ch[p]?"inline-block":"none";E("pbpNext").style.display=ch[p]?"inline-block":"none";E("pbpNext").textContent=p===1?"Завершить":"Далее";
+}
+E("pbpCheck").onclick=()=>{if(!a[p].length){alert("Выберите варианты.");return}ch[p]=true;render()};
+E("pbpEdit").onclick=()=>{ch[p]=false;render()};
+E("pbpBack").onclick=()=>{if(p>0){p--;render()}};
+E("pbpNext").onclick=()=>{if(p<1){p++;render()}else{E("pbpBody").style.display="none";E("pbpResult").style.display="block"}};
+E("pbpRestart").onclick=()=>{p=0;a=[[],[]];ch=[false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startPBP);else startPBP();
+})();
+</script>
+</div>

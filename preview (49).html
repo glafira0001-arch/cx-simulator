@@ -1,0 +1,80 @@
+<div id="kpBriefPractice">
+<style>
+#kpBriefPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#kpBriefPractice *{box-sizing:border-box}
+#kpBriefPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#kpBriefPractice .head,#kpBriefPractice .body,#kpBriefPractice .result{padding:16px}
+#kpBriefPractice .head{border-bottom:1px solid #e5e7eb}
+#kpBriefPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#kpBriefPractice h3{margin:0;font-size:18px}
+#kpBriefPractice .note{padding:10px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;margin-bottom:8px;font-size:13px;line-height:1.4}
+#kpBriefPractice .pick{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+#kpBriefPractice .pick button{font-size:11px;padding:6px 8px}
+#kpBriefPractice .pick button.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}
+#kpBriefPractice .fb{display:none;margin-top:8px;padding:8px;border-radius:8px;font-size:12px}
+#kpBriefPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#kpBriefPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#kpBriefPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#kpBriefPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#kpBriefPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#kpBriefPractice .summary{font-size:13px;line-height:1.5;background:#f8fafc;padding:11px;border-radius:10px}
+</style>
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Разберите заметки после встречи</h3></div>
+<div class="body" id="kbpBody">
+  <div id="kbpNotes"></div>
+  <div class="actions">
+    <button id="kbpBack">Назад</button>
+    <button class="primary" id="kbpCheck">Проверить</button>
+    <button id="kbpEdit">Изменить</button>
+    <button class="primary" id="kbpNext">Далее</button>
+  </div>
+</div>
+<div class="result" id="kbpResult" style="display:none">
+ <h3>Основа КП собрана</h3>
+ <div class="summary" id="kbpSummary"></div>
+ <div class="actions"><button class="primary" id="kbpRestart">Пройти заново</button></div>
+</div>
+</div>
+<script>
+(function(){
+function startKBP(){
+const sets=[
+[
+ {t:"Клиент вручную сводит отчёты из трёх подразделений.",c:"fact",w:"Это подтверждённая задача клиента и сильная вводная для КП."},
+ {t:"Менеджеру показалось, что клиент хочет сократить двух аналитиков.",c:"hyp",w:"Это интерпретация менеджера. Её нельзя превращать в потребность клиента."},
+ {t:"Клиент хочет сохранить действующую CRM.",c:"fact",w:"Это подтверждённое ограничение решения."}
+],
+[
+ {t:"Стоимость проекта менеджер пока не согласовал внутри компании.",c:"missing",w:"Цена — существенный параметр предложения. Её нужно определить до финального КП."},
+ {t:"Запуск возможен за четыре недели — срок подтвердил проектный отдел.",c:"fact",w:"Это подтверждённое условие, которое можно использовать."},
+ {t:"После отправки КП менеджер хочет просто «оставаться на связи».",c:"missing",w:"Нужно определить конкретный следующий шаг, иначе CTA получится размытым."}
+]
+];
+const labs={fact:"В основу КП",hyp:"Оставить гипотезой",missing:"Нужно уточнить"};
+let p=0,a={},ch={};
+const E=id=>document.getElementById(id),box=E("kbpNotes");
+function k(i){return p+"_"+i}
+function render(){
+ E("kbpBody").style.display="block";E("kbpResult").style.display="none";box.innerHTML="";
+ sets[p].forEach((x,i)=>{
+  const d=document.createElement("div");d.className="note";d.innerHTML=x.t;
+  const q=document.createElement("div");q.className="pick";
+  Object.keys(labs).forEach(v=>{const b=document.createElement("button");b.textContent=labs[v];b.className=a[k(i)]===v?"active":"";b.onclick=()=>{a[k(i)]=v;render()};q.appendChild(b)});
+  d.appendChild(q);
+  if(ch[p]){const f=document.createElement("div");f.className="fb "+(a[k(i)]===x.c?"ok":"bad");f.textContent=x.w;d.appendChild(f)}
+  box.appendChild(d);
+ });
+ E("kbpBack").disabled=p===0;E("kbpCheck").style.display=ch[p]?"none":"inline-block";E("kbpEdit").style.display=ch[p]?"inline-block":"none";E("kbpNext").style.display=ch[p]?"inline-block":"none";E("kbpNext").textContent=p===1?"Завершить":"Далее";
+}
+E("kbpCheck").onclick=()=>{if(sets[p].some((x,i)=>!a[k(i)])){alert("Разберите все заметки.");return}ch[p]=true;render()};
+E("kbpEdit").onclick=()=>{ch[p]=false;render()};
+E("kbpBack").onclick=()=>{if(p>0){p--;render()}};
+E("kbpNext").onclick=()=>{if(p<1){p++;render()}else{E("kbpBody").style.display="none";E("kbpResult").style.display="block";E("kbpSummary").innerHTML="<strong>В карточке КП отделены три слоя:</strong> подтверждённые факты, рабочие гипотезы и данные, которые необходимо получить до генерации."}};
+E("kbpRestart").onclick=()=>{p=0;a={};ch={};render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startKBP);else startKBP();
+})();
+</script>
+</div>

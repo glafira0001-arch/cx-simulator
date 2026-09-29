@@ -1,0 +1,83 @@
+<div id="offerDecisionPractice">
+<style>
+#offerDecisionPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#offerDecisionPractice *{box-sizing:border-box}
+#offerDecisionPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#offerDecisionPractice .head,#offerDecisionPractice .body,#offerDecisionPractice .result{padding:16px}
+#offerDecisionPractice .head{border-bottom:1px solid #e5e7eb}
+#offerDecisionPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#offerDecisionPractice h3{margin:0;font-size:18px}
+#offerDecisionPractice .context{font-size:13px;line-height:1.45;padding:10px;background:#f8fafc;border-radius:10px;margin-bottom:10px}
+#offerDecisionPractice .opt{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:7px;cursor:pointer;font-size:13px}
+#offerDecisionPractice .opt.active{border-color:#2563eb;background:#eff6ff}
+#offerDecisionPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#offerDecisionPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#offerDecisionPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#offerDecisionPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#offerDecisionPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#offerDecisionPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+</style>
+
+<div class="card">
+<div class="head"><div class="label">Практика</div><h3>Примите решение по офферам</h3></div>
+<div class="body" id="odpBody">
+  <div class="context" id="odpContext"></div>
+  <div id="odpOptions"></div>
+  <div id="odpFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="odpBack">Назад</button>
+    <button class="primary" id="odpCheck">Проверить</button>
+    <button id="odpEdit">Изменить</button>
+    <button class="primary" id="odpNext">Далее</button>
+  </div>
+</div>
+<div class="result" id="odpResult" style="display:none">
+  <h3>Решение зафиксировано</h3>
+  <div class="context">Основной оффер выбран по соответствию цели акции, а резервный — как альтернативная гипотеза с другим мотивом.</div>
+  <div class="actions"><button class="primary" id="odpRestart">Пройти заново</button></div>
+</div>
+</div>
+
+<script>
+(function(){
+function startODP(){
+const screens=[
+ {ctx:"Компания возвращает клиентов, которые не покупали более 4 месяцев. Максимальная скидка — 15%. Какой вариант нужно исключить до сравнения?",
+  o:["Вернитесь в программу со скидкой 15%","8 практических инструментов на специальных условиях","Только неделю — специальные условия для возвращающихся клиентов","Вернитесь сейчас: скидка 20% и персональная консультация"],c:3,
+  f:"Вариант нарушает сразу два ограничения: превышает допустимую скидку и добавляет консультацию, которой не было во вводных."},
+ {ctx:"После исключения некорректного варианта выберите основной оффер. Цель — именно вернуть неактивных клиентов.",
+  o:["Получите программу со скидкой 15%","Вернитесь к обучению: 8 практических инструментов на специальных условиях","Только 7 дней — специальная цена на программу","Программа для руководителей: доступ на 6 месяцев"],c:1,
+  f:"Этот вариант связывает предложение с возвращением клиента и ценностью продукта. Он не сводит всю мотивацию только к скидке."},
+ {ctx:"Какой вариант лучше сохранить как резервную гипотезу для тестирования?",
+  o:["Ещё один оффер про те же 15%","Вариант с ограниченным сроком действия предложения","Самый эмоциональный слоган без условий","Оффер с дополнительным неподтверждённым бонусом"],c:1,
+  f:"Резервный вариант полезен, когда проверяет другой мотив. Здесь это срочность, а не повтор того же ценового сценария."}
+];
+let page=0,ans=[],checked=[];
+const E=id=>document.getElementById(id);
+function render(){
+ E("odpBody").style.display="block";E("odpResult").style.display="none";
+ const s=screens[page];E("odpContext").textContent=s.ctx;E("odpOptions").innerHTML="";
+ s.o.forEach((t,i)=>{
+   const d=document.createElement("div");d.className="opt"+(ans[page]===i?" active":"");d.textContent=t;
+   d.onclick=()=>{if(!checked[page]){ans[page]=i;render()}};
+   E("odpOptions").appendChild(d);
+ });
+ const fb=E("odpFeedback");fb.className="fb";fb.innerHTML="";
+ if(checked[page]){fb.classList.add(ans[page]===s.c?"ok":"bad");fb.textContent=s.f}
+ E("odpBack").disabled=page===0;
+ E("odpCheck").style.display=checked[page]?"none":"inline-block";
+ E("odpEdit").style.display=checked[page]?"inline-block":"none";
+ E("odpNext").style.display=checked[page]?"inline-block":"none";
+ E("odpNext").textContent=page===2?"Завершить":"Далее";
+}
+E("odpCheck").onclick=()=>{if(ans[page]===undefined){alert("Выберите решение.");return}checked[page]=true;render()};
+E("odpEdit").onclick=()=>{checked[page]=false;render()};
+E("odpBack").onclick=()=>{if(page>0){page--;render()}};
+E("odpNext").onclick=()=>{if(page<2){page++;render()}else{E("odpBody").style.display="none";E("odpResult").style.display="block"}};
+E("odpRestart").onclick=()=>{page=0;ans=[];checked=[];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startODP);else startODP();
+})();
+</script>
+</div>
