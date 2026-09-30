@@ -1,0 +1,142 @@
+<div id="supplierReplyPractice">
+<style>
+#supplierReplyPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#supplierReplyPractice *{box-sizing:border-box}
+#supplierReplyPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#supplierReplyPractice .head,#supplierReplyPractice .body,#supplierReplyPractice .result{padding:16px}
+#supplierReplyPractice .head{border-bottom:1px solid #e5e7eb}
+#supplierReplyPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#supplierReplyPractice h3{margin:0;font-size:18px}
+#supplierReplyPractice .letter{padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:10px}
+#supplierReplyPractice .item{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px}
+#supplierReplyPractice select{width:100%;margin-top:7px;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px}
+#supplierReplyPractice .choice{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;cursor:pointer}
+#supplierReplyPractice .choice.active{border-color:#2563eb;background:#eff6ff}
+#supplierReplyPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#supplierReplyPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#supplierReplyPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#supplierReplyPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#supplierReplyPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#supplierReplyPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#supplierReplyPractice button:disabled{opacity:.4}
+#supplierReplyPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Соберите позицию для ответа поставщику</h3>
+</div>
+
+<div class="body" id="srpBody">
+  <div id="srpScreen"></div>
+  <div id="srpFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="srpBack">Назад</button>
+    <button class="primary" id="srpCheck">Проверить</button>
+    <button id="srpEdit">Изменить ответ</button>
+    <button class="primary" id="srpNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="srpResult" style="display:none">
+  <h3>Бриф для ответа собран</h3>
+  <div class="summary">В ответе важно не смешивать содержание письма поставщика с внутренними последствиями для компании. Сначала фиксируются его условия, затем — ваша реальная переговорная позиция.</div>
+  <div class="actions"><button class="primary" id="srpRestart">Пройти заново</button></div>
+</div>
+</div>
+
+<script>
+(function(){
+function initSupplierReply(){
+var facts=[
+ {t:"Поставщик повышает цены на 10% с 1 сентября.",c:"supplier"},
+ {t:"У нашей компании уже опубликованы цены для клиентов до конца октября.",c:"impact"},
+ {t:"Поставщик, вероятно, согласится сохранить старые цены ещё два месяца.",c:"unknown"},
+ {t:"В письме причиной названа возросшая закупочная стоимость.",c:"supplier"},
+ {t:"Немедленный переход потребует пересмотра текущих коммерческих предложений.",c:"impact"}
+];
+var labels={
+ supplier:"Факт из письма",
+ impact:"Последствие для нас",
+ unknown:"Нельзя считать фактом"
+};
+var answers=[],objective=null,page=0,checked=[false,false];
+var objectives=[
+ "Оспорить само право поставщика повышать цену.",
+ "Принять повышение, но договориться о времени для перехода.",
+ "Попросить ИИ выбрать наиболее выгодную позицию без дополнительных вводных.",
+ "Сообщить, что компания прекращает сотрудничество при любом повышении."
+];
+function E(id){return document.getElementById(id)}
+function render(){
+ E("srpBody").style.display="block";E("srpResult").style.display="none";
+ E("srpScreen").innerHTML="";
+ if(page===0){
+   var l=document.createElement("div");l.className="letter";
+   l.innerHTML="<strong>Входящее письмо:</strong> поставщик уведомил о повышении цены на 10% с 1 сентября и объяснил это ростом закупочной стоимости.<br><br><strong>Внутри компании:</strong> цены для части клиентов уже опубликованы до конца октября.";
+   E("srpScreen").appendChild(l);
+   for(var i=0;i<facts.length;i++){
+     (function(i){
+       var d=document.createElement("div");d.className="item";d.innerHTML=facts[i].t;
+       var s=document.createElement("select");
+       s.innerHTML="<option value=''>Выберите категорию</option><option value='supplier'>Факт из письма</option><option value='impact'>Последствие для нас</option><option value='unknown'>Нельзя считать фактом</option>";
+       s.value=answers[i]||"";
+       s.disabled=checked[0];
+       s.onchange=function(){answers[i]=s.value};
+       d.appendChild(s);E("srpScreen").appendChild(d);
+     })(i);
+   }
+ }else{
+   var q=document.createElement("div");q.className="letter";
+   q.innerHTML="<strong>Определите переговорную цель до генерации ответа.</strong><br>Компания в целом готова принять новую цену, но немедленный переход нарушит уже запущенные коммерческие планы.";
+   E("srpScreen").appendChild(q);
+   for(var j=0;j<objectives.length;j++){
+     (function(j){
+       var d=document.createElement("div");
+       d.className="choice"+(objective===j?" active":"");
+       d.innerHTML=objectives[j];
+       d.onclick=function(){if(!checked[1]){objective=j;render()}};
+       E("srpScreen").appendChild(d);
+     })(j);
+   }
+ }
+ var fb=E("srpFeedback");fb.className="fb";fb.innerHTML="";
+ if(checked[page]){
+   var ok=true;
+   if(page===0){
+     for(var k=0;k<facts.length;k++) if(answers[k]!==facts[k].c) ok=false;
+     fb.innerHTML="Письмо поставщика даёт факты только о его условиях и аргументации. Влияние на ваши прайсы — уже внутренний контекст, а предполагаемая уступчивость поставщика остаётся гипотезой.";
+   }else{
+     ok=objective===1;
+     fb.innerHTML="Здесь предмет переговоров — не само повышение, а способ перехода на новые условия. Такая рамка делает ответ точнее и снижает риск ненужной конфронтации.";
+   }
+   fb.classList.add(ok?"ok":"bad");
+ }
+ E("srpBack").disabled=page===0;
+ E("srpCheck").style.display=checked[page]?"none":"inline-block";
+ E("srpEdit").style.display=checked[page]?"inline-block":"none";
+ E("srpNext").style.display=checked[page]?"inline-block":"none";
+ E("srpNext").innerHTML=page===1?"Завершить":"Далее";
+}
+E("srpCheck").onclick=function(){
+ if(page===0){
+   for(var i=0;i<facts.length;i++){if(!answers[i]){alert("Разберите все пункты.");return;}}
+ }
+ if(page===1&&objective===null){alert("Выберите переговорную цель.");return;}
+ checked[page]=true;render();
+};
+E("srpEdit").onclick=function(){checked[page]=false;render()};
+E("srpBack").onclick=function(){if(page>0){page--;render()}};
+E("srpNext").onclick=function(){
+ if(page<1){page++;render()}
+ else{E("srpBody").style.display="none";E("srpResult").style.display="block"}
+};
+E("srpRestart").onclick=function(){answers=[];objective=null;page=0;checked=[false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initSupplierReply);
+else initSupplierReply();
+})();
+</script>
+</div>

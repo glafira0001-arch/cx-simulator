@@ -1,0 +1,157 @@
+<div id="delayBriefPractice">
+<style>
+#delayBriefPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#delayBriefPractice *{box-sizing:border-box}
+#delayBriefPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#delayBriefPractice .head,#delayBriefPractice .body,#delayBriefPractice .result{padding:16px}
+#delayBriefPractice .head{border-bottom:1px solid #e5e7eb}
+#delayBriefPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#delayBriefPractice h3{margin:0;font-size:18px}
+#delayBriefPractice .case{margin:0 0 12px;padding:10px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.45}
+#delayBriefPractice .item{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#delayBriefPractice .txt{font-size:13px;line-height:1.4;margin-bottom:8px}
+#delayBriefPractice .choices{display:flex;gap:5px;flex-wrap:wrap}
+#delayBriefPractice .choice{padding:6px 8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:11px;cursor:pointer}
+#delayBriefPractice .choice.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
+#delayBriefPractice .fb{display:none;margin-top:8px;padding:8px;border-radius:8px;font-size:12px;line-height:1.4}
+#delayBriefPractice .fb.ok{display:block;background:#ecfdf3;color:#065f46}
+#delayBriefPractice .fb.bad{display:block;background:#fff1f0;color:#7a271a}
+#delayBriefPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#delayBriefPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#delayBriefPractice button.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+#delayBriefPractice button:disabled{opacity:.4}
+#delayBriefPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Подготовьте вводные до обращения к ИИ</h3>
+</div>
+
+<div class="body" id="dbpBody">
+  <div class="case">Поставка должна была состояться 15 октября. Производство сообщает о задержке. Менеджер собрал заметки перед письмом партнёру.</div>
+  <div id="dbpMeta" style="font-size:12px;color:#667085;margin-bottom:9px"></div>
+  <div id="dbpItems"></div>
+  <div class="actions">
+    <button id="dbpBack">Назад</button>
+    <button class="primary" id="dbpCheck">Проверить</button>
+    <button id="dbpEdit">Изменить ответ</button>
+    <button class="primary" id="dbpNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="dbpResult" style="display:none">
+  <h3>Основа письма сформирована</h3>
+  <div class="summary" id="dbpSummary"></div>
+  <div class="actions">
+    <button id="dbpError">Вернуться к ошибке</button>
+    <button class="primary" id="dbpRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initDelayBrief(){
+var data=[
+[
+ {t:"По договору поставка назначена на 15 октября.",c:"fact",f:"Это подтверждённый факт, который можно передать ИИ без дополнительного решения."},
+ {t:"Производство уверено, что сможет завершить заказ к 29 октября.",c:"fact",f:"Если дата подтверждена ответственным подразделением, её можно использовать как новый срок."},
+ {t:"Наверное, клиент не сильно пострадает: у него большой склад.",c:"risk",f:"Это предположение о ситуации клиента. На нём нельзя строить внешнюю коммуникацию."}
+],
+[
+ {t:"Можно было бы предложить скидку 7% на следующий заказ.",c:"decision",f:"Размер компенсации — коммерческое решение. Его нужно согласовать до генерации письма."},
+ {t:"Причина задержки для внешней коммуникации: дополнительная проверка оборудования.",c:"fact",f:"Если эта причина согласована для внешней коммуникации, ИИ может использовать её."},
+ {t:"Попросим ИИ самому решить, нужно ли извиняться и что предложить взамен.",c:"decision",f:"ИИ может оформить позицию, но не должен определять компенсацию и обязательства компании."}
+]
+];
+var labels={fact:"Передать ИИ",decision:"Сначала решить",risk:"Не использовать как факт"};
+var page=0,answers={},checked={};
+function E(id){return document.getElementById(id)}
+function key(i){return page+"_"+i}
+function isGood(p,i){return answers[p+"_"+i]===data[p][i].c}
+function render(){
+ E("dbpBody").style.display="block";
+ E("dbpResult").style.display="none";
+ E("dbpMeta").innerHTML="Экран "+(page+1)+" из 2";
+ E("dbpItems").innerHTML="";
+ for(var i=0;i<data[page].length;i++){
+   (function(i){
+     var x=data[page][i];
+     var d=document.createElement("div");
+     d.className="item";
+     var t=document.createElement("div");
+     t.className="txt";
+     t.innerHTML=x.t;
+     d.appendChild(t);
+
+     var c=document.createElement("div");
+     c.className="choices";
+     for(var v in labels){
+       (function(v){
+         var b=document.createElement("button");
+         b.className="choice"+(answers[key(i)]===v?" active":"");
+         b.innerHTML=labels[v];
+         b.onclick=function(){
+           if(!checked[page]){
+             answers[key(i)]=v;
+             render();
+           }
+         };
+         c.appendChild(b);
+       })(v);
+     }
+     d.appendChild(c);
+
+     if(checked[page]){
+       var f=document.createElement("div");
+       f.className="fb "+(isGood(page,i)?"ok":"bad");
+       f.innerHTML=x.f;
+       d.appendChild(f);
+     }
+     E("dbpItems").appendChild(d);
+   })(i);
+ }
+ E("dbpBack").disabled=page===0;
+ E("dbpCheck").style.display=checked[page]?"none":"inline-block";
+ E("dbpEdit").style.display=checked[page]?"inline-block":"none";
+ E("dbpNext").style.display=checked[page]?"inline-block":"none";
+ E("dbpNext").innerHTML=page===1?"Завершить":"Далее";
+}
+E("dbpCheck").onclick=function(){
+ for(var i=0;i<data[page].length;i++){
+   if(!answers[key(i)]){alert("Примите решение по каждому пункту.");return;}
+ }
+ checked[page]=true;render();
+};
+E("dbpEdit").onclick=function(){checked[page]=false;render()};
+E("dbpBack").onclick=function(){if(page>0){page--;render()}};
+E("dbpNext").onclick=function(){
+ if(page<1){page++;render();return;}
+ var errors=0;
+ for(var p=0;p<data.length;p++){
+   for(var i=0;i<data[p].length;i++) if(!isGood(p,i)) errors++;
+ }
+ E("dbpBody").style.display="none";
+ E("dbpResult").style.display="block";
+ E("dbpSummary").innerHTML=errors
+ ? "<strong>Вводные ещё требуют управленческой доработки.</strong><br>В письме нельзя смешивать подтверждённые факты, предположения о клиенте и коммерческие решения, которые ещё не согласованы."
+ : "<strong>Карточка готова.</strong><br>Вы отделили факты от предположений и решений, которые нельзя передавать ИИ на усмотрение.";
+ E("dbpError").style.display=errors?"inline-block":"none";
+};
+E("dbpError").onclick=function(){
+ for(var p=0;p<data.length;p++){
+   for(var i=0;i<data[p].length;i++){
+     if(!isGood(p,i)){page=p;checked[p]=false;render();return;}
+   }
+ }
+};
+E("dbpRestart").onclick=function(){page=0;answers={};checked={};render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initDelayBrief);
+else initDelayBrief();
+})();
+</script>
+</div>

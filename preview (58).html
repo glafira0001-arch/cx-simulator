@@ -1,0 +1,133 @@
+<div id="delayAuditPractice">
+<style>
+#delayAuditPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#delayAuditPractice *{box-sizing:border-box}
+#delayAuditPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#delayAuditPractice .head,#delayAuditPractice .body,#delayAuditPractice .result{padding:16px}
+#delayAuditPractice .head{border-bottom:1px solid #e5e7eb}
+#delayAuditPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#delayAuditPractice h3{margin:0;font-size:18px}
+#delayAuditPractice .source{padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;line-height:1.45;margin-bottom:10px}
+#delayAuditPractice .fragment{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:13px;line-height:1.4;cursor:pointer}
+#delayAuditPractice .fragment.active{border-color:#dc2626;background:#fff1f2}
+#delayAuditPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#delayAuditPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#delayAuditPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#delayAuditPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#delayAuditPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#delayAuditPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#delayAuditPractice button:disabled{opacity:.4}
+#delayAuditPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Найдите искажения в готовом письме</h3>
+</div>
+
+<div class="body" id="dapBody">
+  <div id="dapScreen"></div>
+  <div id="dapFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="dapBack">Назад</button>
+    <button class="primary" id="dapCheck">Проверить</button>
+    <button id="dapEdit">Изменить ответ</button>
+    <button class="primary" id="dapNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="dapResult" style="display:none">
+  <h3>Проверка завершена</h3>
+  <div class="summary">Смысловая проверка идёт раньше стилистической: сначала даты, обязательства, компенсации и следующий шаг, затем тон и формулировки.</div>
+  <div class="actions"><button class="primary" id="dapRestart">Пройти заново</button></div>
+</div>
+</div>
+
+<script>
+(function(){
+function initDelayAudit(){
+var screens=[
+{
+ source:"Исходные данные: новый срок — 29 октября. Причина — дополнительная проверка оборудования. Компенсация — скидка 5% на следующий заказ. Нужно подтвердить получение письма и новый срок.",
+ fragments:[
+  "Сообщаем, что поставка будет выполнена ориентировочно до конца октября.",
+  "Причиной переноса стала необходимость дополнительной проверки оборудования.",
+  "В качестве компенсации готовы предоставить скидку 5% на текущую поставку.",
+  "Будем рады продолжить сотрудничество и ответить на возникающие вопросы."
+ ],
+ correct:[0,2,3],
+ explain:"Здесь три смысловых проблемы: точная дата стала приблизительной, скидка перенесена на текущую поставку, а конкретный запрос подтвердить новый срок заменён общей фразой."
+},
+{
+ source:"После исправления фактов осталось проверить тон. Выберите фрагменты, которые требуют редакторской правки.",
+ fragments:[
+  "Мы глубоко и искренне сожалеем о сложившейся крайне неприятной ситуации и просим отнестись с пониманием.",
+  "Срок поставки переносится с 15 на 29 октября.",
+  "Причина переноса — дополнительная проверка оборудования перед отгрузкой.",
+  "Мы приложим абсолютно все возможные усилия, чтобы больше никогда не допустить подобных обстоятельств."
+ ],
+ correct:[0,3],
+ explain:"Первый и четвёртый фрагменты перегружены эмоциями и обещаниями. Факты о сроке и причине сформулированы прямо и делово."
+}
+];
+var page=0,answers=[[],[]],checked=[false,false];
+function E(id){return document.getElementById(id)}
+function same(a,b){
+ var x=a.slice().sort().join(",");
+ var y=b.slice().sort().join(",");
+ return x===y;
+}
+function render(){
+ E("dapBody").style.display="block";
+ E("dapResult").style.display="none";
+ var s=screens[page];
+ var html="<div class='source'><strong>"+(page===0?"Сверьте с вводными":"Проверьте тон")+"</strong><br>"+s.source+"</div>";
+ E("dapScreen").innerHTML=html;
+ for(var i=0;i<s.fragments.length;i++){
+   (function(i){
+     var d=document.createElement("div");
+     d.className="fragment"+(answers[page].indexOf(i)>=0?" active":"");
+     d.innerHTML=s.fragments[i];
+     d.onclick=function(){
+       if(checked[page]) return;
+       var pos=answers[page].indexOf(i);
+       if(pos>=0) answers[page].splice(pos,1);
+       else answers[page].push(i);
+       render();
+     };
+     E("dapScreen").appendChild(d);
+   })(i);
+ }
+ var fb=E("dapFeedback");
+ fb.className="fb";
+ fb.innerHTML="";
+ if(checked[page]){
+   var ok=same(answers[page],s.correct);
+   fb.classList.add(ok?"ok":"bad");
+   fb.innerHTML=s.explain;
+ }
+ E("dapBack").disabled=page===0;
+ E("dapCheck").style.display=checked[page]?"none":"inline-block";
+ E("dapEdit").style.display=checked[page]?"inline-block":"none";
+ E("dapNext").style.display=checked[page]?"inline-block":"none";
+ E("dapNext").innerHTML=page===1?"Завершить":"Далее";
+}
+E("dapCheck").onclick=function(){
+ if(!answers[page].length){alert("Отметьте фрагменты, которые требуют вмешательства.");return;}
+ checked[page]=true;render();
+};
+E("dapEdit").onclick=function(){checked[page]=false;render()};
+E("dapBack").onclick=function(){if(page>0){page--;render()}};
+E("dapNext").onclick=function(){
+ if(page<1){page++;render()}
+ else{E("dapBody").style.display="none";E("dapResult").style.display="block"}
+};
+E("dapRestart").onclick=function(){page=0;answers=[[],[]];checked=[false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initDelayAudit);
+else initDelayAudit();
+})();
+</script>
+</div>

@@ -1,0 +1,136 @@
+<div id="transitionPractice">
+<style>
+#transitionPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#transitionPractice *{box-sizing:border-box}
+#transitionPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#transitionPractice .head,#transitionPractice .body,#transitionPractice .result{padding:16px}
+#transitionPractice .head{border-bottom:1px solid #e5e7eb}
+#transitionPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#transitionPractice h3{margin:0;font-size:18px}
+#transitionPractice .case{padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:10px}
+#transitionPractice .field{margin-bottom:10px}
+#transitionPractice .field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#transitionPractice select{width:100%;padding:8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px}
+#transitionPractice .choice{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.4;cursor:pointer}
+#transitionPractice .choice.active{border-color:#2563eb;background:#eff6ff}
+#transitionPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#transitionPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#transitionPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#transitionPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#transitionPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#transitionPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#transitionPractice button:disabled{opacity:.4}
+#transitionPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Соберите переходный сценарий</h3>
+</div>
+
+<div class="body" id="tpBody">
+  <div id="tpScreen"></div>
+  <div id="tpFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="tpBack">Назад</button>
+    <button class="primary" id="tpCheck">Проверить</button>
+    <button id="tpEdit">Изменить ответ</button>
+    <button class="primary" id="tpNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="tpResult" style="display:none">
+  <h3>Переговорная позиция собрана</h3>
+  <div class="summary" id="tpSummary"></div>
+  <div class="actions"><button class="primary" id="tpRestart">Пройти заново</button></div>
+</div>
+</div>
+
+<script>
+(function(){
+function initTransition(){
+var period="",model="",fallback="",reply=null,page=0,checked=[false,false];
+function E(id){return document.getElementById(id)}
+function render(){
+ E("tpBody").style.display="block";E("tpResult").style.display="none";
+ E("tpScreen").innerHTML="";
+ if(page===0){
+   var c=document.createElement("div");c.className="case";
+   c.innerHTML="<strong>Ситуация:</strong> поставщик вводит новые цены с 1 сентября. У вашей компании опубликованы клиентские цены до 31 октября. Повышение вы в целом принимаете. Обещать объём закупок или долгосрочный контракт вы не готовы.";
+   E("tpScreen").appendChild(c);
+
+   var fields=[
+    {id:"tpPeriod",lab:"До какой даты нужен переходный период?",opts:[["","Выберите"],["oct","До 1 октября"],["nov","До 1 ноября"],["jan","До 1 января"]]},
+    {id:"tpModel",lab:"Какой основной механизм предложить?",opts:[["","Выберите"],["old","Сохранить текущие цены до 1 ноября"],["deny","Отказаться от повышения"],["volume","Обещать больший объём закупок в обмен на старую цену"]]},
+    {id:"tpFallback",lab:"Какой запасной вариант допустим?",opts:[["","Выберите"],["orders","Сохранить старые цены для уже согласованных заказов"],["contract","Подписать долгосрочный контракт"],["none","Не оставлять пространства для обсуждения"]]}
+   ];
+   for(var i=0;i<fields.length;i++){
+     var f=document.createElement("div");f.className="field";
+     var l=document.createElement("label");l.innerHTML=fields[i].lab;f.appendChild(l);
+     var s=document.createElement("select");s.id=fields[i].id;
+     for(var j=0;j<fields[i].opts.length;j++){
+       var o=document.createElement("option");o.value=fields[i].opts[j][0];o.innerHTML=fields[i].opts[j][1];s.appendChild(o);
+     }
+     f.appendChild(s);E("tpScreen").appendChild(f);
+   }
+   E("tpPeriod").value=period;E("tpModel").value=model;E("tpFallback").value=fallback;
+   E("tpPeriod").disabled=checked[0];E("tpModel").disabled=checked[0];E("tpFallback").disabled=checked[0];
+   E("tpPeriod").onchange=function(){period=this.value};
+   E("tpModel").onchange=function(){model=this.value};
+   E("tpFallback").onchange=function(){fallback=this.value};
+ }else{
+   var c2=document.createElement("div");c2.className="case";
+   c2.innerHTML="<strong>Финальная формулировка.</strong><br>Выберите вариант, который передаёт позицию без лишних обещаний и не превращает просьбу в отказ от новых условий.";
+   E("tpScreen").appendChild(c2);
+   var opts=[
+    "Мы не можем принять новые цены и просим сохранить прежние условия на неопределённый срок.",
+    "Просим сохранить действующие цены до 1 ноября. С этой даты готовы перейти на новый прайс. Если это невозможно, предлагаем отдельно обсудить уже согласованные заказы.",
+    "Готовы увеличить объём закупок, если вы отложите повышение до 1 ноября.",
+    "Просим сделать для нашей компании исключение, поскольку повышение создаёт значительные неудобства."
+   ];
+   for(var k=0;k<opts.length;k++){
+     (function(k){
+       var d=document.createElement("div");d.className="choice"+(reply===k?" active":"");
+       d.innerHTML=opts[k];
+       d.onclick=function(){if(!checked[1]){reply=k;render()}};
+       E("tpScreen").appendChild(d);
+     })(k);
+   }
+ }
+ var fb=E("tpFeedback");fb.className="fb";fb.innerHTML="";
+ if(checked[page]){
+   var ok=page===0?(period==="nov"&&model==="old"&&fallback==="orders"):reply===1;
+   fb.classList.add(ok?"ok":"bad");
+   fb.innerHTML=page===0
+    ?"Период привязан к реальному ограничению компании — опубликованным ценам до конца октября. Основное предложение конкретно, а запасной вариант не создаёт новых обязательств."
+    :"Рабочая формулировка содержит точную дату, признаёт переход на новый прайс и оставляет реалистичный предмет для дальнейшего согласования.";
+ }
+ E("tpBack").disabled=page===0;
+ E("tpCheck").style.display=checked[page]?"none":"inline-block";
+ E("tpEdit").style.display=checked[page]?"inline-block":"none";
+ E("tpNext").style.display=checked[page]?"inline-block":"none";
+ E("tpNext").innerHTML=page===1?"Посмотреть результат":"Далее";
+}
+E("tpCheck").onclick=function(){
+ if(page===0&&(!period||!model||!fallback)){alert("Заполните все три параметра.");return;}
+ if(page===1&&reply===null){alert("Выберите формулировку.");return;}
+ checked[page]=true;render();
+};
+E("tpEdit").onclick=function(){checked[page]=false;render()};
+E("tpBack").onclick=function(){if(page>0){page--;render()}};
+E("tpNext").onclick=function(){
+ if(page<1){page++;render()}
+ else{
+   E("tpBody").style.display="none";E("tpResult").style.display="block";
+   E("tpSummary").innerHTML="<strong>Позиция:</strong> сохранить текущие цены до 1 ноября, затем перейти на новый прайс. Если поставщик не принимает основной вариант — отдельно обсудить уже согласованные заказы.<br><br>Это предложение связано с реальным бизнес-ограничением и не содержит неподтверждённых встречных обещаний.";
+ }
+};
+E("tpRestart").onclick=function(){period="";model="";fallback="";reply=null;page=0;checked=[false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initTransition);
+else initTransition();
+})();
+</script>
+</div>
