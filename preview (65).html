@@ -1,0 +1,115 @@
+<div id="limitsPractice">
+<style>
+#limitsPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#limitsPractice *{box-sizing:border-box}
+#limitsPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#limitsPractice .head,#limitsPractice .body,#limitsPractice .result{padding:16px}
+#limitsPractice .head{border-bottom:1px solid #e5e7eb}
+#limitsPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#limitsPractice h3{margin:0;font-size:18px}
+#limitsPractice .case{padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:10px}
+#limitsPractice .item{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#limitsPractice .txt{font-size:13px;line-height:1.4;margin-bottom:7px}
+#limitsPractice .choices{display:flex;gap:5px;flex-wrap:wrap}
+#limitsPractice .choice{padding:6px 8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:11px;cursor:pointer}
+#limitsPractice .choice.active{background:#eff6ff;border-color:#2563eb;color:#1d4ed8;font-weight:700}
+#limitsPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#limitsPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#limitsPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#limitsPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#limitsPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#limitsPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#limitsPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Проверьте границы сделки</h3>
+</div>
+
+<div class="body" id="lpBody">
+  <div class="case">
+    Ваша цель — продлить договор на год. Желаемый результат: повышение цены на 12%. Приемлемый диапазон: 9–10%. Предел: не ниже 7%. Отсрочка платежа — максимум 30 дней.
+  </div>
+  <div id="lpItems"></div>
+  <div id="lpFeedback" class="fb"></div>
+  <div class="actions">
+    <button class="primary" id="lpCheck">Проверить</button>
+    <button id="lpEdit">Изменить ответ</button>
+    <button class="primary" id="lpNext">Посмотреть вывод</button>
+  </div>
+</div>
+
+<div class="result" id="lpResult" style="display:none">
+  <h3>Переговорная рамка проверена</h3>
+  <div class="summary">
+    Предел уступок нужен не для того, чтобы всегда дойти до него, а чтобы заранее понимать границу допустимого. Чем ближе вы подходите к пределу, тем важнее получать встречное условие.
+  </div>
+  <div class="actions">
+    <button id="lpBack">Назад</button>
+    <button class="primary" id="lpRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initLimitsPractice(){
+var data=[
+ {t:"Повышение 12%, договор на год, оплата без изменений.",c:"target"},
+ {t:"Повышение 9%, договор на год, отсрочка 30 дней.",c:"acceptable"},
+ {t:"Повышение 7%, договор на год, отсрочка 30 дней.",c:"limit"},
+ {t:"Повышение 5%, договор на год, отсрочка 45 дней.",c:"no"},
+ {t:"Повышение 8% при двухлетнем договоре.",c:"acceptable"}
+];
+var labels={target:"Желаемый",acceptable:"Приемлемый",limit:"На границе",no:"Недопустимый"};
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+function render(){
+ E("lpItems").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");d.className="item";
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var c=document.createElement("div");c.className="choices";
+   for(var k in labels){
+    (function(k){
+     var b=document.createElement("button");
+     b.className="choice"+(answers[i]===k?" active":"");
+     b.innerHTML=labels[k];
+     b.onclick=function(){if(!checked){answers[i]=k;render()}};
+     c.appendChild(b);
+    })(k);
+   }
+   d.appendChild(c);E("lpItems").appendChild(d);
+  })(i);
+ }
+ var fb=E("lpFeedback");fb.className="fb";
+ if(checked){
+   var errors=0;
+   for(var j=0;j<data.length;j++) if(answers[j]!==data[j].c) errors++;
+   fb.className="fb "+(errors===0?"ok":"bad");
+   fb.innerHTML=errors===0
+    ?"Вы правильно различили желаемый результат, рабочий компромисс, предельный вариант и условия, которые уже выходят за рамку."
+    :"Есть ошибка. Оценивайте условия пакетом: цена может быть допустимой только вместе со сроком договора, оплатой и другими параметрами.";
+ }
+ E("lpCheck").style.display=checked?"none":"inline-block";
+ E("lpEdit").style.display=checked?"inline-block":"none";
+ E("lpNext").style.display=checked?"inline-block":"none";
+}
+E("lpCheck").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Оцените все варианты.");return;}}
+ checked=true;render();
+};
+E("lpEdit").onclick=function(){checked=false;render()};
+E("lpNext").onclick=function(){E("lpBody").style.display="none";E("lpResult").style.display="block"};
+E("lpBack").onclick=function(){E("lpBody").style.display="block";E("lpResult").style.display="none"};
+E("lpRestart").onclick=function(){answers=[];checked=false;E("lpBody").style.display="block";E("lpResult").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initLimitsPractice);
+else initLimitsPractice();
+})();
+</script>
+</div>

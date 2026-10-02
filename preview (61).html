@@ -1,0 +1,107 @@
+<div id="transcriptPractice">
+<style>
+#transcriptPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#transcriptPractice *{box-sizing:border-box}
+#transcriptPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#transcriptPractice .head,#transcriptPractice .body,#transcriptPractice .result{padding:16px}
+#transcriptPractice .head{border-bottom:1px solid #e5e7eb}
+#transcriptPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#transcriptPractice h3{margin:0;font-size:18px}
+#transcriptPractice .item{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#transcriptPractice .txt{font-size:12px;line-height:1.45;margin-bottom:7px}
+#transcriptPractice select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px}
+#transcriptPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#transcriptPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#transcriptPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#transcriptPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#transcriptPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#transcriptPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#transcriptPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Подготовьте транскрибацию к анализу</h3>
+</div>
+
+<div class="body" id="trBody">
+  <div id="trItems"></div>
+  <div id="trFeedback" class="fb"></div>
+  <div class="actions">
+    <button class="primary" id="trCheck">Проверить</button>
+    <button id="trEdit">Изменить ответ</button>
+    <button class="primary" id="trNext">Посмотреть результат</button>
+  </div>
+</div>
+
+<div class="result" id="trResult" style="display:none">
+  <h3>Материал готов к анализу</h3>
+  <div class="summary">
+    Перед загрузкой особенно важно проверить роли участников, цифры, сроки и коммерческие условия. Конфиденциальные данные лучше обезличить, сохранив при этом логику переговоров.
+  </div>
+  <div class="actions">
+    <button id="trBack">Назад</button>
+    <button class="primary" id="trRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initTranscriptPractice(){
+var data=[
+ {t:"«Спикер 1: Мы можем обсуждать 9%. Спикер 2: Мне нужно согласование руководства». Вы знаете, кто есть кто.",c:"roles"},
+ {t:"Автораcшифровка записала: «повышение на 70%», хотя в записи явно звучит «7%».",c:"fix"},
+ {t:"В тексте есть личный мобильный номер директора клиента, не влияющий на анализ.",c:"hide"},
+ {t:"Фраза клиента: «Мне нужно обсудить это с генеральным директором».",c:"keep"},
+ {t:"В транскрибации указана реальная сумма договора, но для анализа достаточно относительного изменения цены.",c:"hide"}
+];
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+function render(){
+ E("trItems").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");d.className="item";
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var s=document.createElement("select");
+   s.innerHTML="<option value=''>Что сделать?</option>"+
+    "<option value='roles'>Заменить «спикеров» на роли</option>"+
+    "<option value='fix'>Исправить ошибку распознавания</option>"+
+    "<option value='hide'>Обезличить</option>"+
+    "<option value='keep'>Оставить как есть</option>";
+   s.value=answers[i]||"";
+   s.disabled=checked;
+   s.onchange=function(){answers[i]=this.value};
+   d.appendChild(s);E("trItems").appendChild(d);
+  })(i);
+ }
+ var fb=E("trFeedback");fb.className="fb";
+ if(checked){
+   var errors=0;
+   for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)errors++;
+   fb.className="fb "+(errors===0?"ok":"bad");
+   fb.innerHTML=errors===0
+    ?"Подготовка выполнена корректно: роли понятны, критичные ошибки исправлены, лишние чувствительные данные убраны."
+    :"Есть ошибки. Подумайте, какие элементы влияют на логику переговоров, а какие нужно исправить или обезличить до загрузки.";
+ }
+ E("trCheck").style.display=checked?"none":"inline-block";
+ E("trEdit").style.display=checked?"inline-block":"none";
+ E("trNext").style.display=checked?"inline-block":"none";
+}
+E("trCheck").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Разберите все пункты.");return;}}
+ checked=true;render();
+};
+E("trEdit").onclick=function(){checked=false;render()};
+E("trNext").onclick=function(){E("trBody").style.display="none";E("trResult").style.display="block"};
+E("trBack").onclick=function(){E("trBody").style.display="block";E("trResult").style.display="none"};
+E("trRestart").onclick=function(){answers=[];checked=false;E("trBody").style.display="block";E("trResult").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initTranscriptPractice);
+else initTranscriptPractice();
+})();
+</script>
+</div>

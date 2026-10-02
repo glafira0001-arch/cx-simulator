@@ -1,0 +1,127 @@
+<div id="scenarioPractice">
+<style>
+#scenarioPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#scenarioPractice *{box-sizing:border-box}
+#scenarioPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#scenarioPractice .head,#scenarioPractice .body,#scenarioPractice .result{padding:16px}
+#scenarioPractice .head{border-bottom:1px solid #e5e7eb}
+#scenarioPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#scenarioPractice h3{margin:0;font-size:18px}
+#scenarioPractice .case{padding:10px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.45;margin-bottom:10px}
+#scenarioPractice .item{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#scenarioPractice .txt{font-size:13px;line-height:1.4;margin-bottom:8px}
+#scenarioPractice select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px}
+#scenarioPractice .fb{display:none;margin-top:10px;padding:9px;border-radius:9px;font-size:12px;line-height:1.45}
+#scenarioPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#scenarioPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#scenarioPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#scenarioPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#scenarioPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#scenarioPractice button:disabled{opacity:.4}
+#scenarioPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Соберите фактическую рамку переговоров</h3>
+</div>
+
+<div class="body" id="spBody">
+  <div class="case">
+    Через неделю переговоры о продлении годового договора. Клиент получил предложение с повышением стоимости на 12% и попросил обсудить условия.
+  </div>
+  <div id="spItems"></div>
+  <div id="spFeedback" class="fb"></div>
+  <div class="actions">
+    <button class="primary" id="spCheck">Проверить</button>
+    <button id="spEdit">Изменить ответ</button>
+    <button class="primary" id="spNext">Посмотреть результат</button>
+  </div>
+</div>
+
+<div class="result" id="spResult" style="display:none">
+  <h3>Карточка сценария готова</h3>
+  <div class="summary">
+    До тренировки стоит передавать ИИ только подтверждённые обстоятельства. Неизвестные мотивы, бюджет клиента и наличие конкурентов лучше прямо обозначать как неизвестные, а не превращать в факты.
+  </div>
+  <div class="actions">
+    <button id="spBack">Назад</button>
+    <button class="primary" id="spRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initScenarioPractice(){
+var data=[
+ {t:"Клиент работает с компанией третий год.",c:"fact"},
+ {t:"Новое предложение предусматривает повышение на 12%.",c:"fact"},
+ {t:"У клиента наверняка есть более дешёвое предложение конкурента.",c:"unknown"},
+ {t:"Клиент сообщил, что повышение кажется слишком высоким.",c:"fact"},
+ {t:"Бюджет клиента на следующий год неизвестен.",c:"unknown"},
+ {t:"Если ИИ не хватает данных, он может сам выбрать наиболее реалистичные обстоятельства.",c:"no"}
+];
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+function render(){
+ E("spItems").innerHTML="";
+ for(var i=0;i<data.length;i++){
+   (function(i){
+     var d=document.createElement("div");
+     d.className="item";
+     d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+     var s=document.createElement("select");
+     s.innerHTML="<option value=''>Выберите статус</option>"+
+       "<option value='fact'>Подтверждённый факт</option>"+
+       "<option value='unknown'>Неизвестно — так и обозначить</option>"+
+       "<option value='no'>Не включать в сценарий</option>";
+     s.value=answers[i]||"";
+     s.disabled=checked;
+     s.onchange=function(){answers[i]=this.value};
+     d.appendChild(s);
+     E("spItems").appendChild(d);
+   })(i);
+ }
+ var fb=E("spFeedback");
+ fb.className="fb";
+ fb.innerHTML="";
+ if(checked){
+   var errors=0;
+   for(var j=0;j<data.length;j++) if(answers[j]!==data[j].c) errors++;
+   fb.className="fb "+(errors===0?"ok":"bad");
+   fb.innerHTML=errors===0
+    ?"Сценарий собран корректно: факты отделены от неизвестного, а ИИ не получает права самостоятельно придумывать критичные обстоятельства."
+    :"Есть ошибки. Проверьте, не превратили ли вы предположение в факт и не передали ли модели право самостоятельно достраивать переговорную ситуацию.";
+ }
+ E("spCheck").style.display=checked?"none":"inline-block";
+ E("spEdit").style.display=checked?"inline-block":"none";
+ E("spNext").style.display=checked?"inline-block":"none";
+}
+E("spCheck").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Разберите все пункты.");return;}}
+ checked=true;render();
+};
+E("spEdit").onclick=function(){checked=false;render()};
+E("spNext").onclick=function(){
+ E("spBody").style.display="none";
+ E("spResult").style.display="block";
+};
+E("spBack").onclick=function(){
+ E("spBody").style.display="block";
+ E("spResult").style.display="none";
+};
+E("spRestart").onclick=function(){
+ answers=[];checked=false;
+ E("spBody").style.display="block";
+ E("spResult").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initScenarioPractice);
+else initScenarioPractice();
+})();
+</script>
+</div>

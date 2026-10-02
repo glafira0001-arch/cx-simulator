@@ -1,0 +1,112 @@
+<div id="feedbackPractice">
+<style>
+#feedbackPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#feedbackPractice *{box-sizing:border-box}
+#feedbackPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#feedbackPractice .head,#feedbackPractice .body,#feedbackPractice .result{padding:16px}
+#feedbackPractice .head{border-bottom:1px solid #e5e7eb}
+#feedbackPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#feedbackPractice h3{margin:0;font-size:18px}
+#feedbackPractice .case{padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:10px}
+#feedbackPractice .item{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#feedbackPractice .item.active{border-color:#2563eb;background:#eff6ff}
+#feedbackPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#feedbackPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#feedbackPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#feedbackPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#feedbackPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#feedbackPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#feedbackPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Отберите полезную обратную связь</h3>
+</div>
+
+<div class="body" id="fpBody">
+  <div class="case">
+    После тренировки ИИ выдал шесть выводов. Отметьте те, которые действительно помогают улучшить переговорное поведение и опираются на наблюдаемое действие.
+  </div>
+  <div id="fpItems"></div>
+  <div id="fpFeedback" class="fb"></div>
+  <div class="actions">
+    <button class="primary" id="fpCheck">Проверить</button>
+    <button id="fpEdit">Изменить ответ</button>
+    <button class="primary" id="fpNext">Посмотреть результат</button>
+  </div>
+</div>
+
+<div class="result" id="fpResult" style="display:none">
+  <h3>Обратная связь отфильтрована</h3>
+  <div class="summary">
+    Полезный разбор связывает конкретную реплику с последствием и предлагает поведение для следующей попытки. Оценки личности и общие советы без эпизода разговора лучше исключать.
+  </div>
+  <div class="actions">
+    <button id="fpBack">Назад</button>
+    <button class="primary" id="fpRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initFeedbackPractice(){
+var data=[
+ {t:"После первого возражения вы сразу предложили снижение с 12 до 9%, не выяснив причину сопротивления.",good:true},
+ {t:"Вам нужно быть увереннее в себе.",good:false},
+ {t:"Когда клиент назвал бюджетное ограничение, вы уточнили, какие другие параметры могут помочь согласованию.",good:true},
+ {t:"Вы прирождённый переговорщик, но иногда слишком мягкий.",good:false},
+ {t:"В следующей тренировке проверьте правило: не предлагать уступку до уточнения причины возражения.",good:true},
+ {t:"Рекомендуется активнее использовать психологические техники влияния.",good:false}
+];
+var selected=[],checked=false;
+function E(id){return document.getElementById(id)}
+function render(){
+ E("fpItems").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="item"+(selected.indexOf(i)>=0?" active":"");
+   d.innerHTML=data[i].t;
+   d.onclick=function(){
+    if(checked)return;
+    var p=selected.indexOf(i);
+    if(p>=0)selected.splice(p,1);else selected.push(i);
+    render();
+   };
+   E("fpItems").appendChild(d);
+  })(i);
+ }
+ var fb=E("fpFeedback");fb.className="fb";
+ if(checked){
+   var good=true;
+   for(var j=0;j<data.length;j++){
+     var isSel=selected.indexOf(j)>=0;
+     if(isSel!==data[j].good)good=false;
+   }
+   fb.className="fb "+(good?"ok":"bad");
+   fb.innerHTML=good
+    ?"Вы оставили наблюдаемые действия и конкретные правила для следующей тренировки."
+    :"Проверьте выбор. Полезная обратная связь не оценивает личность и не ограничивается общим советом без связи с конкретным эпизодом.";
+ }
+ E("fpCheck").style.display=checked?"none":"inline-block";
+ E("fpEdit").style.display=checked?"inline-block":"none";
+ E("fpNext").style.display=checked?"inline-block":"none";
+}
+E("fpCheck").onclick=function(){
+ if(!selected.length){alert("Выберите полезные выводы.");return;}
+ checked=true;render();
+};
+E("fpEdit").onclick=function(){checked=false;render()};
+E("fpNext").onclick=function(){E("fpBody").style.display="none";E("fpResult").style.display="block"};
+E("fpBack").onclick=function(){E("fpBody").style.display="block";E("fpResult").style.display="none"};
+E("fpRestart").onclick=function(){selected=[];checked=false;E("fpBody").style.display="block";E("fpResult").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initFeedbackPractice);
+else initFeedbackPractice();
+})();
+</script>
+</div>

@@ -1,0 +1,135 @@
+<div id="tacticsPractice">
+<style>
+#tacticsPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#tacticsPractice *{box-sizing:border-box}
+#tacticsPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#tacticsPractice .head,#tacticsPractice .body,#tacticsPractice .result{padding:16px}
+#tacticsPractice .head{border-bottom:1px solid #e5e7eb}
+#tacticsPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#tacticsPractice h3{margin:0;font-size:18px}
+#tacticsPractice .case{padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:10px}
+#tacticsPractice .choice{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#tacticsPractice .choice.active{border-color:#2563eb;background:#eff6ff}
+#tacticsPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#tacticsPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#tacticsPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#tacticsPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#tacticsPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#tacticsPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#tacticsPractice button:disabled{opacity:.4}
+#tacticsPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Определите следующий тактический ход</h3>
+</div>
+
+<div class="body" id="tp2Body">
+  <div id="tp2Meta" style="font-size:12px;color:#667085;margin-bottom:8px"></div>
+  <div id="tp2Screen"></div>
+  <div id="tp2Feedback" class="fb"></div>
+  <div class="actions">
+    <button id="tp2Back">Назад</button>
+    <button class="primary" id="tp2Check">Проверить</button>
+    <button id="tp2Edit">Изменить ответ</button>
+    <button class="primary" id="tp2Next">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="tp2Result" style="display:none">
+  <h3>Тактический план собран</h3>
+  <div class="summary">
+    Сильный разбор заканчивается не списком ошибок, а конкретным следующим действием: что выяснить, что подготовить, какую позицию сохранить и какое решение получить на следующем контакте.
+  </div>
+  <div class="actions">
+    <button id="tp2ResultBack">Назад</button>
+    <button class="primary" id="tp2Restart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initTacticsPractice(){
+var data=[
+ {
+  case:"Клиент трижды возвращался к цене. Он запросил расчёт для повышения на 7%, но не объяснил, почему именно этот уровень сможет согласовать.",
+  q:"Какой следующий ход наиболее обоснован?",
+  opts:[
+   "Сразу подготовить предложение на 7%, чтобы не затягивать сделку.",
+   "Сначала выяснить, что стоит за уровнем 7% и какие критерии используются при согласовании.",
+   "Повторить аргументы в пользу 12% более подробно."
+  ],
+  c:1
+ },
+ {
+  case:"Ваш минимально приемлемый уровень — 9%. Клиент хочет 7%. Он готов обсуждать срок договора и условия оплаты.",
+  q:"Как действовать дальше?",
+  opts:[
+   "Снизиться до 7%, раз клиент готов обсуждать остальные условия.",
+   "Подготовить пакетный вариант: 9% с текущими условиями и альтернативу при встречном изменении других параметров.",
+   "Прекратить переговоры, потому что позиции по цене не совпали."
+  ],
+  c:1
+ },
+ {
+  case:"Клиент попросил прислать новый расчёт до четверга и договорился вернуться к обсуждению в пятницу.",
+  q:"Как корректно определить этап сделки?",
+  opts:[
+   "Переговоры провалены, потому что соглашения нет.",
+   "Сделка закрыта, потому что назначен следующий контакт.",
+   "Переговоры продолжаются: есть конкретное следующее действие и открытые условия."
+  ],
+  c:2
+ }
+];
+var page=0,answers=[],checked=[false,false,false];
+function E(id){return document.getElementById(id)}
+function render(){
+ E("tp2Body").style.display="block";E("tp2Result").style.display="none";
+ E("tp2Meta").innerHTML="Ситуация "+(page+1)+" из 3";
+ E("tp2Screen").innerHTML="<div class='case'>"+data[page].case+"<br><br><strong>"+data[page].q+"</strong></div>";
+ for(var i=0;i<data[page].opts.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="choice"+(answers[page]===i?" active":"");
+   d.innerHTML=data[page].opts[i];
+   d.onclick=function(){if(!checked[page]){answers[page]=i;render()}};
+   E("tp2Screen").appendChild(d);
+  })(i);
+ }
+ var fb=E("tp2Feedback");fb.className="fb";
+ if(checked[page]){
+   var good=answers[page]===data[page].c;
+   fb.className="fb "+(good?"ok":"bad");
+   if(page===0)fb.innerHTML="Сначала нужно отделить факт — запрос 7% — от неизвестной причины этого уровня. Без этого новая уступка может быть преждевременной.";
+   if(page===1)fb.innerHTML="Разрыв по цене не обязательно означает тупик. Если другие параметры обсуждаемы, стоит подготовить пакетное предложение в пределах своей рамки.";
+   if(page===2)fb.innerHTML="Наличие конкретного следующего действия означает продолжение процесса. Сделка ещё не согласована, но и не потеряна.";
+ }
+ E("tp2Back").disabled=page===0;
+ E("tp2Check").style.display=checked[page]?"none":"inline-block";
+ E("tp2Edit").style.display=checked[page]?"inline-block":"none";
+ E("tp2Next").style.display=checked[page]?"inline-block":"none";
+ E("tp2Next").innerHTML=page===2?"Завершить":"Далее";
+}
+E("tp2Check").onclick=function(){
+ if(typeof answers[page]==="undefined"){alert("Выберите решение.");return;}
+ checked[page]=true;render();
+};
+E("tp2Edit").onclick=function(){checked[page]=false;render()};
+E("tp2Back").onclick=function(){if(page>0){page--;render()}};
+E("tp2Next").onclick=function(){
+ if(page<2){page++;render()}
+ else{E("tp2Body").style.display="none";E("tp2Result").style.display="block"}
+};
+E("tp2ResultBack").onclick=function(){page=2;render()};
+E("tp2Restart").onclick=function(){page=0;answers=[];checked=[false,false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initTacticsPractice);
+else initTacticsPractice();
+})();
+</script>
+</div>

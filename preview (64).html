@@ -1,0 +1,132 @@
+<div id="dialogPractice">
+<style>
+#dialogPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#dialogPractice *{box-sizing:border-box}
+#dialogPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#dialogPractice .head,#dialogPractice .body,#dialogPractice .result{padding:16px}
+#dialogPractice .head{border-bottom:1px solid #e5e7eb}
+#dialogPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#dialogPractice h3{margin:0;font-size:18px}
+#dialogPractice .opponent{padding:10px;background:#f8fafc;border-left:3px solid #667085;border-radius:8px;font-size:13px;line-height:1.5;margin-bottom:10px}
+#dialogPractice .reply{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#dialogPractice .reply.active{border-color:#2563eb;background:#eff6ff}
+#dialogPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#dialogPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#dialogPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#dialogPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#dialogPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#dialogPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#dialogPractice button:disabled{opacity:.4}
+#dialogPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Проведите три реплики переговоров</h3>
+</div>
+
+<div class="body" id="dpBody">
+  <div id="dpMeta" style="font-size:12px;color:#667085;margin-bottom:8px"></div>
+  <div id="dpScreen"></div>
+  <div id="dpFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="dpBack">Назад</button>
+    <button class="primary" id="dpCheck">Проверить</button>
+    <button id="dpEdit">Изменить ответ</button>
+    <button class="primary" id="dpNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="dpResult" style="display:none">
+  <h3>Тренировка завершена</h3>
+  <div class="summary">
+    Цель симуляции — не найти одну «идеальную реплику», а проверить привычный способ принятия решений. Особенно важно не просить ИИ подсказывать ответы по ходу разговора.
+  </div>
+  <div class="actions">
+    <button id="dpResultBack">Назад</button>
+    <button class="primary" id="dpRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initDialogPractice(){
+var screens=[
+ {
+  q:"Повышение на 12% для нас неприемлемо. Если вы настаиваете, мы посмотрим предложения других поставщиков.",
+  options:[
+   "Мы можем сразу снизить повышение до 9%.",
+   "Что именно делает 12% неприемлемыми: общий бюджет, внутренний лимит или сравнение с альтернативами?",
+   "Но наши услуги стоят этих денег, и рынок сейчас растёт."
+  ],
+  correct:1,
+  fb:"Сначала полезнее понять источник сопротивления. Немедленная уступка до диагностики ослабляет позицию, а спор о справедливости цены не даёт новой информации."
+ },
+ {
+  q:"Наш бюджет на следующий год уже утверждён. Всё, что выше 6%, придётся отдельно защищать перед руководством.",
+  options:[
+   "Тогда давайте остановимся на 6%.",
+   "Понимаю. Если мы найдём вариант выше 6%, какие параметры кроме цены могут помочь вам согласовать его внутри?",
+   "Ваш бюджет — это внутренняя проблема вашей компании."
+  ],
+  correct:1,
+  fb:"Сильнее не спорить с ограничением и не принимать его автоматически, а выяснить, какие другие параметры сделки могут повлиять на решение."
+ },
+ {
+  q:"Если вы дадите 8% и отсрочку платежа 45 дней, я готов вынести вариант на согласование.",
+  options:[
+   "Согласен, лишь бы продвинуть сделку.",
+   "По цене можем обсуждать 8%, но отсрочка 45 дней выходит за наши рамки. Давайте посмотрим другой обмен условий.",
+   "Нет, обсуждать больше нечего."
+  ],
+  correct:1,
+  fb:"Ответ удерживает предел по оплате и сохраняет переговорное пространство. Уступка не принимается пакетом автоматически."
+ }
+];
+var page=0,answers=[],checked=[false,false,false];
+function E(id){return document.getElementById(id)}
+function render(){
+ E("dpBody").style.display="block";E("dpResult").style.display="none";
+ E("dpMeta").innerHTML="Реплика "+(page+1)+" из 3";
+ E("dpScreen").innerHTML="<div class='opponent'><strong>Оппонент:</strong><br>"+screens[page].q+"</div>";
+ for(var i=0;i<screens[page].options.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="reply"+(answers[page]===i?" active":"");
+   d.innerHTML=screens[page].options[i];
+   d.onclick=function(){if(!checked[page]){answers[page]=i;render()}};
+   E("dpScreen").appendChild(d);
+  })(i);
+ }
+ var fb=E("dpFeedback");fb.className="fb";
+ if(checked[page]){
+   fb.className="fb "+(answers[page]===screens[page].correct?"ok":"bad");
+   fb.innerHTML=screens[page].fb;
+ }
+ E("dpBack").disabled=page===0;
+ E("dpCheck").style.display=checked[page]?"none":"inline-block";
+ E("dpEdit").style.display=checked[page]?"inline-block":"none";
+ E("dpNext").style.display=checked[page]?"inline-block":"none";
+ E("dpNext").innerHTML=page===2?"Завершить":"Далее";
+}
+E("dpCheck").onclick=function(){
+ if(typeof answers[page]==="undefined"){alert("Выберите свою реплику.");return;}
+ checked[page]=true;render();
+};
+E("dpEdit").onclick=function(){checked[page]=false;render()};
+E("dpBack").onclick=function(){if(page>0){page--;render()}};
+E("dpNext").onclick=function(){
+ if(page<2){page++;render()}
+ else{E("dpBody").style.display="none";E("dpResult").style.display="block"}
+};
+E("dpResultBack").onclick=function(){page=2;render()};
+E("dpRestart").onclick=function(){page=0;answers=[];checked=[false,false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initDialogPractice);
+else initDialogPractice();
+})();
+</script>
+</div>

@@ -1,0 +1,120 @@
+<div id="difficultyPractice">
+<style>
+#difficultyPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#difficultyPractice *{box-sizing:border-box}
+#difficultyPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#difficultyPractice .head,#difficultyPractice .body,#difficultyPractice .result{padding:16px}
+#difficultyPractice .head{border-bottom:1px solid #e5e7eb}
+#difficultyPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#difficultyPractice h3{margin:0;font-size:18px}
+#difficultyPractice .goal{padding:10px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.45;margin-bottom:10px}
+#difficultyPractice .option{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#difficultyPractice .option.active{border-color:#2563eb;background:#eff6ff}
+#difficultyPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#difficultyPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#difficultyPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#difficultyPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#difficultyPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#difficultyPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#difficultyPractice button:disabled{opacity:.4}
+#difficultyPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Подберите сопротивление под тренировочную цель</h3>
+</div>
+
+<div class="body" id="diffBody">
+  <div id="diffMeta" style="font-size:12px;color:#667085;margin-bottom:8px"></div>
+  <div id="diffScreen"></div>
+  <div id="diffFeedback" class="fb"></div>
+  <div class="actions">
+    <button id="diffBack">Назад</button>
+    <button class="primary" id="diffCheck">Проверить</button>
+    <button id="diffEdit">Изменить ответ</button>
+    <button class="primary" id="diffNext">Далее</button>
+  </div>
+</div>
+
+<div class="result" id="diffResult" style="display:none">
+  <h3>Настройка сложности завершена</h3>
+  <div class="summary">
+    Усложнение полезно, когда оно направлено на конкретный навык. Жёсткость, уклончивость и хаотичность тренируют разные действия переговорщика.
+  </div>
+  <div class="actions">
+    <button id="diffResultBack">Назад</button>
+    <button class="primary" id="diffRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initDifficultyPractice(){
+var data=[
+ {
+  goal:"Вы хотите потренироваться выяснять настоящую причину сопротивления.",
+  opts:["Сделать оппонента агрессивнее","Пусть отвечает уклончиво и не раскрывает мотив сразу","Пусть всегда требует скидку"],
+  c:1
+ },
+ {
+  goal:"Вы хотите проверить, умеете ли удерживать структуру разговора.",
+  opts:["Пусть оппонент перескакивает между темами и возвращается к уже обсуждённому","Пусть говорит только односложно","Пусть быстро соглашается"],
+  c:0
+ },
+ {
+  goal:"Вы хотите научиться аргументировать конкретно, без общих слов.",
+  opts:["Пусть оппонент требует цифры и оспаривает общие аргументы","Пусть отвечает эмоционально","Пусть постоянно меняет тему"],
+  c:0
+ }
+];
+var page=0,answers=[],checked=[false,false,false];
+function E(id){return document.getElementById(id)}
+function render(){
+ E("diffBody").style.display="block";E("diffResult").style.display="none";
+ E("diffMeta").innerHTML="Ситуация "+(page+1)+" из 3";
+ E("diffScreen").innerHTML="<div class='goal'><strong>Цель:</strong><br>"+data[page].goal+"</div>";
+ for(var i=0;i<data[page].opts.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="option"+(answers[page]===i?" active":"");
+   d.innerHTML=data[page].opts[i];
+   d.onclick=function(){if(!checked[page]){answers[page]=i;render()}};
+   E("diffScreen").appendChild(d);
+  })(i);
+ }
+ var fb=E("diffFeedback");fb.className="fb";
+ if(checked[page]){
+   var good=answers[page]===data[page].c;
+   fb.className="fb "+(good?"ok":"bad");
+   fb.innerHTML=good
+    ?"Настройка соответствует навыку, который вы хотите проверить."
+    :"Сложность сама по себе не цель. Выберите поведение, которое вынуждает вас тренировать именно нужное действие.";
+ }
+ E("diffBack").disabled=page===0;
+ E("diffCheck").style.display=checked[page]?"none":"inline-block";
+ E("diffEdit").style.display=checked[page]?"inline-block":"none";
+ E("diffNext").style.display=checked[page]?"inline-block":"none";
+ E("diffNext").innerHTML=page===2?"Завершить":"Далее";
+}
+E("diffCheck").onclick=function(){
+ if(typeof answers[page]==="undefined"){alert("Выберите настройку.");return;}
+ checked[page]=true;render();
+};
+E("diffEdit").onclick=function(){checked[page]=false;render()};
+E("diffBack").onclick=function(){if(page>0){page--;render()}};
+E("diffNext").onclick=function(){
+ if(page<2){page++;render()}
+ else{E("diffBody").style.display="none";E("diffResult").style.display="block"}
+};
+E("diffResultBack").onclick=function(){page=2;render()};
+E("diffRestart").onclick=function(){page=0;answers=[];checked=[false,false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initDifficultyPractice);
+else initDifficultyPractice();
+})();
+</script>
+</div>

@@ -1,0 +1,127 @@
+<div id="opponentPractice">
+<style>
+#opponentPractice{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#opponentPractice *{box-sizing:border-box}
+#opponentPractice .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#opponentPractice .head,#opponentPractice .body,#opponentPractice .result{padding:16px}
+#opponentPractice .head{border-bottom:1px solid #e5e7eb}
+#opponentPractice .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#opponentPractice h3{margin:0;font-size:18px}
+#opponentPractice .case{padding:10px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.45;margin-bottom:12px}
+#opponentPractice .field{margin-bottom:11px}
+#opponentPractice label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#opponentPractice select{width:100%;padding:8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:12px}
+#opponentPractice .fb{display:none;padding:9px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#opponentPractice .ok{display:block;background:#ecfdf3;color:#065f46}
+#opponentPractice .bad{display:block;background:#fff1f0;color:#7a271a}
+#opponentPractice .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#opponentPractice button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#opponentPractice button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#opponentPractice .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Настройте реалистичного оппонента</h3>
+</div>
+
+<div class="body" id="oppBody">
+  <div class="case">
+    Вы готовитесь к переговорам с директором по закупкам. Он отвечает за бюджет категории и считает повышение цены на 12% слишком высоким.
+  </div>
+
+  <div class="field">
+    <label>Какую исходную позицию дать оппоненту?</label>
+    <select id="oppPosition">
+      <option value="">Выберите</option>
+      <option value="a">Согласиться на любое предложение, если оно хорошо аргументировано</option>
+      <option value="b">Добиваться снижения повышения до 5%, не раскрывая сразу предел уступок</option>
+      <option value="c">Отвергать всё, что предлагает продавец</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Как задать стиль поведения?</label>
+    <select id="oppStyle">
+      <option value="">Выберите</option>
+      <option value="a">Кратко, требовательно к цифрам, без агрессии, не соглашаться с первым аргументом</option>
+      <option value="b">Максимально конфликтно и эмоционально</option>
+      <option value="c">Подсказывать продавцу более сильные аргументы по ходу разговора</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Какое правило важно добавить?</label>
+    <select id="oppRule">
+      <option value="">Выберите</option>
+      <option value="a">Не раскрывать заранее внутренние ограничения и не давать советов продавцу</option>
+      <option value="b">После каждой реплики объяснять, как продавцу стоило ответить</option>
+      <option value="c">Обязательно прийти к соглашению к пятой реплике</option>
+    </select>
+  </div>
+
+  <div id="oppFeedback" class="fb"></div>
+
+  <div class="actions">
+    <button class="primary" id="oppCheck">Проверить</button>
+    <button id="oppEdit">Изменить ответ</button>
+    <button class="primary" id="oppNext">Посмотреть настройку</button>
+  </div>
+</div>
+
+<div class="result" id="oppResult" style="display:none">
+  <h3>Оппонент настроен</h3>
+  <div class="summary">
+    Сильная настройка сочетает роль, интерес, исходную позицию и 2–4 характеристики поведения. Оппонент должен сопротивляться в рамках своей логики, а не помогать вам или отвергать всё подряд.
+  </div>
+  <div class="actions">
+    <button id="oppBack">Назад</button>
+    <button class="primary" id="oppRestart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function initOpponentPractice(){
+var checked=false;
+function E(id){return document.getElementById(id)}
+function render(){
+ var fb=E("oppFeedback");
+ fb.className="fb";
+ if(checked){
+   var good=E("oppPosition").value==="b"&&E("oppStyle").value==="a"&&E("oppRule").value==="a";
+   fb.className="fb "+(good?"ok":"bad");
+   fb.innerHTML=good
+    ?"Настройка реалистична: у оппонента есть собственный интерес, сопротивление и ограничения, но нет обязанности помогать вам или искусственно срывать переговоры."
+    :"Проверьте настройку. Хороший ИИ-оппонент не должен ни помогать продавцу, ни превращаться в персонажа, который отвергает всё без логики.";
+ }
+ E("oppPosition").disabled=checked;
+ E("oppStyle").disabled=checked;
+ E("oppRule").disabled=checked;
+ E("oppCheck").style.display=checked?"none":"inline-block";
+ E("oppEdit").style.display=checked?"inline-block":"none";
+ E("oppNext").style.display=checked?"inline-block":"none";
+}
+E("oppCheck").onclick=function(){
+ if(!E("oppPosition").value||!E("oppStyle").value||!E("oppRule").value){alert("Заполните все параметры.");return;}
+ checked=true;render();
+};
+E("oppEdit").onclick=function(){checked=false;render()};
+E("oppNext").onclick=function(){E("oppBody").style.display="none";E("oppResult").style.display="block"};
+E("oppBack").onclick=function(){E("oppBody").style.display="block";E("oppResult").style.display="none"};
+E("oppRestart").onclick=function(){
+ E("oppPosition").value="";
+ E("oppStyle").value="";
+ E("oppRule").value="";
+ checked=false;
+ E("oppBody").style.display="block";E("oppResult").style.display="none";render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initOpponentPractice);
+else initOpponentPractice();
+})();
+</script>
+</div>
