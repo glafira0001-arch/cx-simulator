@@ -1,0 +1,115 @@
+<div id="ca3">
+<style>
+#ca3{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca3 *{box-sizing:border-box}
+#ca3 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca3 .head,#ca3 .body,#ca3 .result{padding:16px}
+#ca3 .head{border-bottom:1px solid #e5e7eb}
+#ca3 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca3 h3{margin:0;font-size:18px}
+#ca3 .evidence{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.5;margin-bottom:12px}
+#ca3 .item{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#ca3 .item.active{background:#eff6ff;border-color:#2563eb}
+#ca3 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ca3 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca3 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca3 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ca3 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca3 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca3 .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Не перепутайте активность с эффективностью</h3>
+</div>
+
+<div class="body" id="ca3Body">
+<div class="evidence">
+По конкуренту обнаружено: активный блог, еженедельные публикации в соцсетях, рекламные объявления в поиске и форма подписки на сайте. Данных о лидах, продажах и рекламных расходах нет.
+<br><br>
+Отметьте выводы, которые можно использовать без дополнительных доказательств.
+</div>
+
+<div id="ca3Items"></div>
+<div id="ca3Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="ca3Check">Проверить</button>
+<button id="ca3Edit">Изменить ответ</button>
+<button class="primary" id="ca3Next">Посмотреть вывод</button>
+</div>
+</div>
+
+<div class="result" id="ca3Result" style="display:none">
+<h3>Карта доказательств</h3>
+<div class="summary">
+Из открытых данных можно подтверждать присутствие и наблюдаемую активность. Конверсию, окупаемость и вклад канала в продажи нельзя достоверно выводить без соответствующих показателей.
+</div>
+<div class="actions">
+<button id="ca3Back">Назад</button>
+<button class="primary" id="ca3Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"Конкурент регулярно использует соцсети.",good:true},
+ {t:"Социальные сети являются главным источником продаж конкурента.",good:false},
+ {t:"У конкурента обнаружена поисковая реклама.",good:true},
+ {t:"Поисковая реклама окупается лучше остальных каналов.",good:false},
+ {t:"На сайте есть механизм подписки на email-коммуникацию.",good:true},
+ {t:"Email обеспечивает конкуренту высокий процент повторных продаж.",good:false}
+];
+var selected=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("ca3Items").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="item"+(selected.indexOf(i)>=0?" active":"");
+   d.innerHTML=data[i].t;
+   d.onclick=function(){
+    if(checked)return;
+    var p=selected.indexOf(i);
+    if(p>=0)selected.splice(p,1);else selected.push(i);
+    render();
+   };
+   E("ca3Items").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("ca3Fb");fb.className="fb";
+ if(checked){
+  var good=true;
+  for(var j=0;j<data.length;j++){
+   if((selected.indexOf(j)>=0)!==data[j].good)good=false;
+  }
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=good
+   ?"Вы отделили подтверждаемую активность от выводов, для которых нужны внутренние показатели конкурента."
+   :"В выбор попал вывод об эффективности или пропущен факт, который прямо подтверждается наблюдением.";
+ }
+
+ E("ca3Check").style.display=checked?"none":"inline-block";
+ E("ca3Edit").style.display=checked?"inline-block":"none";
+ E("ca3Next").style.display=checked?"inline-block":"none";
+}
+
+E("ca3Check").onclick=function(){if(!selected.length){alert("Выберите подтверждаемые выводы.");return;}checked=true;render()};
+E("ca3Edit").onclick=function(){checked=false;render()};
+E("ca3Next").onclick=function(){E("ca3Body").style.display="none";E("ca3Result").style.display="block"};
+E("ca3Back").onclick=function(){E("ca3Body").style.display="block";E("ca3Result").style.display="none"};
+E("ca3Restart").onclick=function(){selected=[];checked=false;E("ca3Body").style.display="block";E("ca3Result").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

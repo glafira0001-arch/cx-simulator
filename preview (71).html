@@ -1,0 +1,118 @@
+<div id="ca6">
+<style>
+#ca6{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca6 *{box-sizing:border-box}
+#ca6 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca6 .head,#ca6 .body,#ca6 .result{padding:16px}
+#ca6 .head{border-bottom:1px solid #e5e7eb}
+#ca6 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca6 h3{margin:0;font-size:18px}
+#ca6 .item{border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:8px}
+#ca6 .txt{font-size:12px;line-height:1.4;margin-bottom:7px}
+#ca6 .buttons{display:flex;gap:5px;flex-wrap:wrap}
+#ca6 .tag{padding:6px 7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:11px;cursor:pointer}
+#ca6 .tag.active{background:#eff6ff;border-color:#2563eb;color:#1d4ed8}
+#ca6 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ca6 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca6 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca6 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ca6 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca6 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca6 .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Соберите SWOT-таблицу</h3>
+</div>
+
+<div class="body" id="ca6Body">
+<div id="ca6Items"></div>
+<div id="ca6Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="ca6Check">Проверить</button>
+<button id="ca6Edit">Изменить ответ</button>
+<button class="primary" id="ca6Next">Посмотреть правило</button>
+</div>
+</div>
+
+<div class="result" id="ca6Result" style="display:none">
+<h3>SWOT собран</h3>
+<div class="summary">
+Сильные и слабые стороны относятся к внутренним характеристикам бизнеса. Возможности и угрозы возникают во внешней среде. Один и тот же негативный эффект не делает внешний фактор «слабостью» компании.
+</div>
+<div class="actions">
+<button id="ca6Back">Назад</button>
+<button class="primary" id="ca6Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"Средний запуск проекта — 3 дня, у выбранных конкурентов — 7–10.",c:"S"},
+ {t:"В компании нет тарифа для самого быстрорастущего сегмента.",c:"W"},
+ {t:"В выбранном сегменте растёт спрос на дистанционное обслуживание.",c:"O"},
+ {t:"Два крупных федеральных игрока вышли в ваш регион.",c:"T"},
+ {t:"Команда может одновременно вести не более 20 новых запусков.",c:"W"},
+ {t:"Появился новый канал, который конкуренты пока почти не используют.",c:"O"}
+];
+var answers=[],checked=false;
+var labels={S:"Сильная",W:"Слабая",O:"Возможность",T:"Угроза"};
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("ca6Items").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var box=document.createElement("div");box.className="item";
+   box.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var wrap=document.createElement("div");wrap.className="buttons";
+
+   for(var k in labels){
+    (function(k){
+     var b=document.createElement("button");
+     b.className="tag"+(answers[i]===k?" active":"");
+     b.innerHTML=labels[k];
+     b.onclick=function(){if(!checked){answers[i]=k;render()}};
+     wrap.appendChild(b);
+    })(k);
+   }
+
+   box.appendChild(wrap);E("ca6Items").appendChild(box);
+  })(i);
+ }
+
+ var fb=E("ca6Fb");fb.className="fb";
+ if(checked){
+  var err=0;
+  for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)err++;
+  fb.className="fb "+(err===0?"ok":"bad");
+  fb.innerHTML=err===0
+   ?"Все факторы распределены по логике внутреннее / внешнее."
+   :"Есть ошибки. Сначала определите: фактор находится внутри компании или возникает во внешней среде.";
+ }
+
+ E("ca6Check").style.display=checked?"none":"inline-block";
+ E("ca6Edit").style.display=checked?"inline-block":"none";
+ E("ca6Next").style.display=checked?"inline-block":"none";
+}
+
+E("ca6Check").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Распределите все факторы.");return;}}
+ checked=true;render();
+};
+E("ca6Edit").onclick=function(){checked=false;render()};
+E("ca6Next").onclick=function(){E("ca6Body").style.display="none";E("ca6Result").style.display="block"};
+E("ca6Back").onclick=function(){E("ca6Body").style.display="block";E("ca6Result").style.display="none"};
+E("ca6Restart").onclick=function(){answers=[];checked=false;E("ca6Body").style.display="block";E("ca6Result").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

@@ -1,0 +1,111 @@
+<div id="ca5">
+<style>
+#ca5{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca5 *{box-sizing:border-box}
+#ca5 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca5 .head,#ca5 .body,#ca5 .result{padding:16px}
+#ca5 .head{border-bottom:1px solid #e5e7eb}
+#ca5 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca5 h3{margin:0;font-size:18px}
+#ca5 .item{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#ca5 .txt{font-size:12px;line-height:1.45;margin-bottom:7px}
+#ca5 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#ca5 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ca5 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca5 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca5 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ca5 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca5 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca5 .summary{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Очистите вводные для SWOT</h3>
+</div>
+
+<div class="body" id="ca5Body">
+<div id="ca5Items"></div>
+<div id="ca5Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="ca5Check">Проверить</button>
+<button id="ca5Edit">Изменить ответ</button>
+<button class="primary" id="ca5Next">Посмотреть результат</button>
+</div>
+</div>
+
+<div class="result" id="ca5Result" style="display:none">
+<h3>Данные подготовлены</h3>
+<div class="summary">
+Для SWOT лучше передавать наблюдаемые факты отдельно от оценок и гипотез. Если формулировка уже содержит вывод — её полезно разложить на конкретные наблюдения.
+</div>
+<div class="actions">
+<button id="ca5Back">Назад</button>
+<button class="primary" id="ca5Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"Средний запуск проекта занимает 3 рабочих дня.",c:"fact"},
+ {t:"У нас отличный сервис.",c:"assessment"},
+ {t:"Три из пяти выбранных конкурентов ввели подписные тарифы.",c:"fact"},
+ {t:"Клиенты, скорее всего, скоро массово перейдут на подписку.",c:"hyp"},
+ {t:"На сайте нет отдельного блока с тарифами.",c:"fact"},
+ {t:"Наш сайт заметно хуже конкурентных.",c:"assessment"}
+];
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("ca5Items").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");d.className="item";
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var s=document.createElement("select");
+   s.innerHTML="<option value=''>Что это?</option>"+
+    "<option value='fact'>Наблюдаемый факт</option>"+
+    "<option value='assessment'>Готовая оценка</option>"+
+    "<option value='hyp'>Гипотеза</option>";
+   s.value=answers[i]||"";
+   s.disabled=checked;
+   s.onchange=function(){answers[i]=this.value};
+   d.appendChild(s);E("ca5Items").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("ca5Fb");fb.className="fb";
+ if(checked){
+  var err=0;
+  for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)err++;
+  fb.className="fb "+(err===0?"ok":"bad");
+  fb.innerHTML=err===0
+   ?"Вы отделили данные, которые можно использовать напрямую, от оценок и гипотез."
+   :"Есть ошибки. Проверьте, можно ли формулировку наблюдать или измерить напрямую, либо в ней уже содержится интерпретация.";
+ }
+
+ E("ca5Check").style.display=checked?"none":"inline-block";
+ E("ca5Edit").style.display=checked?"inline-block":"none";
+ E("ca5Next").style.display=checked?"inline-block":"none";
+}
+
+E("ca5Check").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Разберите все вводные.");return;}}
+ checked=true;render();
+};
+E("ca5Edit").onclick=function(){checked=false;render()};
+E("ca5Next").onclick=function(){E("ca5Body").style.display="none";E("ca5Result").style.display="block"};
+E("ca5Back").onclick=function(){E("ca5Body").style.display="block";E("ca5Result").style.display="none"};
+E("ca5Restart").onclick=function(){answers=[];checked=false;E("ca5Body").style.display="block";E("ca5Result").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

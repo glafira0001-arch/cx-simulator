@@ -1,0 +1,135 @@
+<div id="ca7">
+<style>
+#ca7{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca7 *{box-sizing:border-box}
+#ca7 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca7 .head,#ca7 .body,#ca7 .result{padding:16px}
+#ca7 .head{border-bottom:1px solid #e5e7eb}
+#ca7 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca7 h3{margin:0;font-size:18px}
+#ca7 .current{padding:10px;background:#f8fafc;border-radius:10px;font-size:13px;margin-bottom:10px}
+#ca7 .option{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#ca7 .option.active{background:#eff6ff;border-color:#2563eb}
+#ca7 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ca7 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca7 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca7 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ca7 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca7 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca7 button:disabled{opacity:.4}
+#ca7 .summary{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Доработайте слабый SWOT</h3>
+</div>
+
+<div class="body" id="ca7Body">
+<div id="ca7Meta" style="font-size:12px;color:#667085;margin-bottom:7px"></div>
+<div id="ca7Screen"></div>
+<div id="ca7Fb" class="fb"></div>
+
+<div class="actions">
+<button id="ca7Back">Назад</button>
+<button class="primary" id="ca7Check">Проверить</button>
+<button id="ca7Edit">Изменить ответ</button>
+<button class="primary" id="ca7Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="ca7Result" style="display:none">
+<h3>SWOT стал конкретнее</h3>
+<div class="summary">
+Дополнительный запрос нужен не для увеличения количества пунктов, а чтобы заменить общие формулировки на проверяемые, восстановить пропущенные факторы и обозначить неопределённость.
+</div>
+<div class="actions">
+<button id="ca7ResultBack">Назад</button>
+<button class="primary" id="ca7Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {
+  cur:"Сильная сторона: хороший сервис.",
+  opts:[
+   "Оставить как есть: формулировка положительная.",
+   "Заменить на подтверждаемое: средний ответ клиенту — 15 минут против 1–2 часов у выбранных конкурентов.",
+   "Усилить до «лучший сервис на рынке»."
+  ],c:1,
+  fb:"В SWOT полезнее использовать конкретный измеримый признак, а не общую положительную оценку."
+ },
+ {
+  cur:"Угроза: высокая конкуренция.",
+  opts:[
+   "Уточнить, какое изменение во внешней среде создаёт риск и на каких данных это основано.",
+   "Добавить ещё три похожие угрозы для полноты.",
+   "Перенести формулировку в слабые стороны."
+  ],c:0,
+  fb:"«Высокая конкуренция» слишком общая. Нужен конкретный внешний фактор: новый игрок, ценовое давление, изменение предложения."
+ },
+ {
+  cur:"Факт из вводных: команда ограничена по числу одновременных запусков. В SWOT он отсутствует.",
+  opts:[
+   "Игнорировать: таблица уже заполнена.",
+   "Добавить как внутреннее ограничение, если оно влияет на выбранную задачу.",
+   "Добавить как внешнюю угрозу."
+  ],c:1,
+  fb:"Значимый пропущенный внутренний фактор нужно вернуть в SWOT, если он влияет на решение."
+ }
+];
+
+var page=0,answers=[],checked=[false,false,false];
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("ca7Body").style.display="block";E("ca7Result").style.display="none";
+ E("ca7Meta").innerHTML="Проблема "+(page+1)+" из 3";
+ E("ca7Screen").innerHTML="<div class='current'><strong>Текущий пункт:</strong><br>"+data[page].cur+"</div>";
+
+ for(var i=0;i<data[page].opts.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="option"+(answers[page]===i?" active":"");
+   d.innerHTML=data[page].opts[i];
+   d.onclick=function(){if(!checked[page]){answers[page]=i;render()}};
+   E("ca7Screen").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("ca7Fb");fb.className="fb";
+ if(checked[page]){
+  var good=answers[page]===data[page].c;
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=data[page].fb;
+ }
+
+ E("ca7Back").disabled=page===0;
+ E("ca7Check").style.display=checked[page]?"none":"inline-block";
+ E("ca7Edit").style.display=checked[page]?"inline-block":"none";
+ E("ca7Next").style.display=checked[page]?"inline-block":"none";
+ E("ca7Next").innerHTML=page===2?"Завершить":"Далее";
+}
+
+E("ca7Check").onclick=function(){
+ if(typeof answers[page]==="undefined"){alert("Выберите действие.");return;}
+ checked[page]=true;render();
+};
+E("ca7Edit").onclick=function(){checked[page]=false;render()};
+E("ca7Back").onclick=function(){if(page>0){page--;render()}};
+E("ca7Next").onclick=function(){
+ if(page<2){page++;render()}else{E("ca7Body").style.display="none";E("ca7Result").style.display="block"}
+};
+E("ca7ResultBack").onclick=function(){page=2;render()};
+E("ca7Restart").onclick=function(){page=0;answers=[];checked=[false,false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

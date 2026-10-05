@@ -1,0 +1,134 @@
+<div id="ca4">
+<style>
+#ca4{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca4 *{box-sizing:border-box}
+#ca4 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca4 .head,#ca4 .body,#ca4 .result{padding:16px}
+#ca4 .head{border-bottom:1px solid #e5e7eb}
+#ca4 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca4 h3{margin:0;font-size:18px}
+#ca4 .mini{overflow:auto;margin:10px 0}
+#ca4 table{width:100%;border-collapse:collapse;font-size:11px}
+#ca4 th,#ca4 td{border:1px solid #e5e7eb;padding:7px;text-align:left}
+#ca4 .option{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.4;cursor:pointer}
+#ca4 .option.active{background:#eff6ff;border-color:#2563eb}
+#ca4 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ca4 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca4 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca4 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ca4 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca4 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca4 .summary{padding:11px;background:#f8fafc;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>От ошибки в таблице — к поручению</h3>
+</div>
+
+<div class="body" id="ca4Body">
+<div id="ca4Meta" style="font-size:12px;color:#667085"></div>
+<div id="ca4Screen"></div>
+<div id="ca4Fb" class="fb"></div>
+
+<div class="actions">
+<button id="ca4Back">Назад</button>
+<button class="primary" id="ca4Check">Проверить</button>
+<button id="ca4Edit">Изменить ответ</button>
+<button class="primary" id="ca4Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="ca4Result" style="display:none">
+<h3>Проверка завершена</h3>
+<div class="summary">
+Сначала нужно исправить или проверить критичное несоответствие. Только после этого вывод можно превращать в действие с ответственным, сроком и ожидаемым результатом.
+</div>
+<div class="actions">
+<button id="ca4ResultBack">Назад</button>
+<button class="primary" id="ca4Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var page=0,answers=[],checked=[false,false];
+function E(id){return document.getElementById(id)}
+
+var screens=[
+ {
+  html:"<div class='mini'><table><tr><th>Конкурент</th><th>Цена</th><th>Период</th></tr>"+
+       "<tr><td>А</td><td>24 000 ₽</td><td>месяц</td></tr>"+
+       "<tr><td>Б</td><td>210 000 ₽</td><td>год</td></tr>"+
+       "<tr><td>В</td><td>19 000 ₽</td><td>месяц</td></tr></table></div>"+
+       "<strong style='font-size:13px'>Какой вывод нельзя делать до нормализации данных?</strong>",
+  opts:[
+   "Конкурент Б самый дорогой.",
+   "Цены указаны за разные периоды.",
+   "Перед сравнением годовую и месячную цену нужно привести к одной базе."
+  ],
+  c:0,
+  fb:"210 000 ₽ за год нельзя напрямую сравнивать с месячной ценой. Сначала значения нужно привести к одному периоду."
+ },
+ {
+  html:"<div style='background:#f8fafc;padding:10px;border-radius:9px;font-size:12px;line-height:1.45'>После проверки выяснилось: у трёх ключевых конкурентов тарифы на сайте показаны в простой таблице, а у вас условия разбросаны по нескольким страницам.</div><br><strong style='font-size:13px'>Какое поручение лучше?</strong>",
+  opts:[
+   "Улучшить сайт и сделать тарифы лучше.",
+   "Маркетингу до пятницы предложить единый блок сравнения тарифов и показать, какие условия войдут в каждую колонку.",
+   "Скопировать таблицу наиболее сильного конкурента.",
+   "Попросить ИИ самостоятельно переделать тарифную модель."
+  ],
+  c:1,
+  fb:"Поручение содержит конкретное действие, ответственного, срок и ожидаемый результат."
+ }
+];
+
+function render(){
+ E("ca4Body").style.display="block";E("ca4Result").style.display="none";
+ E("ca4Meta").innerHTML="Экран "+(page+1)+" из 2";
+ E("ca4Screen").innerHTML=screens[page].html;
+
+ for(var i=0;i<screens[page].opts.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="option"+(answers[page]===i?" active":"");
+   d.innerHTML=screens[page].opts[i];
+   d.onclick=function(){if(!checked[page]){answers[page]=i;render()}};
+   E("ca4Screen").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("ca4Fb");fb.className="fb";
+ if(checked[page]){
+  var good=answers[page]===screens[page].c;
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=screens[page].fb;
+ }
+
+ E("ca4Back").disabled=page===0;
+ E("ca4Check").style.display=checked[page]?"none":"inline-block";
+ E("ca4Edit").style.display=checked[page]?"inline-block":"none";
+ E("ca4Next").style.display=checked[page]?"inline-block":"none";
+ E("ca4Next").innerHTML=page===1?"Завершить":"Далее";
+}
+
+E("ca4Check").onclick=function(){
+ if(typeof answers[page]==="undefined"){alert("Выберите вариант.");return;}
+ checked[page]=true;render();
+};
+E("ca4Edit").onclick=function(){checked[page]=false;render()};
+E("ca4Back").onclick=function(){if(page>0){page--;render()}};
+E("ca4Next").onclick=function(){
+ if(page<1){page++;render()}else{E("ca4Body").style.display="none";E("ca4Result").style.display="block"}
+};
+E("ca4ResultBack").onclick=function(){page=1;render()};
+E("ca4Restart").onclick=function(){page=0;answers=[];checked=[false,false];render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

@@ -1,0 +1,160 @@
+<div id="ca1">
+<style>
+#ca1{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca1 *{box-sizing:border-box}
+#ca1 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca1 .head,#ca1 .body,#ca1 .result{padding:16px}
+#ca1 .head{border-bottom:1px solid #e5e7eb}
+#ca1 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca1 h3{margin:0;font-size:18px}
+#ca1 .case{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:12px}
+#ca1 .field{margin-bottom:11px}
+#ca1 label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#ca1 select{width:100%;padding:8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#ca1 .fb{display:none;margin-top:10px;padding:10px;border-radius:9px;font-size:12px;line-height:1.45}
+#ca1 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca1 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca1 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+#ca1 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca1 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca1 .summary{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+  <div class="label">Практика</div>
+  <h3>Соберите ТЗ на конкурентный анализ</h3>
+</div>
+
+<div class="body" id="ca1Body">
+  <div class="case">
+    Руководитель написал: «Посмотри конкурентов. Мы продаём бухгалтерское обслуживание бизнесу, хотим понять, как лучше отстроиться».
+  </div>
+
+  <div class="field">
+    <label>Как уточнить нишу?</label>
+    <select id="ca1Niche">
+      <option value="">Выберите</option>
+      <option value="a">Все компании в сфере финансов</option>
+      <option value="b">Бухгалтерский аутсорсинг для малого и среднего бизнеса</option>
+      <option value="c">Любые B2B-услуги</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Как задать регион?</label>
+    <select id="ca1Region">
+      <option value="">Выберите</option>
+      <option value="a">Россия, если услуги оказываются дистанционно по стране</option>
+      <option value="b">Весь мир, чтобы выборка была больше</option>
+      <option value="c">Регион можно не указывать</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Как сформулировать управленческую задачу?</label>
+    <select id="ca1Goal">
+      <option value="">Выберите</option>
+      <option value="a">Найти как можно больше компаний</option>
+      <option value="b">Понять, чем отличаются предложения и какие параметры используют для отстройки</option>
+      <option value="c">Определить, кто из конкурентов объективно лучший</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Какие параметры задать для сравнения?</label>
+    <select id="ca1Params">
+      <option value="">Выберите</option>
+      <option value="a">Название, цвет сайта, год основания</option>
+      <option value="b">Предложение, аудитория, цена, УТП, акции</option>
+      <option value="c">Количество страниц на сайте</option>
+    </select>
+  </div>
+
+  <div id="ca1Fb" class="fb"></div>
+
+  <div class="actions">
+    <button class="primary" id="ca1Check">Проверить</button>
+    <button id="ca1Edit">Изменить ответ</button>
+    <button class="primary" id="ca1Next">Получить ТЗ</button>
+  </div>
+</div>
+
+<div class="result" id="ca1Result" style="display:none">
+  <h3>Рабочее ТЗ</h3>
+  <div class="summary">
+    Ниша: бухгалтерский аутсорсинг для малого и среднего бизнеса.<br><br>
+    Регион: Россия.<br><br>
+    Задача: понять различия предложений и способы отстройки.<br><br>
+    Сравнивать: предложение, аудиторию, цену, УТП и акции.
+  </div>
+  <div class="actions">
+    <button id="ca1Back">Назад</button>
+    <button class="primary" id="ca1Restart">Пройти заново</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+function E(id){return document.getElementById(id)}
+var checked=false;
+
+function render(){
+ var good=
+  E("ca1Niche").value==="b" &&
+  E("ca1Region").value==="a" &&
+  E("ca1Goal").value==="b" &&
+  E("ca1Params").value==="b";
+
+ var fb=E("ca1Fb");
+ fb.className="fb";
+
+ if(checked){
+   fb.className="fb "+(good?"ok":"bad");
+   fb.innerHTML=good
+    ?"Задача собрана: рынок ограничен, цель понятна, а параметры можно сопоставить."
+    :"Проверьте ТЗ. Ниша не должна быть слишком широкой, а параметры сравнения должны помогать принять заявленное решение.";
+ }
+
+ var ids=["ca1Niche","ca1Region","ca1Goal","ca1Params"];
+ for(var i=0;i<ids.length;i++)E(ids[i]).disabled=checked;
+
+ E("ca1Check").style.display=checked?"none":"inline-block";
+ E("ca1Edit").style.display=checked?"inline-block":"none";
+ E("ca1Next").style.display=checked?"inline-block":"none";
+}
+
+E("ca1Check").onclick=function(){
+ if(!E("ca1Niche").value||!E("ca1Region").value||!E("ca1Goal").value||!E("ca1Params").value){
+   alert("Заполните все поля.");return;
+ }
+ checked=true;render();
+};
+
+E("ca1Edit").onclick=function(){checked=false;render()};
+E("ca1Next").onclick=function(){
+ E("ca1Body").style.display="none";
+ E("ca1Result").style.display="block";
+};
+E("ca1Back").onclick=function(){
+ E("ca1Body").style.display="block";
+ E("ca1Result").style.display="none";
+};
+E("ca1Restart").onclick=function(){
+ E("ca1Niche").value="";
+ E("ca1Region").value="";
+ E("ca1Goal").value="";
+ E("ca1Params").value="";
+ checked=false;
+ E("ca1Body").style.display="block";
+ E("ca1Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

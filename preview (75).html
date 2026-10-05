@@ -1,0 +1,119 @@
+<div id="ca2">
+<style>
+#ca2{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#202938}
+#ca2 *{box-sizing:border-box}
+#ca2 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ca2 .head,#ca2 .body,#ca2 .result{padding:16px}
+#ca2 .head{border-bottom:1px solid #e5e7eb}
+#ca2 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ca2 h3{margin:0;font-size:18px}
+#ca2 .case{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.5;margin-bottom:10px}
+#ca2 .item{border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:8px}
+#ca2 .name{font-size:13px;font-weight:700;margin-bottom:4px}
+#ca2 .desc{font-size:12px;line-height:1.4;margin-bottom:7px}
+#ca2 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#ca2 .fb{display:none;margin-top:10px;padding:10px;border-radius:9px;font-size:12px;line-height:1.45}
+#ca2 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ca2 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ca2 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ca2 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ca2 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ca2 .summary{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Отберите сопоставимых конкурентов</h3>
+</div>
+
+<div class="body" id="ca2Body">
+<div class="case">
+Ваша компания оказывает бухгалтерский аутсорсинг малому и среднему бизнесу по всей России.
+Определите, кого включать в основное сравнение.
+</div>
+
+<div id="ca2Items"></div>
+<div id="ca2Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="ca2Check">Проверить</button>
+<button id="ca2Edit">Изменить ответ</button>
+<button class="primary" id="ca2Next">Посмотреть выборку</button>
+</div>
+</div>
+
+<div class="result" id="ca2Result" style="display:none">
+<h3>Сопоставимая выборка</h3>
+<div class="summary">
+В основное сравнение попадают компании с похожим продуктом и близкой аудиторией. Косвенных игроков можно оставить отдельной группой, но не смешивать с прямыми конкурентами в одной ценовой таблице.
+</div>
+<div class="actions">
+<button id="ca2Back">Назад</button>
+<button class="primary" id="ca2Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {n:"Компания А",d:"Бухгалтерский аутсорсинг для компаний до 100 сотрудников, работа по всей России.",c:"direct"},
+ {n:"Компания Б",d:"ERP-система для самостоятельного ведения бухгалтерии.",c:"indirect"},
+ {n:"Компания В",d:"Аутсорсинг бухгалтерии только для крупных холдингов с выручкой от 10 млрд.",c:"other"},
+ {n:"Компания Г",d:"Бухгалтерское сопровождение малого бизнеса, дистанционная работа по России.",c:"direct"},
+ {n:"Компания Д",d:"Юридический консалтинг для физических лиц.",c:"other"}
+];
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("ca2Items").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var box=document.createElement("div");
+   box.className="item";
+   box.innerHTML="<div class='name'>"+data[i].n+"</div><div class='desc'>"+data[i].d+"</div>";
+   var s=document.createElement("select");
+   s.innerHTML="<option value=''>Выберите</option>"+
+    "<option value='direct'>Прямой конкурент</option>"+
+    "<option value='indirect'>Косвенная альтернатива</option>"+
+    "<option value='other'>Не включать в основное сравнение</option>";
+   s.value=answers[i]||"";
+   s.disabled=checked;
+   s.onchange=function(){answers[i]=this.value};
+   box.appendChild(s);
+   E("ca2Items").appendChild(box);
+  })(i);
+ }
+
+ var fb=E("ca2Fb");fb.className="fb";
+ if(checked){
+  var errors=0;
+  for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)errors++;
+  fb.className="fb "+(errors===0?"ok":"bad");
+  fb.innerHTML=errors===0
+   ?"Выборка собрана корректно: прямые конкуренты отделены от заменителей и несопоставимых компаний."
+   :"Есть спорные позиции. Проверяйте одновременно продукт, аудиторию и реальную конкурентную ситуацию.";
+ }
+
+ E("ca2Check").style.display=checked?"none":"inline-block";
+ E("ca2Edit").style.display=checked?"inline-block":"none";
+ E("ca2Next").style.display=checked?"inline-block":"none";
+}
+
+E("ca2Check").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Классифицируйте все компании.");return;}}
+ checked=true;render();
+};
+E("ca2Edit").onclick=function(){checked=false;render()};
+E("ca2Next").onclick=function(){E("ca2Body").style.display="none";E("ca2Result").style.display="block"};
+E("ca2Back").onclick=function(){E("ca2Body").style.display="block";E("ca2Result").style.display="none"};
+E("ca2Restart").onclick=function(){answers=[];checked=false;E("ca2Body").style.display="block";E("ca2Result").style.display="none";render()};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>
