@@ -1,0 +1,124 @@
+<div id="vc5">
+<style>
+#vc5{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc5 *{box-sizing:border-box}
+#vc5 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc5 .head,#vc5 .body,#vc5 .result{padding:16px}
+#vc5 .head{border-bottom:1px solid #e5e7eb}
+#vc5 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc5 h3{margin:0;font-size:18px}
+#vc5 .item{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;cursor:pointer}
+#vc5 .item.active{background:#eff6ff;border-color:#2563eb}
+#vc5 .txt{font-size:12px;line-height:1.45}
+#vc5 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#vc5 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc5 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc5 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc5 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc5 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#vc5 .summary{background:#f8fafc;padding:11px;border-radius:10px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Найдите доказанные сильные стороны</h3>
+</div>
+
+<div class="body" id="vc5Body">
+<p style="font-size:12px;line-height:1.5">Отметьте отзывы, из которых можно вывести конкретное преимущество.</p>
+<div id="vc5Items"></div>
+<div id="vc5Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="vc5Check">Проверить</button>
+<button id="vc5Edit">Изменить ответ</button>
+<button class="primary" id="vc5Next">Посмотреть вывод</button>
+</div>
+</div>
+
+<div class="result" id="vc5Result" style="display:none">
+<h3>Что действительно ценят клиенты</h3>
+<div class="summary">
+Повторяющиеся конкретные формулировки позволяют выделить сильные стороны: скорость решения вопроса, понятность консультации, соответствие продукта обещаниям. Фразы «всё супер» полезны для оценки тональности, но не объясняют причину удовлетворённости.
+</div>
+<div class="actions">
+<button id="vc5Back">Назад</button>
+<button class="primary" id="vc5Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"«Менеджер разобрался за пять минут и сразу решил вопрос»",good:true},
+ {t:"«Всё супер!»",good:false},
+ {t:"«Наконец-то нормально объяснили, какие документы нужны»",good:true},
+ {t:"«Отличная компания»",good:false},
+ {t:"«Товар полностью совпал с описанием на сайте»",good:true},
+ {t:"«Пять звёзд»",good:false}
+];
+var selected=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("vc5Items").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="item"+(selected.indexOf(i)>=0?" active":"");
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   d.onclick=function(){
+    if(checked)return;
+    var p=selected.indexOf(i);
+    if(p>=0)selected.splice(p,1);else selected.push(i);
+    render();
+   };
+   E("vc5Items").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("vc5Fb");fb.className="fb";
+ if(checked){
+  var good=true;
+  for(var j=0;j<data.length;j++){
+   if((selected.indexOf(j)>=0)!==data[j].good)good=false;
+  }
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=good
+   ?"Вы выбрали отзывы, которые содержат конкретное основание для сильной стороны."
+   :"Общее одобрение показывает отношение, но не объясняет, что именно понравилось клиенту.";
+ }
+
+ E("vc5Check").style.display=checked?"none":"inline-block";
+ E("vc5Edit").style.display=checked?"inline-block":"none";
+ E("vc5Next").style.display=checked?"inline-block":"none";
+}
+
+E("vc5Check").onclick=function(){
+ if(!selected.length){alert("Выберите отзывы.");return;}
+ checked=true;render();
+};
+E("vc5Edit").onclick=function(){checked=false;render()};
+E("vc5Next").onclick=function(){
+ E("vc5Body").style.display="none";
+ E("vc5Result").style.display="block";
+};
+E("vc5Back").onclick=function(){
+ E("vc5Body").style.display="block";
+ E("vc5Result").style.display="none";
+};
+E("vc5Restart").onclick=function(){
+ selected=[];checked=false;
+ E("vc5Body").style.display="block";
+ E("vc5Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

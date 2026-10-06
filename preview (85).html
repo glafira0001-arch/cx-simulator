@@ -1,0 +1,149 @@
+<div id="lp2">
+<style>
+#lp2{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#lp2 *{box-sizing:border-box}
+#lp2 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#lp2 .head,#lp2 .body,#lp2 .result{padding:16px}
+#lp2 .head{border-bottom:1px solid #e5e7eb}
+#lp2 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#lp2 h3{margin:0;font-size:18px}
+#lp2 .intro{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:12px}
+#lp2 .row{border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:8px}
+#lp2 .type{font-size:11px;font-weight:700;color:#667085;margin-bottom:5px}
+#lp2 .txt{font-size:13px;line-height:1.45;margin-bottom:8px}
+#lp2 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#lp2 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#lp2 .ok{display:block;background:#ecfdf3;color:#065f46}
+#lp2 .bad{display:block;background:#fff1f0;color:#7a271a}
+#lp2 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#lp2 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#lp2 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#lp2 .summary{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практика</div>
+    <h3>Отредактируйте текст ИИ</h3>
+  </div>
+
+  <div class="body" id="lp2Body">
+    <div class="intro">
+      Для каждого фрагмента выберите решение: оставить, переписать или удалить.
+    </div>
+
+    <div id="lp2Rows"></div>
+    <div id="lp2Fb" class="fb"></div>
+
+    <div class="actions">
+      <button class="primary" id="lp2Check">Проверить</button>
+      <button id="lp2Edit">Изменить ответ</button>
+      <button class="primary" id="lp2Next">Посмотреть вывод</button>
+    </div>
+  </div>
+
+  <div class="result" id="lp2Result" style="display:none">
+    <h3>Что важно при редактуре</h3>
+    <div class="summary">
+      Полезный текст лендинга не просто звучит убедительно. Каждый блок выполняет отдельную функцию, заголовок передаёт конкретную ценность, а любые цифры, гарантии и сравнения можно подтвердить исходными данными.
+    </div>
+    <div class="actions">
+      <button id="lp2Back">Назад</button>
+      <button class="primary" id="lp2Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function init(){
+  var data=[
+    {type:"Заголовок",t:"«Инновационное решение для вашего бизнеса»",c:"rewrite"},
+    {type:"Заголовок",t:"«Находите отклонения от плана продаж без ручного разбора десятков строк»",c:"keep"},
+    {type:"Преимущество",t:"«Сервис гарантированно увеличит продажи минимум на 30%»",c:"remove"},
+    {type:"Блок",t:"«Как это работает: загрузите отчёт → получите анализ → проверьте выводы»",c:"keep"},
+    {type:"Блок",t:"«Почему мы лучшие / Наши преимущества / Почему выбирают нас» — три соседних блока с одинаковым смыслом",c:"rewrite"},
+    {type:"FAQ",t:"«Сколько занимает внедрение?» — данных о сроках нет, ИИ придумал ответ «1 день»",c:"remove"}
+  ];
+
+  var answers=[],checked=false;
+
+  function E(id){return document.getElementById(id)}
+
+  function render(){
+    var wrap=E("lp2Rows");
+    wrap.innerHTML="";
+
+    for(var i=0;i<data.length;i++){
+      (function(i){
+        var row=document.createElement("div");
+        row.className="row";
+        row.innerHTML="<div class='type'>"+data[i].type+"</div><div class='txt'>"+data[i].t+"</div>";
+
+        var s=document.createElement("select");
+        s.innerHTML=
+          "<option value=''>Выберите решение</option>"+
+          "<option value='keep'>Оставить</option>"+
+          "<option value='rewrite'>Переписать</option>"+
+          "<option value='remove'>Удалить</option>";
+
+        s.value=answers[i]||"";
+        s.disabled=checked;
+        s.onchange=function(){answers[i]=this.value};
+
+        row.appendChild(s);
+        wrap.appendChild(row);
+      })(i);
+    }
+
+    var fb=E("lp2Fb");
+    fb.className="fb";
+
+    if(checked){
+      var errors=0;
+      for(var j=0;j<data.length;j++){
+        if(answers[j]!==data[j].c)errors++;
+      }
+
+      fb.className="fb "+(errors===0?"ok":"bad");
+      fb.innerHTML=errors===0
+        ?"Редакторский аудит выполнен корректно."
+        :"Проверьте: конкретный и подтверждённый текст можно оставить; общие или дублирующие формулировки лучше переписать; вымышленные факты — удалить.";
+    }
+
+    E("lp2Check").style.display=checked?"none":"inline-block";
+    E("lp2Edit").style.display=checked?"inline-block":"none";
+    E("lp2Next").style.display=checked?"inline-block":"none";
+  }
+
+  E("lp2Check").onclick=function(){
+    for(var i=0;i<data.length;i++){
+      if(!answers[i]){alert("Оцените все фрагменты.");return;}
+    }
+    checked=true;
+    render();
+  };
+
+  E("lp2Edit").onclick=function(){checked=false;render()};
+  E("lp2Next").onclick=function(){
+    E("lp2Body").style.display="none";
+    E("lp2Result").style.display="block";
+  };
+  E("lp2Back").onclick=function(){
+    E("lp2Body").style.display="block";
+    E("lp2Result").style.display="none";
+  };
+  E("lp2Restart").onclick=function(){
+    answers=[];
+    checked=false;
+    E("lp2Body").style.display="block";
+    E("lp2Result").style.display="none";
+    render();
+  };
+
+  render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

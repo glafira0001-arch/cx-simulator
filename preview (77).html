@@ -1,0 +1,134 @@
+<div id="vc1">
+<style>
+#vc1{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc1 *{box-sizing:border-box}
+#vc1 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc1 .head,#vc1 .body,#vc1 .result{padding:16px}
+#vc1 .head{border-bottom:1px solid #e5e7eb}
+#vc1 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc1 h3{margin:0;font-size:18px}
+#vc1 .intro{font-size:13px;line-height:1.5;background:#f8fafc;padding:10px;border-radius:10px;margin-bottom:12px}
+#vc1 .row{border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:8px}
+#vc1 .txt{font-size:12px;line-height:1.45;margin-bottom:7px}
+#vc1 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#vc1 .fb{display:none;margin-top:10px;padding:10px;border-radius:9px;font-size:12px;line-height:1.45}
+#vc1 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc1 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc1 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc1 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc1 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#vc1 .summary{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Подготовьте массив отзывов</h3>
+</div>
+
+<div class="body" id="vc1Body">
+<div class="intro">
+Решите, как обработать каждую запись перед загрузкой в ИИ.
+</div>
+
+<div id="vc1Rows"></div>
+<div id="vc1Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="vc1Check">Проверить</button>
+<button id="vc1Edit">Изменить ответ</button>
+<button class="primary" id="vc1Next">Посмотреть результат</button>
+</div>
+</div>
+
+<div class="result" id="vc1Result" style="display:none">
+<h3>Файл готов к анализу</h3>
+<div class="summary">
+В рабочем массиве один отзыв занимает одну строку. Дубли и технические записи удалены, персональные данные обезличены, а исходный смысл клиентского сообщения сохранён.
+</div>
+<div class="actions">
+<button id="vc1Back">Назад</button>
+<button class="primary" id="vc1Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"«Доставка опоздала на два дня, поддержки не дождался»",c:"keep"},
+ {t:"«Иван Петров, +7 999 123-45-67. Курьер не приехал»",c:"fix"},
+ {t:"Пустая строка",c:"remove"},
+ {t:"«Всё отлично, менеджер помог за пять минут»",c:"keep"},
+ {t:"Полный дубль предыдущего отзыва из той же выгрузки",c:"remove"},
+ {t:"«Клиент недоволен сервисом» — пересказ сотрудника вместо исходного отзыва",c:"remove"}
+];
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("vc1Rows").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="row";
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var s=document.createElement("select");
+   s.innerHTML=
+    "<option value=''>Выберите действие</option>"+
+    "<option value='keep'>Оставить как есть</option>"+
+    "<option value='fix'>Обезличить / исправить</option>"+
+    "<option value='remove'>Удалить из массива</option>";
+   s.value=answers[i]||"";
+   s.disabled=checked;
+   s.onchange=function(){answers[i]=this.value};
+   d.appendChild(s);
+   E("vc1Rows").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("vc1Fb");
+ fb.className="fb";
+
+ if(checked){
+  var err=0;
+  for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)err++;
+  fb.className="fb "+(err===0?"ok":"bad");
+  fb.innerHTML=err===0
+   ?"Массив подготовлен корректно."
+   :"Проверьте: исходные отзывы лучше сохранять, персональные данные — обезличивать, дубли и технические строки — удалять.";
+ }
+
+ E("vc1Check").style.display=checked?"none":"inline-block";
+ E("vc1Edit").style.display=checked?"inline-block":"none";
+ E("vc1Next").style.display=checked?"inline-block":"none";
+}
+
+E("vc1Check").onclick=function(){
+ for(var i=0;i<data.length;i++){
+  if(!answers[i]){alert("Обработайте все строки.");return;}
+ }
+ checked=true;render();
+};
+E("vc1Edit").onclick=function(){checked=false;render()};
+E("vc1Next").onclick=function(){
+ E("vc1Body").style.display="none";
+ E("vc1Result").style.display="block";
+};
+E("vc1Back").onclick=function(){
+ E("vc1Body").style.display="block";
+ E("vc1Result").style.display="none";
+};
+E("vc1Restart").onclick=function(){
+ answers=[];checked=false;
+ E("vc1Body").style.display="block";
+ E("vc1Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

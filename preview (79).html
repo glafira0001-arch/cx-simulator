@@ -1,0 +1,138 @@
+<div id="vc3">
+<style>
+#vc3{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc3 *{box-sizing:border-box}
+#vc3 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc3 .head,#vc3 .body,#vc3 .result{padding:16px}
+#vc3 .head{border-bottom:1px solid #e5e7eb}
+#vc3 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc3 h3{margin:0;font-size:18px}
+#vc3 .row{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#vc3 .txt{font-size:12px;line-height:1.45;margin-bottom:7px}
+#vc3 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#vc3 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#vc3 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc3 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc3 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc3 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc3 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#vc3 .bar{margin-bottom:10px;font-size:12px}
+#vc3 .track{height:8px;background:#e5e7eb;border-radius:5px;overflow:hidden;margin-top:4px}
+#vc3 .fill{height:100%;background:#2563eb}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Сгруппируйте жалобы</h3>
+</div>
+
+<div class="body" id="vc3Body">
+<div id="vc3Rows"></div>
+<div id="vc3Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="vc3Check">Проверить</button>
+<button id="vc3Edit">Изменить ответ</button>
+<button class="primary" id="vc3Next">Посчитать частоту</button>
+</div>
+</div>
+
+<div class="result" id="vc3Result" style="display:none">
+<h3>Частота проблем</h3>
+<div id="vc3Chart"></div>
+<div class="actions">
+<button id="vc3Back">Назад</button>
+<button class="primary" id="vc3Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"«Заказ обещали утром, привезли поздно вечером»",c:"delivery"},
+ {t:"«Курьер опоздал почти на сутки»",c:"delivery"},
+ {t:"«В чате никто не отвечал два часа»",c:"support"},
+ {t:"«Пришлось ждать ответа оператора до вечера»",c:"support"},
+ {t:"«Оплатил заказ, но платёж долго не отображался»",c:"payment"},
+ {t:"«Доставка снова позже обещанного срока»",c:"delivery"}
+];
+var answers=[],checked=false;
+var labels={delivery:"Задержка доставки",support:"Долгое ожидание поддержки",payment:"Проблемы с оплатой"};
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("vc3Rows").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="row";
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var s=document.createElement("select");
+   s.innerHTML="<option value=''>Выберите проблему</option>"+
+    "<option value='delivery'>Задержка доставки</option>"+
+    "<option value='support'>Долгое ожидание поддержки</option>"+
+    "<option value='payment'>Проблемы с оплатой</option>";
+   s.value=answers[i]||"";
+   s.disabled=checked;
+   s.onchange=function(){answers[i]=this.value};
+   d.appendChild(s);
+   E("vc3Rows").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("vc3Fb");fb.className="fb";
+ if(checked){
+  var err=0;
+  for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)err++;
+  fb.className="fb "+(err===0?"ok":"bad");
+  fb.innerHTML=err===0
+   ?"Формулировки сгруппированы по смыслу."
+   :"Проверьте, описывают ли сообщения действительно одну и ту же проблему.";
+ }
+
+ E("vc3Check").style.display=checked?"none":"inline-block";
+ E("vc3Edit").style.display=checked?"inline-block":"none";
+ E("vc3Next").style.display=checked?"inline-block":"none";
+}
+
+function chart(){
+ var counts={delivery:0,support:0,payment:0};
+ for(var i=0;i<answers.length;i++)counts[answers[i]]++;
+ var html="";
+ for(var k in counts){
+  var p=Math.round(counts[k]/data.length*100);
+  html+="<div class='bar'><strong>"+labels[k]+"</strong>: "+counts[k]+" из "+data.length+" ("+p+"%)"+
+   "<div class='track'><div class='fill' style='width:"+p+"%'></div></div></div>";
+ }
+ E("vc3Chart").innerHTML=html;
+}
+
+E("vc3Check").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Классифицируйте все отзывы.");return;}}
+ checked=true;render();
+};
+E("vc3Edit").onclick=function(){checked=false;render()};
+E("vc3Next").onclick=function(){
+ chart();
+ E("vc3Body").style.display="none";
+ E("vc3Result").style.display="block";
+};
+E("vc3Back").onclick=function(){
+ E("vc3Body").style.display="block";
+ E("vc3Result").style.display="none";
+};
+E("vc3Restart").onclick=function(){
+ answers=[];checked=false;
+ E("vc3Body").style.display="block";
+ E("vc3Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

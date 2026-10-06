@@ -1,0 +1,174 @@
+<div id="lp1">
+<style>
+#lp1{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#lp1 *{box-sizing:border-box}
+#lp1 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#lp1 .head,#lp1 .body,#lp1 .result{padding:16px}
+#lp1 .head{border-bottom:1px solid #e5e7eb}
+#lp1 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#lp1 h3{margin:0;font-size:18px}
+#lp1 .intro{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:12px}
+#lp1 .item{border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:7px;font-size:13px;display:flex;align-items:center;gap:8px}
+#lp1 .num{width:24px;height:24px;border-radius:50%;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+#lp1 .txt{flex:1}
+#lp1 .mini{padding:5px 8px!important;font-size:12px!important}
+#lp1 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#lp1 .ok{display:block;background:#ecfdf3;color:#065f46}
+#lp1 .bad{display:block;background:#fff1f0;color:#7a271a}
+#lp1 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#lp1 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#lp1 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#lp1 .summary{background:#f8fafc;padding:11px;border-radius:10px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практика</div>
+    <h3>Соберите логику лендинга</h3>
+  </div>
+
+  <div class="body" id="lp1Body">
+    <div class="intro">
+      Расположите блоки так, чтобы пользователь сначала понял предложение, затем увидел ценность и доказательства, а уже после этого пришёл к целевому действию.
+    </div>
+
+    <div id="lp1List"></div>
+    <div id="lp1Fb" class="fb"></div>
+
+    <div class="actions">
+      <button class="primary" id="lp1Check">Проверить</button>
+      <button id="lp1Edit">Изменить ответ</button>
+      <button class="primary" id="lp1Next">Посмотреть логику</button>
+    </div>
+  </div>
+
+  <div class="result" id="lp1Result" style="display:none">
+    <h3>Логика страницы</h3>
+    <div class="summary">
+      Первый экран объясняет, что предлагается и кому. Затем страница показывает клиентскую задачу, раскрывает решение, объясняет преимущества, подтверждает доверие, снимает неопределённость через процесс и FAQ и завершает путь конкретным целевым действием.
+    </div>
+    <div class="actions">
+      <button id="lp1Back">Назад</button>
+      <button class="primary" id="lp1Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function init(){
+  var items=[
+    {id:"proof",t:"Доказательства: кейсы, отзывы, факты"},
+    {id:"hero",t:"Первый экран: что предлагаем и для кого"},
+    {id:"cta",t:"Финальный призыв оставить заявку"},
+    {id:"solution",t:"Как продукт решает задачу клиента"},
+    {id:"problem",t:"Проблема или рабочая ситуация клиента"},
+    {id:"faq",t:"FAQ и снятие оставшихся вопросов"},
+    {id:"benefits",t:"Преимущества для целевой аудитории"},
+    {id:"process",t:"Как проходит работа после заявки"}
+  ];
+
+  var correct=["hero","problem","solution","benefits","proof","process","faq","cta"];
+  var checked=false;
+
+  function E(id){return document.getElementById(id)}
+
+  function render(){
+    var list=E("lp1List");
+    list.innerHTML="";
+
+    for(var i=0;i<items.length;i++){
+      (function(i){
+        var row=document.createElement("div");
+        row.className="item";
+
+        var num=document.createElement("div");
+        num.className="num";
+        num.innerHTML=(i+1);
+
+        var txt=document.createElement("div");
+        txt.className="txt";
+        txt.innerHTML=items[i].t;
+
+        var up=document.createElement("button");
+        up.className="mini";
+        up.innerHTML="↑";
+        up.disabled=checked || i===0;
+        up.onclick=function(){
+          var tmp=items[i-1];
+          items[i-1]=items[i];
+          items[i]=tmp;
+          render();
+        };
+
+        var down=document.createElement("button");
+        down.className="mini";
+        down.innerHTML="↓";
+        down.disabled=checked || i===items.length-1;
+        down.onclick=function(){
+          var tmp=items[i+1];
+          items[i+1]=items[i];
+          items[i]=tmp;
+          render();
+        };
+
+        row.appendChild(num);
+        row.appendChild(txt);
+        row.appendChild(up);
+        row.appendChild(down);
+        list.appendChild(row);
+      })(i);
+    }
+
+    var fb=E("lp1Fb");
+    fb.className="fb";
+
+    if(checked){
+      var current=[];
+      for(var j=0;j<items.length;j++)current.push(items[j].id);
+
+      var good=current.join(",")===correct.join(",");
+      fb.className="fb "+(good?"ok":"bad");
+      fb.innerHTML=good
+        ?"Структура выстроена последовательно: каждый блок выполняет новую функцию."
+        :"Проверьте путь клиента: сначала он должен понять предложение, затем ценность и основания доверять ему, и только после этого перейти к действию.";
+    }
+
+    E("lp1Check").style.display=checked?"none":"inline-block";
+    E("lp1Edit").style.display=checked?"inline-block":"none";
+    E("lp1Next").style.display=checked?"inline-block":"none";
+  }
+
+  E("lp1Check").onclick=function(){checked=true;render()};
+  E("lp1Edit").onclick=function(){checked=false;render()};
+  E("lp1Next").onclick=function(){
+    E("lp1Body").style.display="none";
+    E("lp1Result").style.display="block";
+  };
+  E("lp1Back").onclick=function(){
+    E("lp1Body").style.display="block";
+    E("lp1Result").style.display="none";
+  };
+  E("lp1Restart").onclick=function(){
+    items=[
+      {id:"proof",t:"Доказательства: кейсы, отзывы, факты"},
+      {id:"hero",t:"Первый экран: что предлагаем и для кого"},
+      {id:"cta",t:"Финальный призыв оставить заявку"},
+      {id:"solution",t:"Как продукт решает задачу клиента"},
+      {id:"problem",t:"Проблема или рабочая ситуация клиента"},
+      {id:"faq",t:"FAQ и снятие оставшихся вопросов"},
+      {id:"benefits",t:"Преимущества для целевой аудитории"},
+      {id:"process",t:"Как проходит работа после заявки"}
+    ];
+    checked=false;
+    E("lp1Body").style.display="block";
+    E("lp1Result").style.display="none";
+    render();
+  };
+
+  render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

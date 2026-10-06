@@ -1,0 +1,138 @@
+<div id="vc6">
+<style>
+#vc6{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc6 *{box-sizing:border-box}
+#vc6 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc6 .head,#vc6 .body,#vc6 .result{padding:16px}
+#vc6 .head{border-bottom:1px solid #e5e7eb}
+#vc6 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc6 h3{margin:0;font-size:18px}
+#vc6 .case{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.5;margin-bottom:12px}
+#vc6 .bank{margin-bottom:10px}
+#vc6 .block{padding:9px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:7px;font-size:12px;line-height:1.4;cursor:pointer}
+#vc6 .block.used{opacity:.45}
+#vc6 .answer{min-height:70px;border:1px dashed #94a3b8;border-radius:10px;padding:10px;font-size:12px;line-height:1.5;background:#f8fafc}
+#vc6 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#vc6 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc6 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc6 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc6 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc6 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Соберите ответ клиенту</h3>
+</div>
+
+<div class="body" id="vc6Body">
+<div class="case">
+Отзыв: «Заказ обещали во вторник, приехал в четверг. Никто не предупредил, поддержка отвечала несколько часов».<br><br>
+Факты компании: задержка подтверждена, уведомление не отправилось, заказ уже доставлен, компенсация 10% оформлена.
+</div>
+
+<div class="bank" id="vc6Bank"></div>
+
+<div style="font-size:12px;font-weight:700;margin-bottom:5px">Ваш ответ:</div>
+<div class="answer" id="vc6Answer">Нажимайте на блоки в нужном порядке.</div>
+
+<div id="vc6Fb" class="fb"></div>
+
+<div class="actions">
+<button id="vc6Undo">Убрать последний</button>
+<button class="primary" id="vc6Check">Проверить</button>
+<button id="vc6Edit">Изменить ответ</button>
+<button class="primary" id="vc6Next">Посмотреть разбор</button>
+</div>
+</div>
+
+<div class="result" id="vc6Result" style="display:none;padding:16px">
+<h3>Логика ответа</h3>
+<p style="font-size:13px;line-height:1.5">
+Сначала компания показывает, что поняла конкретную проблему, затем подтверждает факты, сообщает уже выполненное действие и даёт понятный следующий шаг. Нельзя добавлять обещания, которых нет в подтверждённом контексте.
+</p>
+<div class="actions">
+<button id="vc6Back">Назад</button>
+<button class="primary" id="vc6Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var blocks=[
+ {t:"Вы правы: заказ пришёл позже обещанного срока, а уведомление о задержке не было отправлено.",id:"ack"},
+ {t:"Заказ уже доставлен, компенсация 10% оформлена.",id:"action"},
+ {t:"Такое больше никогда не повторится.",id:"promise"},
+ {t:"Если компенсация не отобразится, напишите нам — проверим статус.",id:"next"},
+ {t:"Спасибо за ваш бесценный отзыв! Нам невероятно важно ваше мнение.",id:"template"}
+];
+var chosen=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("vc6Bank").innerHTML="";
+ for(var i=0;i<blocks.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="block"+(chosen.indexOf(i)>=0?" used":"");
+   d.innerHTML=blocks[i].t;
+   d.onclick=function(){
+    if(checked||chosen.indexOf(i)>=0)return;
+    chosen.push(i);render();
+   };
+   E("vc6Bank").appendChild(d);
+  })(i);
+ }
+
+ var txt="";
+ for(var j=0;j<chosen.length;j++){
+  txt+=(j+1)+". "+blocks[chosen[j]].t+"<br><br>";
+ }
+ E("vc6Answer").innerHTML=txt||"Нажимайте на блоки в нужном порядке.";
+
+ var fb=E("vc6Fb");fb.className="fb";
+ if(checked){
+  var ids=[];
+  for(var k=0;k<chosen.length;k++)ids.push(blocks[chosen[k]].id);
+  var good=ids.join(",")==="ack,action,next";
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=good
+   ?"Ответ опирается только на подтверждённые факты и содержит понятный следующий шаг."
+   :"Проверьте порядок и удалите шаблонные или неподтверждённые обещания.";
+ }
+
+ E("vc6Check").style.display=checked?"none":"inline-block";
+ E("vc6Edit").style.display=checked?"inline-block":"none";
+ E("vc6Next").style.display=checked?"inline-block":"none";
+ E("vc6Undo").disabled=checked||!chosen.length;
+}
+
+E("vc6Undo").onclick=function(){if(chosen.length){chosen.pop();render()}};
+E("vc6Check").onclick=function(){
+ if(!chosen.length){alert("Соберите ответ.");return;}
+ checked=true;render();
+};
+E("vc6Edit").onclick=function(){checked=false;render()};
+E("vc6Next").onclick=function(){
+ E("vc6Body").style.display="none";
+ E("vc6Result").style.display="block";
+};
+E("vc6Back").onclick=function(){
+ E("vc6Body").style.display="block";
+ E("vc6Result").style.display="none";
+};
+E("vc6Restart").onclick=function(){
+ chosen=[];checked=false;
+ E("vc6Body").style.display="block";
+ E("vc6Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

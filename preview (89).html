@@ -1,0 +1,186 @@
+<div id="lp6">
+<style>
+#lp6{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#lp6 *{box-sizing:border-box}
+#lp6 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#lp6 .head,#lp6 .body,#lp6 .result{padding:16px}
+#lp6 .head{border-bottom:1px solid #e5e7eb}
+#lp6 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#lp6 h3{margin:0;font-size:18px}
+#lp6 .meta{font-size:12px;color:#667085;margin-bottom:8px}
+#lp6 .case{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.55;margin-bottom:12px}
+#lp6 .opt{border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin-bottom:7px;font-size:13px;cursor:pointer}
+#lp6 .opt.active{border-color:#2563eb;background:#eff6ff}
+#lp6 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#lp6 .ok{display:block;background:#ecfdf3;color:#065f46}
+#lp6 .bad{display:block;background:#fff1f0;color:#7a271a}
+#lp6 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#lp6 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#lp6 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#lp6 button:disabled{opacity:.4}
+#lp6 .summary{background:#f8fafc;padding:11px;border-radius:10px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практика</div>
+    <h3>Проверьте пакетную генерацию</h3>
+  </div>
+
+  <div class="body" id="lp6Body">
+    <div class="meta" id="lp6Meta"></div>
+    <div id="lp6Screen"></div>
+    <div id="lp6Fb" class="fb"></div>
+
+    <div class="actions">
+      <button id="lp6Back">Назад</button>
+      <button class="primary" id="lp6Check">Проверить</button>
+      <button id="lp6Edit">Изменить ответ</button>
+      <button class="primary" id="lp6Next">Далее</button>
+    </div>
+  </div>
+
+  <div class="result" id="lp6Result" style="display:none">
+    <h3>Контроль завершён</h3>
+    <div class="summary">
+      Безопасная массовая схема выглядит так: тестовая генерация → сверка с исходными строками → пакетная обработка → контроль артикулов и характеристик → возврат текста в ту же строку → отдельный статус для карточек, которым не хватает данных.
+    </div>
+    <div class="actions">
+      <button id="lp6ResultBack">Назад</button>
+      <button class="primary" id="lp6Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function init(){
+  var cases=[
+    {
+      q:"Артикул A101. Исходные данные: ЛДСП, металл; 120×60 см; чёрный. ИИ написал: «Стол Loft 120 из ЛДСП и металла, размер 120×60 см, чёрный».",
+      options:[
+        "Готово — вернуть описание в строку A101",
+        "Нужно уточнить характеристики",
+        "Удалить описание и весь товар"
+      ],
+      correct:0,
+      ok:"Описание соответствует характеристикам и сохраняет связь с артикулом."
+    },
+    {
+      q:"Артикул A102. Поле «Материал» пустое. ИИ написал: «Белый стол из прочного металла и ЛДСП размером 140×70 см».",
+      options:[
+        "Готово — описание выглядит правдоподобно",
+        "Нужно уточнить материал и убрать неподтверждённое свойство",
+        "Скопировать материал из A101"
+      ],
+      correct:1,
+      ok:"Пустое поле нельзя восполнять догадкой или значением соседней модели."
+    },
+    {
+      q:"При возврате результата описание A205 оказалось в строке A206, потому что одна карточка в ответе ИИ была пропущена.",
+      options:[
+        "Оставить — товары похожи",
+        "Исправить только текст A206 вручную",
+        "Сопоставить результаты заново по артикулу, а не по позиции строки"
+      ],
+      correct:2,
+      ok:"Уникальный идентификатор защищает от смещения описаний при пакетной обработке."
+    }
+  ];
+
+  var page=0;
+  var answers=[null,null,null];
+  var checked=[false,false,false];
+
+  function E(id){return document.getElementById(id)}
+
+  function render(){
+    var c=cases[page];
+
+    E("lp6Meta").innerHTML="Ситуация "+(page+1)+" из "+cases.length;
+
+    var html="<div class='case'>"+c.q+"</div>";
+
+    for(var i=0;i<c.options.length;i++){
+      html+="<div class='opt"+(answers[page]===i?" active":"")+"' data-i='"+i+"'>"+c.options[i]+"</div>";
+    }
+
+    E("lp6Screen").innerHTML=html;
+
+    var opts=E("lp6Screen").getElementsByClassName("opt");
+    for(var j=0;j<opts.length;j++){
+      opts[j].onclick=function(){
+        if(checked[page])return;
+        answers[page]=parseInt(this.getAttribute("data-i"),10);
+        render();
+      };
+    }
+
+    var fb=E("lp6Fb");
+    fb.className="fb";
+
+    if(checked[page]){
+      var good=answers[page]===c.correct;
+      fb.className="fb "+(good?"ok":"bad");
+      fb.innerHTML=good
+        ?c.ok
+        :"Проверьте исходные характеристики, артикул и правило работы с отсутствующими данными.";
+    }
+
+    E("lp6Back").disabled=page===0;
+    E("lp6Check").style.display=checked[page]?"none":"inline-block";
+    E("lp6Edit").style.display=checked[page]?"inline-block":"none";
+    E("lp6Next").style.display=checked[page]?"inline-block":"none";
+    E("lp6Next").innerHTML=page===cases.length-1?"Завершить":"Далее";
+  }
+
+  E("lp6Check").onclick=function(){
+    if(answers[page]===null){alert("Выберите решение.");return;}
+    checked[page]=true;
+    render();
+  };
+
+  E("lp6Edit").onclick=function(){
+    checked[page]=false;
+    render();
+  };
+
+  E("lp6Back").onclick=function(){
+    if(page>0){
+      page--;
+      render();
+    }
+  };
+
+  E("lp6Next").onclick=function(){
+    if(page<cases.length-1){
+      page++;
+      render();
+    }else{
+      E("lp6Body").style.display="none";
+      E("lp6Result").style.display="block";
+    }
+  };
+
+  E("lp6ResultBack").onclick=function(){
+    E("lp6Body").style.display="block";
+    E("lp6Result").style.display="none";
+    page=cases.length-1;
+    render();
+  };
+
+  E("lp6Restart").onclick=function(){
+    page=0;
+    answers=[null,null,null];
+    checked=[false,false,false];
+    E("lp6Body").style.display="block";
+    E("lp6Result").style.display="none";
+    render();
+  };
+
+  render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

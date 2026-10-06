@@ -1,0 +1,130 @@
+<div id="vc7">
+<style>
+#vc7{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc7 *{box-sizing:border-box}
+#vc7 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc7 .head,#vc7 .body,#vc7 .result{padding:16px}
+#vc7 .head{border-bottom:1px solid #e5e7eb}
+#vc7 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc7 h3{margin:0;font-size:18px}
+#vc7 .review{background:#fff1f2;border-radius:10px;padding:10px;font-size:12px;line-height:1.45;margin-bottom:12px}
+#vc7 .row{padding:10px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+#vc7 .txt{font-size:12px;line-height:1.45;margin-bottom:7px}
+#vc7 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#vc7 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#vc7 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc7 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc7 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc7 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc7 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#vc7 .final{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Проведите аудит ответа</h3>
+</div>
+
+<div class="body" id="vc7Body">
+
+<div class="review">
+Клиент: «Третий раз переносите доставку. Я весь день жду дома, а вы даже не можете сообщить нормальное время».
+</div>
+
+<div id="vc7Rows"></div>
+<div id="vc7Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="vc7Check">Проверить</button>
+<button id="vc7Edit">Изменить ответ</button>
+<button class="primary" id="vc7Next">Посмотреть итог</button>
+</div>
+</div>
+
+<div class="result" id="vc7Result" style="display:none">
+<h3>Что должно остаться в ответе</h3>
+<div class="final">
+Ответ должен признать повторяемость проблемы, не спорить с раздражением клиента, не оправдывать задержку «высокой нагрузкой» и дать конкретный следующий шаг. Чем эмоциональнее ситуация, тем меньше в ответе должно быть формальных благодарностей и общих корпоративных фраз.
+</div>
+<div class="actions">
+<button id="vc7Back">Назад</button>
+<button class="primary" id="vc7Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"«Спасибо за ваш бесценный отзыв! Нам очень важно ваше мнение.»",c:"remove"},
+ {t:"«Понимаем ваше раздражение: срок доставки переносился уже несколько раз.»",c:"keep"},
+ {t:"«В период высокой нагрузки такие задержки, к сожалению, возможны.»",c:"rewrite"},
+ {t:"«Проверим актуальное время доставки и сообщим его вам в личном сообщении.»",c:"keep"},
+ {t:"«Просим отнестись к ситуации с пониманием.»",c:"remove"}
+];
+var answers=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("vc7Rows").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="row";
+   d.innerHTML="<div class='txt'>"+data[i].t+"</div>";
+   var s=document.createElement("select");
+   s.innerHTML=
+    "<option value=''>Выберите решение</option>"+
+    "<option value='keep'>Оставить</option>"+
+    "<option value='rewrite'>Переписать</option>"+
+    "<option value='remove'>Удалить</option>";
+   s.value=answers[i]||"";
+   s.disabled=checked;
+   s.onchange=function(){answers[i]=this.value};
+   d.appendChild(s);
+   E("vc7Rows").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("vc7Fb");fb.className="fb";
+ if(checked){
+  var err=0;
+  for(var j=0;j<data.length;j++)if(answers[j]!==data[j].c)err++;
+  fb.className="fb "+(err===0?"ok":"bad");
+  fb.innerHTML=err===0
+   ?"Аудит выполнен: сохранена конкретика, а шаблонные и оборонительные формулировки убраны."
+   :"Проверьте, не звучит ли фраза как оправдание, формальная отписка или просьба клиенту самому принять проблему.";
+ }
+
+ E("vc7Check").style.display=checked?"none":"inline-block";
+ E("vc7Edit").style.display=checked?"inline-block":"none";
+ E("vc7Next").style.display=checked?"inline-block":"none";
+}
+
+E("vc7Check").onclick=function(){
+ for(var i=0;i<data.length;i++){if(!answers[i]){alert("Оцените все фразы.");return;}}
+ checked=true;render();
+};
+E("vc7Edit").onclick=function(){checked=false;render()};
+E("vc7Next").onclick=function(){
+ E("vc7Body").style.display="none";
+ E("vc7Result").style.display="block";
+};
+E("vc7Back").onclick=function(){
+ E("vc7Body").style.display="block";
+ E("vc7Result").style.display="none";
+};
+E("vc7Restart").onclick=function(){
+ answers=[];checked=false;
+ E("vc7Body").style.display="block";
+ E("vc7Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

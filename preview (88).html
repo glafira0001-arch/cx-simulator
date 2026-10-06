@@ -1,0 +1,150 @@
+<div id="lp5">
+<style>
+#lp5{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#lp5 *{box-sizing:border-box}
+#lp5 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#lp5 .head,#lp5 .body,#lp5 .result{padding:16px}
+#lp5 .head{border-bottom:1px solid #e5e7eb}
+#lp5 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#lp5 h3{margin:0;font-size:18px}
+#lp5 .source{background:#f8fafc;padding:11px;border-radius:10px;font-size:12px;line-height:1.55;margin-bottom:12px}
+#lp5 .claim{border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin-bottom:7px;font-size:13px;cursor:pointer}
+#lp5 .claim.active{border-color:#2563eb;background:#eff6ff}
+#lp5 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#lp5 .ok{display:block;background:#ecfdf3;color:#065f46}
+#lp5 .bad{display:block;background:#fff1f0;color:#7a271a}
+#lp5 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#lp5 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#lp5 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#lp5 .summary{background:#f8fafc;padding:11px;border-radius:10px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практика</div>
+    <h3>Найдите вымышленные свойства</h3>
+  </div>
+
+  <div class="body" id="lp5Body">
+    <div class="source">
+      <strong>Исходная строка:</strong><br>
+      Артикул: A101<br>
+      Модель: Loft 120<br>
+      Материал: ЛДСП, металл<br>
+      Размер: 120×60 см<br>
+      Цвет: чёрный<br>
+      Максимальная нагрузка: не указана<br>
+      Назначение: не указано
+    </div>
+
+    <p style="font-size:13px;line-height:1.5">Отметьте фразы, которые нельзя подтвердить исходной строкой.</p>
+
+    <div id="lp5Claims"></div>
+    <div id="lp5Fb" class="fb"></div>
+
+    <div class="actions">
+      <button class="primary" id="lp5Check">Проверить</button>
+      <button id="lp5Edit">Изменить ответ</button>
+      <button class="primary" id="lp5Next">Посмотреть правило</button>
+    </div>
+  </div>
+
+  <div class="result" id="lp5Result" style="display:none">
+    <h3>Правило фактчекинга</h3>
+    <div class="summary">
+      Каждое фактическое утверждение должно иметь источник в той же строке товара. Если свойства, назначения или преимущества нет среди исходных характеристик, его нельзя добавлять только потому, что оно звучит правдоподобно.
+    </div>
+    <div class="actions">
+      <button id="lp5Back">Назад</button>
+      <button class="primary" id="lp5Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function init(){
+  var data=[
+    {t:"Стол выполнен из ЛДСП и металла.",bad:false},
+    {t:"Размер модели — 120×60 см.",bad:false},
+    {t:"Стол выдерживает нагрузку до 100 кг.",bad:true},
+    {t:"Модель выполнена в чёрном цвете.",bad:false},
+    {t:"Идеально подходит для ежедневной интенсивной работы.",bad:true},
+    {t:"Усиленная конструкция обеспечивает повышенную долговечность.",bad:true}
+  ];
+
+  var selected=[],checked=false;
+
+  function E(id){return document.getElementById(id)}
+
+  function render(){
+    var wrap=E("lp5Claims");
+    wrap.innerHTML="";
+
+    for(var i=0;i<data.length;i++){
+      (function(i){
+        var el=document.createElement("div");
+        el.className="claim"+(selected.indexOf(i)>=0?" active":"");
+        el.innerHTML=data[i].t;
+
+        el.onclick=function(){
+          if(checked)return;
+          var p=selected.indexOf(i);
+          if(p>=0)selected.splice(p,1);
+          else selected.push(i);
+          render();
+        };
+
+        wrap.appendChild(el);
+      })(i);
+    }
+
+    var fb=E("lp5Fb");
+    fb.className="fb";
+
+    if(checked){
+      var good=true;
+
+      for(var j=0;j<data.length;j++){
+        if((selected.indexOf(j)>=0)!==data[j].bad)good=false;
+      }
+
+      fb.className="fb "+(good?"ok":"bad");
+      fb.innerHTML=good
+        ?"Вы отделили подтверждённые характеристики от вымышленных преимуществ."
+        :"Проверьте каждую фразу буквально: можно ли указать конкретное поле таблицы, которое её подтверждает?";
+    }
+
+    E("lp5Check").style.display=checked?"none":"inline-block";
+    E("lp5Edit").style.display=checked?"inline-block":"none";
+    E("lp5Next").style.display=checked?"inline-block":"none";
+  }
+
+  E("lp5Check").onclick=function(){
+    checked=true;
+    render();
+  };
+
+  E("lp5Edit").onclick=function(){checked=false;render()};
+  E("lp5Next").onclick=function(){
+    E("lp5Body").style.display="none";
+    E("lp5Result").style.display="block";
+  };
+  E("lp5Back").onclick=function(){
+    E("lp5Body").style.display="block";
+    E("lp5Result").style.display="none";
+  };
+  E("lp5Restart").onclick=function(){
+    selected=[];
+    checked=false;
+    E("lp5Body").style.display="block";
+    E("lp5Result").style.display="none";
+    render();
+  };
+
+  render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

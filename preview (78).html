@@ -1,0 +1,129 @@
+<div id="vc2">
+<style>
+#vc2{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc2 *{box-sizing:border-box}
+#vc2 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc2 .head,#vc2 .body,#vc2 .result{padding:16px}
+#vc2 .head{border-bottom:1px solid #e5e7eb}
+#vc2 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc2 h3{margin:0;font-size:18px}
+#vc2 .case{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.5;margin-bottom:12px}
+#vc2 .item{border:1px solid #e5e7eb;border-radius:9px;padding:9px;margin-bottom:7px;font-size:12px;cursor:pointer}
+#vc2 .item.active{background:#eff6ff;border-color:#2563eb}
+#vc2 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#vc2 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc2 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc2 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc2 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc2 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#vc2 .prompt{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.55}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Соберите критерии анализа</h3>
+</div>
+
+<div class="body" id="vc2Body">
+<div class="case">
+Руководитель клиентского сервиса хочет понять, почему растёт число повторных обращений и какие ожидания клиентов чаще всего остаются неудовлетворёнными.
+</div>
+
+<div id="vc2Items"></div>
+<div id="vc2Fb" class="fb"></div>
+
+<div class="actions">
+<button class="primary" id="vc2Check">Проверить</button>
+<button id="vc2Edit">Изменить ответ</button>
+<button class="primary" id="vc2Next">Собрать запрос</button>
+</div>
+</div>
+
+<div class="result" id="vc2Result" style="display:none">
+<h3>Техническое задание</h3>
+<div class="prompt">
+Проанализируй отзывы клиентов. Выдели повторяющиеся проблемы, частоту их упоминания, ожидания клиентов и примеры записей. Отдельно покажи жалобы, связанные с повторными обращениями и невозможностью решить вопрос с первого контакта. Не добавляй причины, которых нет в отзывах.
+</div>
+<div class="actions">
+<button id="vc2Back">Назад</button>
+<button class="primary" id="vc2Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {t:"Повторяющиеся проблемы",good:true},
+ {t:"Частота упоминаний",good:true},
+ {t:"Ожидания клиентов",good:true},
+ {t:"Номера подтверждающих отзывов",good:true},
+ {t:"Любимые цвета клиентов",good:false},
+ {t:"Предположительная выручка компании",good:false},
+ {t:"Жалобы на необходимость обращаться повторно",good:true}
+];
+var selected=[],checked=false;
+function E(id){return document.getElementById(id)}
+
+function render(){
+ E("vc2Items").innerHTML="";
+ for(var i=0;i<data.length;i++){
+  (function(i){
+   var d=document.createElement("div");
+   d.className="item"+(selected.indexOf(i)>=0?" active":"");
+   d.innerHTML=data[i].t;
+   d.onclick=function(){
+    if(checked)return;
+    var p=selected.indexOf(i);
+    if(p>=0)selected.splice(p,1);else selected.push(i);
+    render();
+   };
+   E("vc2Items").appendChild(d);
+  })(i);
+ }
+
+ var fb=E("vc2Fb");
+ fb.className="fb";
+ if(checked){
+  var good=true;
+  for(var j=0;j<data.length;j++){
+   if((selected.indexOf(j)>=0)!==data[j].good)good=false;
+  }
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=good
+   ?"Критерии соответствуют управленческой задаче."
+   :"В анализ стоит включать только те параметры, которые помогают ответить на поставленный вопрос.";
+ }
+
+ E("vc2Check").style.display=checked?"none":"inline-block";
+ E("vc2Edit").style.display=checked?"inline-block":"none";
+ E("vc2Next").style.display=checked?"inline-block":"none";
+}
+
+E("vc2Check").onclick=function(){
+ if(!selected.length){alert("Выберите критерии.");return;}
+ checked=true;render();
+};
+E("vc2Edit").onclick=function(){checked=false;render()};
+E("vc2Next").onclick=function(){
+ E("vc2Body").style.display="none";
+ E("vc2Result").style.display="block";
+};
+E("vc2Back").onclick=function(){
+ E("vc2Body").style.display="block";
+ E("vc2Result").style.display="none";
+};
+E("vc2Restart").onclick=function(){
+ selected=[];checked=false;
+ E("vc2Body").style.display="block";
+ E("vc2Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

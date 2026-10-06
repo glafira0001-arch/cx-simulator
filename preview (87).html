@@ -1,0 +1,165 @@
+<div id="lp4">
+<style>
+#lp4{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#lp4 *{box-sizing:border-box}
+#lp4 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#lp4 .head,#lp4 .body,#lp4 .result{padding:16px}
+#lp4 .head{border-bottom:1px solid #e5e7eb}
+#lp4 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#lp4 h3{margin:0;font-size:18px}
+#lp4 .intro{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:12px}
+#lp4 .item{border:1px solid #e5e7eb;border-radius:9px;padding:9px;margin-bottom:7px;font-size:13px;cursor:pointer}
+#lp4 .item.active{border-color:#2563eb;background:#eff6ff}
+#lp4 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#lp4 .ok{display:block;background:#ecfdf3;color:#065f46}
+#lp4 .bad{display:block;background:#fff1f0;color:#7a271a}
+#lp4 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#lp4 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#lp4 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#lp4 .table{font-size:12px;overflow:auto}
+#lp4 table{width:100%;border-collapse:collapse}
+#lp4 th,#lp4 td{border:1px solid #e5e7eb;padding:7px;text-align:left}
+#lp4 th{background:#f8fafc}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практика</div>
+    <h3>Соберите Excel-шаблон</h3>
+  </div>
+
+  <div class="body" id="lp4Body">
+    <div class="intro">
+      Выберите столбцы, которые нужны для массовой генерации SEO-описаний мебели.
+    </div>
+
+    <div id="lp4Items"></div>
+    <div id="lp4Fb" class="fb"></div>
+
+    <div class="actions">
+      <button class="primary" id="lp4Check">Проверить</button>
+      <button id="lp4Edit">Изменить ответ</button>
+      <button class="primary" id="lp4Next">Показать шаблон</button>
+    </div>
+  </div>
+
+  <div class="result" id="lp4Result" style="display:none">
+    <h3>Рабочая структура</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Артикул</th>
+          <th>Название</th>
+          <th>Материал</th>
+          <th>Размер</th>
+          <th>Цвет</th>
+          <th>SEO-описание</th>
+        </tr>
+        <tr>
+          <td>A101</td>
+          <td>Loft 120</td>
+          <td>ЛДСП, металл</td>
+          <td>120×60</td>
+          <td>чёрный</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>
+    <div class="actions">
+      <button id="lp4Back">Назад</button>
+      <button class="primary" id="lp4Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function init(){
+  var data=[
+    {t:"Артикул",good:true},
+    {t:"Название модели",good:true},
+    {t:"Материал",good:true},
+    {t:"Размер",good:true},
+    {t:"Цвет",good:true},
+    {t:"SEO-описание",good:true},
+    {t:"Всё, что известно о товаре, одной длинной строкой",good:false},
+    {t:"Предполагаемая характеристика, которую сотрудник не проверял",good:false},
+    {t:"Красивые рекламные фразы из карточек конкурентов",good:false}
+  ];
+
+  var selected=[],checked=false;
+
+  function E(id){return document.getElementById(id)}
+
+  function render(){
+    var wrap=E("lp4Items");
+    wrap.innerHTML="";
+
+    for(var i=0;i<data.length;i++){
+      (function(i){
+        var item=document.createElement("div");
+        item.className="item"+(selected.indexOf(i)>=0?" active":"");
+        item.innerHTML=data[i].t;
+
+        item.onclick=function(){
+          if(checked)return;
+          var p=selected.indexOf(i);
+          if(p>=0)selected.splice(p,1);
+          else selected.push(i);
+          render();
+        };
+
+        wrap.appendChild(item);
+      })(i);
+    }
+
+    var fb=E("lp4Fb");
+    fb.className="fb";
+
+    if(checked){
+      var good=true;
+
+      for(var j=0;j<data.length;j++){
+        if((selected.indexOf(j)>=0)!==data[j].good)good=false;
+      }
+
+      fb.className="fb "+(good?"ok":"bad");
+      fb.innerHTML=good
+        ?"Шаблон содержит отдельные исходные поля, идентификатор товара и место для результата."
+        :"В таблице нужны проверенные характеристики в отдельных столбцах. Предположения и случайные рекламные тексты не должны становиться исходными данными.";
+    }
+
+    E("lp4Check").style.display=checked?"none":"inline-block";
+    E("lp4Edit").style.display=checked?"inline-block":"none";
+    E("lp4Next").style.display=checked?"inline-block":"none";
+  }
+
+  E("lp4Check").onclick=function(){
+    if(!selected.length){alert("Выберите столбцы.");return;}
+    checked=true;
+    render();
+  };
+
+  E("lp4Edit").onclick=function(){checked=false;render()};
+  E("lp4Next").onclick=function(){
+    E("lp4Body").style.display="none";
+    E("lp4Result").style.display="block";
+  };
+  E("lp4Back").onclick=function(){
+    E("lp4Body").style.display="block";
+    E("lp4Result").style.display="none";
+  };
+  E("lp4Restart").onclick=function(){
+    selected=[];
+    checked=false;
+    E("lp4Body").style.display="block";
+    E("lp4Result").style.display="none";
+    render();
+  };
+
+  render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

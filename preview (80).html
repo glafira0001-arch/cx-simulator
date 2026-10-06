@@ -1,0 +1,146 @@
+<div id="vc4">
+<style>
+#vc4{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#vc4 *{box-sizing:border-box}
+#vc4 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#vc4 .head,#vc4 .body,#vc4 .result{padding:16px}
+#vc4 .head{border-bottom:1px solid #e5e7eb}
+#vc4 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#vc4 h3{margin:0;font-size:18px}
+#vc4 .quote{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:12px}
+#vc4 .field{margin-bottom:10px}
+#vc4 label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#vc4 select{width:100%;padding:8px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#vc4 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#vc4 .ok{display:block;background:#ecfdf3;color:#065f46}
+#vc4 .bad{display:block;background:#fff1f0;color:#7a271a}
+#vc4 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#vc4 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#vc4 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#vc4 button:disabled{opacity:.4}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Разберите эмоцию и ожидание</h3>
+</div>
+
+<div class="body" id="vc4Body">
+<div id="vc4Meta" style="font-size:12px;color:#667085;margin-bottom:8px"></div>
+<div id="vc4Screen"></div>
+<div id="vc4Fb" class="fb"></div>
+
+<div class="actions">
+<button id="vc4Back">Назад</button>
+<button class="primary" id="vc4Check">Проверить</button>
+<button id="vc4Edit">Изменить ответ</button>
+<button class="primary" id="vc4Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="vc4Result" style="display:none;padding:16px">
+<h3>Практика завершена</h3>
+<p style="font-size:13px;line-height:1.5">Вы разделили эмоциональную окраску и ожидание клиента. Именно такая разметка помогает увидеть не только «негатив», но и конкретный стандарт сервиса, который клиент ожидает получить.</p>
+<div class="actions">
+<button id="vc4ResultBack">Назад</button>
+<button class="primary" id="vc4Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+ {
+  q:"«Третий раз звоню и каждый раз заново объясняю проблему. Это уже невозможно.»",
+  tone:"strong",
+  exp:"history"
+ },
+ {
+  q:"«В целом всё хорошо, но хотелось бы видеть точный статус доставки.»",
+  tone:"mixed",
+  exp:"status"
+ },
+ {
+  q:"«Спасибо оператору, решил вопрос за пять минут.»",
+  tone:"positive",
+  exp:"fast"
+ }
+];
+var page=0,answers=[{}, {}, {}],checked=[false,false,false];
+function E(id){return document.getElementById(id)}
+
+function render(){
+ var d=data[page];
+ E("vc4Meta").innerHTML="Отзыв "+(page+1)+" из "+data.length;
+ E("vc4Screen").innerHTML=
+  "<div class='quote'>"+d.q+"</div>"+
+  "<div class='field'><label>Тональность</label><select id='vc4Tone'>"+
+  "<option value=''>Выберите</option>"+
+  "<option value='positive'>Положительная</option>"+
+  "<option value='mixed'>Смешанная</option>"+
+  "<option value='strong'>Сильное раздражение</option>"+
+  "</select></div>"+
+  "<div class='field'><label>Главное ожидание</label><select id='vc4Exp'>"+
+  "<option value=''>Выберите</option>"+
+  "<option value='history'>Не повторять историю обращения</option>"+
+  "<option value='status'>Понимать статус и срок доставки</option>"+
+  "<option value='fast'>Быстро решить вопрос</option>"+
+  "</select></div>";
+
+ E("vc4Tone").value=answers[page].tone||"";
+ E("vc4Exp").value=answers[page].exp||"";
+ E("vc4Tone").disabled=checked[page];
+ E("vc4Exp").disabled=checked[page];
+
+ E("vc4Tone").onchange=function(){answers[page].tone=this.value};
+ E("vc4Exp").onchange=function(){answers[page].exp=this.value};
+
+ var fb=E("vc4Fb");fb.className="fb";
+ if(checked[page]){
+  var good=answers[page].tone===d.tone && answers[page].exp===d.exp;
+  fb.className="fb "+(good?"ok":"bad");
+  fb.innerHTML=good
+   ?"Вы правильно отделили эмоцию от клиентского ожидания."
+   :"Проверьте отдельно: как клиент себя чувствует и какого результата он ожидал.";
+ }
+
+ E("vc4Back").disabled=page===0;
+ E("vc4Check").style.display=checked[page]?"none":"inline-block";
+ E("vc4Edit").style.display=checked[page]?"inline-block":"none";
+ E("vc4Next").style.display=checked[page]?"inline-block":"none";
+ E("vc4Next").innerHTML=page===data.length-1?"Завершить":"Далее";
+}
+
+E("vc4Check").onclick=function(){
+ if(!answers[page].tone||!answers[page].exp){alert("Заполните оба поля.");return;}
+ checked[page]=true;render();
+};
+E("vc4Edit").onclick=function(){checked[page]=false;render()};
+E("vc4Back").onclick=function(){if(page>0){page--;render()}};
+E("vc4Next").onclick=function(){
+ if(page<data.length-1){page++;render();}
+ else{
+  E("vc4Body").style.display="none";
+  E("vc4Result").style.display="block";
+ }
+};
+E("vc4ResultBack").onclick=function(){
+ E("vc4Body").style.display="block";
+ E("vc4Result").style.display="none";
+ page=data.length-1;render();
+};
+E("vc4Restart").onclick=function(){
+ page=0;answers=[{}, {}, {}];checked=[false,false,false];
+ E("vc4Body").style.display="block";
+ E("vc4Result").style.display="none";
+ render();
+};
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

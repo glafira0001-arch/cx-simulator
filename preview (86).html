@@ -1,0 +1,158 @@
+<div id="lp3">
+<style>
+#lp3{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#lp3 *{box-sizing:border-box}
+#lp3 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#lp3 .head,#lp3 .body,#lp3 .result{padding:16px}
+#lp3 .head{border-bottom:1px solid #e5e7eb}
+#lp3 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#lp3 h3{margin:0;font-size:18px}
+#lp3 .intro{background:#f8fafc;border-radius:10px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:12px}
+#lp3 .ad{border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:10px}
+#lp3 .adtitle{font-size:12px;font-weight:700;margin-bottom:6px}
+#lp3 .adtxt{font-size:13px;line-height:1.45;margin-bottom:8px}
+#lp3 select{width:100%;padding:7px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}
+#lp3 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#lp3 .ok{display:block;background:#ecfdf3;color:#065f46}
+#lp3 .bad{display:block;background:#fff1f0;color:#7a271a}
+#lp3 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#lp3 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#lp3 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#lp3 .summary{background:#f8fafc;padding:11px;border-radius:10px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+  <div class="head">
+    <div class="label">Практика</div>
+    <h3>Свяжите сообщение и визуал</h3>
+  </div>
+
+  <div class="body" id="lp3Body">
+    <div class="intro">
+      Для каждого объявления выберите визуал, который поддерживает ту же рекламную идею.
+    </div>
+
+    <div id="lp3Rows"></div>
+    <div id="lp3Fb" class="fb"></div>
+
+    <div class="actions">
+      <button class="primary" id="lp3Check">Проверить</button>
+      <button id="lp3Edit">Изменить ответ</button>
+      <button class="primary" id="lp3Next">Посмотреть правило</button>
+    </div>
+  </div>
+
+  <div class="result" id="lp3Result" style="display:none">
+    <h3>Связка готова</h3>
+    <div class="summary">
+      Креатив работает убедительнее, когда текст и изображение раскрывают один смысл: проблема поддерживается визуализацией проблемы, результат — понятным образом результата, а рабочий сценарий — узнаваемой ситуацией пользователя.
+    </div>
+    <div class="actions">
+      <button id="lp3Back">Назад</button>
+      <button class="primary" id="lp3Restart">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+function init(){
+  var data=[
+    {
+      title:"Объявление A",
+      t:"«Перед планёркой снова приходится вручную просматривать десятки строк Excel?»",
+      c:"excel"
+    },
+    {
+      title:"Объявление B",
+      t:"«Получите структурированный разбор отчёта и быстрее найдите отклонения»",
+      c:"result"
+    },
+    {
+      title:"Объявление C",
+      t:"«Загрузите отчёт и подготовьте анализ продаж к встрече с командой»",
+      c:"meeting"
+    }
+  ];
+
+  var answers=[],checked=false;
+
+  function E(id){return document.getElementById(id)}
+
+  function render(){
+    var wrap=E("lp3Rows");
+    wrap.innerHTML="";
+
+    for(var i=0;i<data.length;i++){
+      (function(i){
+        var box=document.createElement("div");
+        box.className="ad";
+        box.innerHTML="<div class='adtitle'>"+data[i].title+"</div><div class='adtxt'>"+data[i].t+"</div>";
+
+        var s=document.createElement("select");
+        s.innerHTML=
+          "<option value=''>Выберите визуал</option>"+
+          "<option value='result'>Большая таблица превращается в компактный список ключевых отклонений</option>"+
+          "<option value='meeting'>Руководитель перед экраном с готовым анализом накануне командной встречи</option>"+
+          "<option value='excel'>Перегруженный Excel-файл с десятками строк и выделенными вручную ячейками</option>";
+
+        s.value=answers[i]||"";
+        s.disabled=checked;
+        s.onchange=function(){answers[i]=this.value};
+
+        box.appendChild(s);
+        wrap.appendChild(box);
+      })(i);
+    }
+
+    var fb=E("lp3Fb");
+    fb.className="fb";
+
+    if(checked){
+      var errors=0;
+      for(var j=0;j<data.length;j++){
+        if(answers[j]!==data[j].c)errors++;
+      }
+
+      fb.className="fb "+(errors===0?"ok":"bad");
+      fb.innerHTML=errors===0
+        ?"Все визуалы поддерживают смысл соответствующего сообщения."
+        :"Сопоставляйте не по красоте изображения, а по смыслу: пользователь должен считать ту же идею, которая сформулирована в объявлении.";
+    }
+
+    E("lp3Check").style.display=checked?"none":"inline-block";
+    E("lp3Edit").style.display=checked?"inline-block":"none";
+    E("lp3Next").style.display=checked?"inline-block":"none";
+  }
+
+  E("lp3Check").onclick=function(){
+    for(var i=0;i<data.length;i++){
+      if(!answers[i]){alert("Подберите визуал для каждого объявления.");return;}
+    }
+    checked=true;
+    render();
+  };
+
+  E("lp3Edit").onclick=function(){checked=false;render()};
+  E("lp3Next").onclick=function(){
+    E("lp3Body").style.display="none";
+    E("lp3Result").style.display="block";
+  };
+  E("lp3Back").onclick=function(){
+    E("lp3Body").style.display="block";
+    E("lp3Result").style.display="none";
+  };
+  E("lp3Restart").onclick=function(){
+    answers=[];
+    checked=false;
+    E("lp3Body").style.display="block";
+    E("lp3Result").style.display="none";
+    render();
+  };
+
+  render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>
