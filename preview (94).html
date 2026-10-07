@@ -1,0 +1,186 @@
+<div id="ac5">
+<style>
+#ac5{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#ac5 *{box-sizing:border-box}
+#ac5 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ac5 .head,#ac5 .body,#ac5 .result{padding:16px}
+#ac5 .head{border-bottom:1px solid #e5e7eb}
+#ac5 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ac5 h3{margin:0;font-size:18px}
+#ac5 .meta{font-size:12px;color:#667085;margin-bottom:8px}
+#ac5 .source{background:#f8fafc;border-radius:10px;padding:11px;font-size:12px;line-height:1.55;margin-bottom:10px}
+#ac5 .item{border:1px solid #e5e7eb;border-radius:9px;padding:9px;margin-bottom:7px;font-size:13px;cursor:pointer}
+#ac5 .item.active{background:#eff6ff;border-color:#2563eb}
+#ac5 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ac5 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ac5 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ac5 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ac5 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ac5 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ac5 button:disabled{opacity:.4}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Проверьте отзыв и напоминание</h3>
+</div>
+
+<div class="body" id="ac5Body">
+<div class="meta" id="ac5Meta"></div>
+<div id="ac5Screen"></div>
+<div id="ac5Fb" class="fb"></div>
+
+<div class="actions">
+<button id="ac5Back">Назад</button>
+<button class="primary" id="ac5Check">Проверить</button>
+<button id="ac5Edit">Изменить ответ</button>
+<button class="primary" id="ac5Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="ac5Result" style="display:none;padding:16px">
+<h3>Практика завершена</h3>
+<p style="font-size:13px;line-height:1.55">
+Отзыв можно сокращать и адаптировать, но нельзя дополнять результатами, которых клиент не сообщал. Напоминание должно давать новый повод вернуться к акции — например, через срок или действие, — при неизменных условиях.
+</p>
+<div class="actions">
+<button id="ac5ResultBack">Назад</button>
+<button class="primary" id="ac5Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var page=0;
+var answers=[[],null];
+var checked=[false,false];
+
+function E(id){return document.getElementById(id)}
+
+var fakeClaims=[
+{t:"«Пользуюсь сервисом третий месяц»",bad:false},
+{t:"«Удобно смотреть всё в одном месте»",bad:false},
+{t:"«Мария из Москвы увеличила продуктивность на 40%»",bad:true},
+{t:"«Теперь я экономлю по три часа каждый день»",bad:true}
+];
+
+var reminders=[
+"До завершения акции осталось два дня. Годовое продление со скидкой 20% доступно до 17 ноября.",
+"Мы решили увеличить скидку до 30%, чтобы вам было проще принять решение.",
+"Осталось всего 7 мест, поэтому предложение может исчезнуть в любой момент."
+];
+
+function render(){
+E("ac5Meta").innerHTML="Задание "+(page+1)+" из 2";
+var html="";
+
+if(page===0){
+html+="<div class='source'><strong>Исходный отзыв:</strong><br>«Пользуюсь сервисом третий месяц. Удобно смотреть всё в одном месте».</div>";
+html+="<p style='font-size:13px;line-height:1.5'>Отметьте фразы, которые ИИ не имеет права добавлять.</p>";
+
+for(var i=0;i<fakeClaims.length;i++){
+html+="<div class='item"+(answers[0].indexOf(i)>=0?" active":"")+"' data-i='"+i+"'>"+fakeClaims[i].t+"</div>";
+}
+}else{
+html+="<div class='source'><strong>Условия:</strong><br>скидка 20% на годовое продление до 17 ноября.</div>";
+html+="<p style='font-size:13px;line-height:1.5'>Выберите корректное напоминание.</p>";
+
+for(var j=0;j<reminders.length;j++){
+html+="<div class='item"+(answers[1]===j?" active":"")+"' data-i='"+j+"'>"+reminders[j]+"</div>";
+}
+}
+
+E("ac5Screen").innerHTML=html;
+
+var items=E("ac5Screen").getElementsByClassName("item");
+
+for(var k=0;k<items.length;k++){
+items[k].onclick=function(){
+if(checked[page])return;
+var n=parseInt(this.getAttribute("data-i"),10);
+
+if(page===0){
+var p=answers[0].indexOf(n);
+if(p>=0)answers[0].splice(p,1);
+else answers[0].push(n);
+}else{
+answers[1]=n;
+}
+render();
+};
+}
+
+var fb=E("ac5Fb");
+fb.className="fb";
+
+if(checked[page]){
+var good=false;
+
+if(page===0){
+good=
+answers[0].length===2 &&
+answers[0].indexOf(2)>=0 &&
+answers[0].indexOf(3)>=0;
+}else{
+good=answers[1]===0;
+}
+
+fb.className="fb "+(good?"ok":"bad");
+fb.innerHTML=good
+?page===0
+?"Вы отделили реальный отзыв от придуманных результатов."
+:"Напоминание сохраняет оффер и использует реальный срок как новый повод."
+:page===0
+?"Проверяйте каждую конкретную цифру, имя и результат: есть ли они в исходном отзыве."
+:"Нельзя менять скидку или придумывать дефицит, которого нет в условиях.";
+}
+
+E("ac5Back").disabled=page===0;
+E("ac5Check").style.display=checked[page]?"none":"inline-block";
+E("ac5Edit").style.display=checked[page]?"inline-block":"none";
+E("ac5Next").style.display=checked[page]?"inline-block":"none";
+E("ac5Next").innerHTML=page===1?"Завершить":"Далее";
+}
+
+E("ac5Check").onclick=function(){
+if(page===1&&answers[1]===null){alert("Выберите напоминание.");return;}
+checked[page]=true;
+render();
+};
+
+E("ac5Edit").onclick=function(){checked[page]=false;render()};
+E("ac5Back").onclick=function(){if(page>0){page--;render()}};
+
+E("ac5Next").onclick=function(){
+if(page===0){page=1;render();}
+else{
+E("ac5Body").style.display="none";
+E("ac5Result").style.display="block";
+}
+};
+
+E("ac5ResultBack").onclick=function(){
+E("ac5Body").style.display="block";
+E("ac5Result").style.display="none";
+page=1;
+render();
+};
+
+E("ac5Restart").onclick=function(){
+page=0;
+answers=[[],null];
+checked=[false,false];
+E("ac5Body").style.display="block";
+E("ac5Result").style.display="none";
+render();
+};
+
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

@@ -1,0 +1,169 @@
+<div id="ac6">
+<style>
+#ac6{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#ac6 *{box-sizing:border-box}
+#ac6 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ac6 .head,#ac6 .body,#ac6 .result{padding:16px}
+#ac6 .head{border-bottom:1px solid #e5e7eb}
+#ac6 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ac6 h3{margin:0;font-size:18px}
+#ac6 .meta{font-size:12px;color:#667085;margin-bottom:8px}
+#ac6 .source{background:#f8fafc;padding:11px;border-radius:10px;font-size:12px;line-height:1.55;margin-bottom:10px}
+#ac6 .row{border:1px solid #e5e7eb;border-radius:9px;padding:9px;margin-bottom:7px;font-size:12px;line-height:1.45;cursor:pointer}
+#ac6 .row.active{background:#eff6ff;border-color:#2563eb}
+#ac6 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ac6 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ac6 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ac6 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ac6 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ac6 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ac6 button:disabled{opacity:.4}
+#ac6 .summary{background:#f8fafc;padding:11px;border-radius:10px;font-size:13px;line-height:1.55}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Проведите финальный аудит цепочки</h3>
+</div>
+
+<div class="body" id="ac6Body">
+<div class="meta" id="ac6Meta"></div>
+<div id="ac6Screen"></div>
+<div id="ac6Fb" class="fb"></div>
+
+<div class="actions">
+<button id="ac6Back">Назад</button>
+<button class="primary" id="ac6Check">Проверить</button>
+<button id="ac6Edit">Изменить ответ</button>
+<button class="primary" id="ac6Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="ac6Result" style="display:none">
+<h3>Цепочка готова к запуску</h3>
+<div class="summary">
+Перед публикацией нужно проверить всю последовательность как единое целое: даты, размер скидки, товары или тарифы, ограничения, статус акции и следующее действие. Финальное сообщение не должно продлевать предложение или вводить новые условия без отдельного решения компании.
+</div>
+<div class="actions">
+<button id="ac6ResultBack">Назад</button>
+<button class="primary" id="ac6Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var page=0;
+var answers=[null,null];
+var checked=[false,false];
+
+var chain=[
+"7 ноября — анонс: с 10 ноября скидка 20% на годовое продление.",
+"10 ноября — старт: скидка 20% действует до 17 ноября.",
+"13 ноября — отзыв клиента + напоминание о тех же условиях.",
+"16 ноября — «Только сегодня скидка 30% на все тарифы».",
+"17 ноября — последний день: скидка 20% до 23:59."
+];
+
+var finals=[
+"Акция завершена. Скидка 20% на годовое продление больше не действует.",
+"Не успели? Мы автоматически продлили скидку ещё на сутки.",
+"Акция закончилась, но напишите нам — возможно, мы сохраним скидку персонально."
+];
+
+function E(id){return document.getElementById(id)}
+
+function render(){
+E("ac6Meta").innerHTML="Задание "+(page+1)+" из 2";
+
+var html="<div class='source'><strong>Исходные условия:</strong><br>скидка 20% на годовое продление;<br>период — 10–17 ноября, до 23:59.</div>";
+
+if(page===0){
+html+="<p style='font-size:13px;line-height:1.5'>Выберите сообщение, которое нарушает условия акции.</p>";
+
+for(var i=0;i<chain.length;i++){
+html+="<div class='row"+(answers[0]===i?" active":"")+"' data-i='"+i+"'>"+chain[i]+"</div>";
+}
+}else{
+html+="<p style='font-size:13px;line-height:1.5'>Сообщение отправляется 18 ноября. Выберите корректный финал.</p>";
+
+for(var j=0;j<finals.length;j++){
+html+="<div class='row"+(answers[1]===j?" active":"")+"' data-i='"+j+"'>"+finals[j]+"</div>";
+}
+}
+
+E("ac6Screen").innerHTML=html;
+
+var rows=E("ac6Screen").getElementsByClassName("row");
+for(var k=0;k<rows.length;k++){
+rows[k].onclick=function(){
+if(checked[page])return;
+answers[page]=parseInt(this.getAttribute("data-i"),10);
+render();
+};
+}
+
+var fb=E("ac6Fb");
+fb.className="fb";
+
+if(checked[page]){
+var good=page===0?answers[0]===3:answers[1]===0;
+
+fb.className="fb "+(good?"ok":"bad");
+fb.innerHTML=good
+?page===0
+?"Вы нашли касание, которое одновременно меняет скидку и расширяет действие на другие тарифы."
+:"Финал точно сообщает, что предложение завершено, и не создаёт новых исключений."
+:page===0
+?"Сравните скидку, тариф и срок каждого касания с исходными условиями."
+:"После окончания акции нельзя самостоятельно продлевать срок или обещать персональные исключения.";
+}
+
+E("ac6Back").disabled=page===0;
+E("ac6Check").style.display=checked[page]?"none":"inline-block";
+E("ac6Edit").style.display=checked[page]?"inline-block":"none";
+E("ac6Next").style.display=checked[page]?"inline-block":"none";
+E("ac6Next").innerHTML=page===1?"Завершить":"Далее";
+}
+
+E("ac6Check").onclick=function(){
+if(answers[page]===null){alert("Выберите вариант.");return;}
+checked[page]=true;
+render();
+};
+
+E("ac6Edit").onclick=function(){checked[page]=false;render()};
+E("ac6Back").onclick=function(){if(page>0){page--;render()}};
+
+E("ac6Next").onclick=function(){
+if(page===0){page=1;render();}
+else{
+E("ac6Body").style.display="none";
+E("ac6Result").style.display="block";
+}
+};
+
+E("ac6ResultBack").onclick=function(){
+E("ac6Body").style.display="block";
+E("ac6Result").style.display="none";
+page=1;
+render();
+};
+
+E("ac6Restart").onclick=function(){
+page=0;
+answers=[null,null];
+checked=[false,false];
+E("ac6Body").style.display="block";
+E("ac6Result").style.display="none";
+render();
+};
+
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>

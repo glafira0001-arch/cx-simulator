@@ -1,0 +1,149 @@
+<div id="ac2">
+<style>
+#ac2{max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#1f2937}
+#ac2 *{box-sizing:border-box}
+#ac2 .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;overflow:hidden}
+#ac2 .head,#ac2 .body,#ac2 .result{padding:16px}
+#ac2 .head{border-bottom:1px solid #e5e7eb}
+#ac2 .label{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:5px}
+#ac2 h3{margin:0;font-size:18px}
+#ac2 .meta{font-size:12px;color:#667085;margin-bottom:8px}
+#ac2 .msg{background:#f8fafc;padding:12px;border-radius:10px;font-size:13px;line-height:1.55;margin-bottom:12px}
+#ac2 .option{border:1px solid #e5e7eb;border-radius:9px;padding:9px;margin-bottom:7px;font-size:13px;cursor:pointer}
+#ac2 .option.active{background:#eff6ff;border-color:#2563eb}
+#ac2 .fb{display:none;padding:10px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:10px}
+#ac2 .ok{display:block;background:#ecfdf3;color:#065f46}
+#ac2 .bad{display:block;background:#fff1f0;color:#7a271a}
+#ac2 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+#ac2 button{padding:8px 11px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;font-weight:600;cursor:pointer}
+#ac2 .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+#ac2 button:disabled{opacity:.4}
+</style>
+
+<div class="card">
+<div class="head">
+<div class="label">Практика</div>
+<h3>Определите этап касания</h3>
+</div>
+
+<div class="body" id="ac2Body">
+<div class="meta" id="ac2Meta"></div>
+<div id="ac2Screen"></div>
+<div id="ac2Fb" class="fb"></div>
+
+<div class="actions">
+<button id="ac2Back">Назад</button>
+<button class="primary" id="ac2Check">Проверить</button>
+<button id="ac2Edit">Изменить ответ</button>
+<button class="primary" id="ac2Next">Далее</button>
+</div>
+</div>
+
+<div class="result" id="ac2Result" style="display:none">
+<h3>Этапы разделены</h3>
+<p style="font-size:13px;line-height:1.55">
+Анонс говорит о будущем предложении, старт — о уже действующем, промежуточное касание добавляет новый аргумент, напоминание возвращает внимание к сроку, а финал закрывает предложение.
+</p>
+<div class="actions">
+<button id="ac2ResultBack">Назад</button>
+<button class="primary" id="ac2Restart">Пройти заново</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+function init(){
+var data=[
+{q:"«С 10 ноября годовую подписку можно будет продлить со скидкой 20%.»",c:"announce"},
+{q:"«Акция началась. Скидка 20% действует до 17 ноября.»",c:"start"},
+{q:"«Клиенты отмечают, что годовой тариф удобен тем, что не нужно следить за ежемесячным продлением.»",c:"middle"},
+{q:"«До завершения акции осталось два дня.»",c:"reminder"},
+{q:"«Акция завершена. Специальные условия больше не действуют.»",c:"final"}
+];
+
+var labels=[
+["announce","Анонс"],
+["start","Старт"],
+["middle","Промежуточное касание"],
+["reminder","Напоминание"],
+["final","Завершение"]
+];
+
+var page=0;
+var answers=[null,null,null,null,null];
+var checked=[false,false,false,false,false];
+
+function E(id){return document.getElementById(id)}
+
+function render(){
+E("ac2Meta").innerHTML="Сообщение "+(page+1)+" из "+data.length;
+
+var html="<div class='msg'>"+data[page].q+"</div>";
+for(var i=0;i<labels.length;i++){
+html+="<div class='option"+(answers[page]===labels[i][0]?" active":"")+"' data-v='"+labels[i][0]+"'>"+labels[i][1]+"</div>";
+}
+E("ac2Screen").innerHTML=html;
+
+var opts=E("ac2Screen").getElementsByClassName("option");
+for(var j=0;j<opts.length;j++){
+opts[j].onclick=function(){
+if(checked[page])return;
+answers[page]=this.getAttribute("data-v");
+render();
+};
+}
+
+var fb=E("ac2Fb");
+fb.className="fb";
+
+if(checked[page]){
+var good=answers[page]===data[page].c;
+fb.className="fb "+(good?"ok":"bad");
+fb.innerHTML=good
+?"Верно: роль сообщения соответствует состоянию акции."
+:"Смотрите, что происходит с предложением в этот момент: оно ещё не началось, уже действует, продолжается или завершено.";
+}
+
+E("ac2Back").disabled=page===0;
+E("ac2Check").style.display=checked[page]?"none":"inline-block";
+E("ac2Edit").style.display=checked[page]?"inline-block":"none";
+E("ac2Next").style.display=checked[page]?"inline-block":"none";
+E("ac2Next").innerHTML=page===data.length-1?"Завершить":"Далее";
+}
+
+E("ac2Check").onclick=function(){
+if(answers[page]===null){alert("Выберите этап.");return;}
+checked[page]=true;
+render();
+};
+E("ac2Edit").onclick=function(){checked[page]=false;render()};
+E("ac2Back").onclick=function(){if(page>0){page--;render()}};
+E("ac2Next").onclick=function(){
+if(page<data.length-1){page++;render();}
+else{
+E("ac2Body").style.display="none";
+E("ac2Result").style.display="block";
+}
+};
+E("ac2ResultBack").onclick=function(){
+E("ac2Body").style.display="block";
+E("ac2Result").style.display="none";
+page=data.length-1;
+render();
+};
+E("ac2Restart").onclick=function(){
+page=0;
+answers=[null,null,null,null,null];
+checked=[false,false,false,false,false];
+E("ac2Body").style.display="block";
+E("ac2Result").style.display="none";
+render();
+};
+
+render();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+</div>
