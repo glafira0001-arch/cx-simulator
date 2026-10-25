@@ -1,0 +1,55 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Практика</title><style>
+*{box-sizing:border-box} body{margin:0;background:#f3f5f7;font-family:Arial,sans-serif;color:#1f2933}
+.app{width:100%;max-width:560px;margin:0 auto;background:#fff;min-height:100vh}
+.head{background:#2f6b4f;color:#fff;padding:14px 16px;font-weight:700}
+.screen{display:none;padding:16px}.screen.active{display:block}
+h2{font-size:20px;margin:0 0 10px} p{font-size:14px;line-height:1.45;margin:8px 0}
+.case{background:#f0f6f3;border-left:4px solid #2f6b4f;padding:10px 12px;border-radius:8px;margin:12px 0;font-size:14px}
+.opt{display:block;border:1px solid #cfd8df;border-radius:8px;padding:10px 11px;margin:8px 0;font-size:14px;cursor:pointer}
+.opt input{margin-right:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer;font-size:13px}
+.primary{background:#2f6b4f;color:#fff}.secondary{background:#e8edf0}.ghost{background:#fff;border:1px solid #cfd8df}
+.fb{display:none;margin-top:12px;padding:10px;border-radius:8px;font-size:14px;line-height:1.45}.fb.show{display:block}
+.good{background:#e9f7ef;border:1px solid #a8d7b9}.bad{background:#fff3e8;border:1px solid #e5ba89}
+select{width:100%;padding:9px;border:1px solid #cfd8df;border-radius:8px;font-size:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.card{border:1px solid #d6dde3;border-radius:8px;padding:10px;font-size:13px}
+.sort{display:grid;gap:8px}.item{border:1px solid #cfd8df;border-radius:8px;padding:10px;display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.move button{padding:4px 7px;background:#eef2f4}
+.small{font-size:12px;color:#64727d}
+</style></head><body><div class="app"><div class="head">Практика</div>
+<section class="screen active">
+<h2>Соберите запуск</h2>
+<p>Расставьте действия по порядку.</p>
+<div id="sort" class="sort">
+<div class="item" data-id="3">Связать с постом и клипом <span class="move"><button onclick="up(this)">↑</button><button onclick="down(this)">↓</button></span></div>
+<div class="item" data-id="1">Проверить карточку и плейлист <span class="move"><button onclick="up(this)">↑</button><button onclick="down(this)">↓</button></span></div>
+<div class="item" data-id="4">Смотреть первые данные <span class="move"><button onclick="up(this)">↑</button><button onclick="down(this)">↓</button></span></div>
+<div class="item" data-id="2">Опубликовать видео <span class="move"><button onclick="up(this)">↑</button><button onclick="down(this)">↓</button></span></div>
+</div>
+<div id="f1" class="fb"></div>
+<div class="actions"><button class="primary" onclick="c1()">Проверить ответ</button><button class="secondary" onclick="next()">Дальше</button></div>
+</section>
+<section class="screen">
+<h2>Когда подключать продвижение?</h2>
+<label class="opt"><input type="radio" name="q2" value="a">До публикации</label>
+<label class="opt"><input type="radio" name="q2" value="b">После проверки маршрута</label>
+<label class="opt"><input type="radio" name="q2" value="c">Сразу после загрузки</label>
+<label class="opt"><input type="radio" name="q2" value="d">Только после месяца</label>
+<div id="f2" class="fb"></div>
+<div class="actions"><button class="ghost" onclick="back()">Вернуться назад</button><button class="primary" onclick="c2()">Проверить ответ</button><button class="secondary" onclick="restart()">Пройти всё заново</button></div>
+</section>
+</div><script>
+let cur=0; const sc=[...document.querySelectorAll('.screen')];
+function show(i){cur=Math.max(0,Math.min(i,sc.length-1));sc.forEach((x,n)=>x.classList.toggle('active',n===cur));}
+function next(){show(cur+1)} function back(){show(cur-1)} function restart(){location.reload()} show(0);
+function fb(id,ok,good,bad){let e=document.getElementById(id);e.className='fb show '+(ok?'good':'bad');e.innerHTML=ok?good:bad}
+function val(n){return document.querySelector('input[name="'+n+'"]:checked')?.value}
+
+function up(b){let e=b.closest('.item'),p=e.previousElementSibling;if(p)e.parentNode.insertBefore(e,p)}
+function down(b){let e=b.closest('.item'),n=e.nextElementSibling;if(n)e.parentNode.insertBefore(n,e)}
+function c1(){let x=[...document.querySelectorAll('#sort .item')].map(e=>e.dataset.id).join('');fb('f1',x==='1234','Верно. Сначала готовность, затем публикация и распространение.','Проверка и структура должны быть готовы до распространения.')}
+function c2(){fb('f2',val('q2')==='b','Верно. Сначала убеждаемся, что путь зрителя работает.','Продвижение не должно компенсировать слабую упаковку или навигацию.')}
+</script></body></html>
