@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Практика</title><style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#18222d}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:#fff;box-shadow:0 0 30px rgba(0,0,0,.08)}
+.top{padding:18px 24px;background:#1f6b4f;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.top h1{margin:0;font-size:20px}
+.progress{font-size:14px;opacity:.9}
+.screen{display:none;padding:28px 24px 32px}
+.screen.active{display:block}
+h2{margin:0 0 12px;font-size:24px}
+p{line-height:1.55;margin:10px 0}
+.case{background:#f0f6f3;border-left:4px solid #1f6b4f;padding:16px 18px;margin:18px 0;border-radius:8px}
+.options{display:grid;gap:12px;margin:18px 0}
+.option{border:1px solid #cfd8df;border-radius:10px;padding:14px 16px;cursor:pointer;background:#fff;transition:.15s}
+.option:hover{border-color:#1f6b4f}
+.option.selected{border:2px solid #1f6b4f;background:#f4fbf7}
+.option input{margin-right:10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+button{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer}
+.primary{background:#1f6b4f;color:#fff}
+.secondary{background:#e9eef1;color:#18222d}
+.ghost{background:#fff;border:1px solid #cfd8df;color:#18222d}
+.feedback{display:none;margin-top:18px;padding:16px;border-radius:10px;line-height:1.55}
+.feedback.show{display:block}
+.feedback.good{background:#eaf7ef;border:1px solid #9ed0af}
+.feedback.bad{background:#fff3e7;border:1px solid #e4b27b}
+.small{font-size:13px;color:#5b6875}
+.tag{display:inline-block;padding:5px 8px;border-radius:999px;background:#eef2f4;margin:3px 4px 3px 0;font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}.screen{padding:22px 16px}.top{padding:16px}}
+.card{border:1px solid #d7dfe5;border-radius:10px;padding:14px;background:#fff}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.kpi .card{text-align:center}
+.kpi b{display:block;font-size:22px;margin-top:5px}
+select,textarea,input[type=text]{width:100%;padding:10px 12px;border:1px solid #cfd8df;border-radius:8px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+.sortable{display:grid;gap:10px;margin:16px 0}
+.sort-item{padding:13px;border:1px solid #cfd8df;border-radius:9px;background:#fff;display:flex;justify-content:space-between;align-items:center}
+.sort-item .move{display:flex;gap:6px}
+.move button{padding:6px 9px;background:#eef2f4}
+.choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:700px){.choice-grid{grid-template-columns:1fr}}
+</style></head>
+<body><div class="app">
+<div class="top"><h1>Практика</h1><div class="progress" id="progress">1 / 3</div></div>
+
+<section class="screen active">
+<h2>Выберите одно изменение</h2>
+<div class="case">Видео получает мало открытий, но те, кто его открывает, смотрят 70% материала. Название — «Современные решения нашей компании», обложка — логотип на фирменном фоне.</div>
+<p>Что изменить первым?</p>
+<div class="options">
+<label class="option"><input type="radio" name="q1" value="a">Переснять видео полностью</label>
+<label class="option"><input type="radio" name="q1" value="b">Сделать название и обложку конкретнее, сохранив само видео</label>
+<label class="option"><input type="radio" name="q1" value="c">Укоротить видео вдвое</label>
+<label class="option"><input type="radio" name="q1" value="d">Увеличить бюджет продвижения</label>
+</div>
+<div class="feedback" id="f1"></div>
+<div class="actions"><button class="primary" onclick="check1()">Проверить ответ</button><button class="secondary" onclick="next()">Дальше</button></div>
+</section>
+
+<section class="screen">
+<h2>Не меняйте всё сразу</h2>
+<div class="case">Команда предлагает одновременно: сменить тему, сократить ролик, заменить обложку, изменить название и запустить платное продвижение.</div>
+<p>Какое решение лучше?</p>
+<div class="options">
+<label class="option"><input type="radio" name="q2" value="a">Согласиться: так быстрее найдём рабочую комбинацию</label>
+<label class="option"><input type="radio" name="q2" value="b">Выбрать одну гипотезу и одно ключевое изменение, чтобы понять его эффект</label>
+<label class="option"><input type="radio" name="q2" value="c">Не менять ничего никогда</label>
+<label class="option"><input type="radio" name="q2" value="d">Удалить ролик</label>
+</div>
+<div class="feedback" id="f2"></div>
+<div class="actions"><button class="ghost" onclick="back()">Вернуться назад</button><button class="primary" onclick="check2()">Проверить ответ</button><button class="secondary" onclick="next()">Дальше</button></div>
+</section>
+
+<section class="screen">
+<h2>Соберите гипотезу</h2>
+<p>Выберите наиболее проверяемую формулировку.</p>
+<div class="options">
+<label class="option"><input type="radio" name="q3" value="a">Нужно сделать контент интереснее</label>
+<label class="option"><input type="radio" name="q3" value="b">Если конкретизировать название вокруг проблемы зрителя, доля открытий вырастет при сохранении глубины просмотра</label>
+<label class="option"><input type="radio" name="q3" value="c">Алгоритм плохо показывает наш канал</label>
+<label class="option"><input type="radio" name="q3" value="d">Нужно полностью поменять стратегию</label>
+</div>
+<div class="feedback" id="f3"></div>
+<div class="actions"><button class="ghost" onclick="back()">Вернуться назад</button><button class="primary" onclick="check3()">Проверить ответ</button><button class="secondary" onclick="restart()">Пройти всё заново</button></div>
+</section>
+
+</div><script>
+let current=0;
+const screens=[...document.querySelectorAll('.screen')];
+function show(i){current=Math.max(0,Math.min(i,screens.length-1));screens.forEach((s,n)=>s.classList.toggle('active',n===current));document.getElementById('progress').textContent=(current+1)+' / '+screens.length;window.scrollTo(0,0)}
+function next(){show(current+1)}
+function back(){show(current-1)}
+function restart(){location.reload()}
+show(0);
+
+function fb(id,ok,text){let e=document.getElementById(id);e.className='feedback show '+(ok?'good':'bad');e.innerHTML=text}
+function cv(n){return document.querySelector('input[name='+n+']:checked')?.value}
+function check1(){fb('f1',cv('q1')==='b',cv('q1')==='b'?'<b>Верно.</b> Хорошая глубина просмотра говорит, что содержание работает; проблема, вероятно, до открытия видео.':'Не переснимайте материал, если данные показывают, что после открытия он работает хорошо.')}
+function check2(){fb('f2',cv('q2')==='b',cv('q2')==='b'?'<b>Верно.</b> Одно изменение даёт возможность понять причинно-следственную связь.':'Если изменить всё сразу, даже хороший результат не покажет, что именно сработало.')}
+function check3(){fb('f3',cv('q3')==='b',cv('q3')==='b'?'<b>Верно.</b> Гипотеза конкретна, проверяема и связана с наблюдаемой проблемой.':'Рабочая гипотеза должна описывать конкретное изменение и ожидаемый измеримый эффект.')}
+</script></body></html>

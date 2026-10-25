@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Практика</title><style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#18222d}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:#fff;box-shadow:0 0 30px rgba(0,0,0,.08)}
+.top{padding:18px 24px;background:#1f6b4f;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.top h1{margin:0;font-size:20px}
+.progress{font-size:14px;opacity:.9}
+.screen{display:none;padding:28px 24px 32px}
+.screen.active{display:block}
+h2{margin:0 0 12px;font-size:24px}
+p{line-height:1.55;margin:10px 0}
+.case{background:#f0f6f3;border-left:4px solid #1f6b4f;padding:16px 18px;margin:18px 0;border-radius:8px}
+.options{display:grid;gap:12px;margin:18px 0}
+.option{border:1px solid #cfd8df;border-radius:10px;padding:14px 16px;cursor:pointer;background:#fff;transition:.15s}
+.option:hover{border-color:#1f6b4f}
+.option.selected{border:2px solid #1f6b4f;background:#f4fbf7}
+.option input{margin-right:10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+button{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer}
+.primary{background:#1f6b4f;color:#fff}
+.secondary{background:#e9eef1;color:#18222d}
+.ghost{background:#fff;border:1px solid #cfd8df;color:#18222d}
+.feedback{display:none;margin-top:18px;padding:16px;border-radius:10px;line-height:1.55}
+.feedback.show{display:block}
+.feedback.good{background:#eaf7ef;border:1px solid #9ed0af}
+.feedback.bad{background:#fff3e7;border:1px solid #e4b27b}
+.small{font-size:13px;color:#5b6875}
+.tag{display:inline-block;padding:5px 8px;border-radius:999px;background:#eef2f4;margin:3px 4px 3px 0;font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}.screen{padding:22px 16px}.top{padding:16px}}
+.card{border:1px solid #d7dfe5;border-radius:10px;padding:14px;background:#fff}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.kpi .card{text-align:center}
+.kpi b{display:block;font-size:22px;margin-top:5px}
+select,textarea,input[type=text]{width:100%;padding:10px 12px;border:1px solid #cfd8df;border-radius:8px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+.sortable{display:grid;gap:10px;margin:16px 0}
+.sort-item{padding:13px;border:1px solid #cfd8df;border-radius:9px;background:#fff;display:flex;justify-content:space-between;align-items:center}
+.sort-item .move{display:flex;gap:6px}
+.move button{padding:6px 9px;background:#eef2f4}
+.choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:700px){.choice-grid{grid-template-columns:1fr}}
+</style></head>
+<body><div class="app">
+<div class="top"><h1>Практика</h1><div class="progress" id="progress">1 / 3</div></div>
+
+<section class="screen active">
+<h2>Распределите темы по форматам</h2>
+<p>Компания по автоматизации складов уже выбрала темы. Ваша задача — подобрать формат не по привычке, а по глубине вопроса.</p>
+<div class="grid2">
+<div class="card"><b>Тема 1</b><p>«Один признак, что проблема склада не в нехватке сотрудников»</p><select id="s1"><option value="">Выберите формат</option><option>Shorts</option><option>Обычное видео</option><option>Серия</option><option>Прямой эфир</option></select></div>
+<div class="card"><b>Тема 2</b><p>«Как подготовить склад к автоматизации: от диагностики до запуска»</p><select id="s2"><option value="">Выберите формат</option><option>Shorts</option><option>Обычное видео</option><option>Серия</option><option>Прямой эфир</option></select></div>
+<div class="card"><b>Тема 3</b><p>«Ответы инженера на вопросы о новом оборудовании в день запуска»</p><select id="s3"><option value="">Выберите формат</option><option>Shorts</option><option>Обычное видео</option><option>Серия</option><option>Прямой эфир</option></select></div>
+<div class="card"><b>Тема 4</b><p>«Какие процессы автоматизировать первыми и почему»</p><select id="s4"><option value="">Выберите формат</option><option>Shorts</option><option>Обычное видео</option><option>Серия</option><option>Прямой эфир</option></select></div>
+</div>
+<div class="feedback" id="f1"></div>
+<div class="actions"><button class="primary" onclick="check()">Проверить ответ</button><button class="secondary" onclick="next()">Дальше</button></div>
+</section>
+
+<section class="screen">
+<h2>Найдите спорное решение</h2>
+<div class="case">Команда предлагает: «Все темы надо делать и в Shorts, и в длинном видео, чтобы ничего не потерять».</div>
+<p>Какое управленческое решение сильнее?</p>
+<div class="options">
+<label class="option"><input type="radio" name="q2" value="a">Согласиться: больше форматов всегда увеличивает шанс охвата</label>
+<label class="option"><input type="radio" name="q2" value="b">Проверять, создаёт ли второй формат новую ценность; если нет — не дублировать материал</label>
+<label class="option"><input type="radio" name="q2" value="c">Оставить только Shorts, потому что они короче</label>
+<label class="option"><input type="radio" name="q2" value="d">Оставить только длинные видео, чтобы сохранить экспертность</label>
+</div>
+<div class="feedback" id="f2"></div>
+<div class="actions"><button class="ghost" onclick="back()">Вернуться назад</button><button class="primary" onclick="check2()">Проверить ответ</button><button class="secondary" onclick="next()">Дальше</button></div>
+</section>
+
+<section class="screen">
+<h2>Соберите мини-серию</h2>
+<p>Выберите лучшую последовательность из трёх материалов по теме «автоматизация склада».</p>
+<div class="options">
+<label class="option"><input type="radio" name="q3" value="a">История компании → интервью директора → обзор оборудования</label>
+<label class="option"><input type="radio" name="q3" value="b">Признаки проблемы → что автоматизировать первым → как оценить эффект после внедрения</label>
+<label class="option"><input type="radio" name="q3" value="c">Shorts → Shorts → Shorts на разные темы</label>
+<label class="option"><input type="radio" name="q3" value="d">Обзор рынка → история отрасли → поздравление с юбилеем компании</label>
+</div>
+<div class="feedback" id="f3"></div>
+<div class="actions"><button class="ghost" onclick="back()">Вернуться назад</button><button class="primary" onclick="check3()">Проверить ответ</button><button class="secondary" onclick="restart()">Пройти всё заново</button></div>
+</section>
+
+</div><script>
+let current=0;
+const screens=[...document.querySelectorAll('.screen')];
+function show(i){current=Math.max(0,Math.min(i,screens.length-1));screens.forEach((s,n)=>s.classList.toggle('active',n===current));document.getElementById('progress').textContent=(current+1)+' / '+screens.length;window.scrollTo(0,0)}
+function next(){show(current+1)}
+function back(){show(current-1)}
+function restart(){location.reload()}
+show(0);
+
+function fb(id,ok,text){let e=document.getElementById(id);e.className='feedback show '+(ok?'good':'bad');e.innerHTML=text}
+function check(){let a=[s1.value,s2.value,s3.value,s4.value];let ok=JSON.stringify(a)===JSON.stringify(['Shorts','Серия','Прямой эфир','Обычное видео']);fb('f1',ok,ok?'<b>Верно.</b> Формат соответствует глубине и сценарию потребления каждой темы.':'Проверьте логику: один тезис — короткий формат; большая тема с самостоятельными частями — серия; синхронные вопросы — эфир; подробный разбор одного вопроса — обычное видео.')}
+function check2(){let v=document.querySelector('input[name=q2]:checked')?.value;fb('f2',v==='b',v==='b'?'<b>Верно.</b> Дублирование оправдано только тогда, когда второй формат решает другую задачу.':'Само количество форматов не создаёт ценность. Важно, зачем нужен каждый из них.')}
+function check3(){let v=document.querySelector('input[name=q3]:checked')?.value;fb('f3',v==='b',v==='b'?'<b>Верно.</b> Последовательность ведёт зрителя от распознавания проблемы к выбору действия и оценке результата.':'Серия должна развивать одну задачу, а не просто объединять публикации по календарю.')}
+</script></body></html>
