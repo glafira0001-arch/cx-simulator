@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Практика. Масштабирование</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;font-family:Arial,sans-serif;color:#1f2933}
+.app{max-width:560px;margin:0 auto;background:#fff;min-height:100vh}
+.head{background:#2f6b4f;color:#fff;padding:14px 16px;font-weight:700}
+.screen{display:none;padding:16px}.screen.active{display:block}
+h2{font-size:19px;margin:0 0 10px}
+.case{background:#f0f6f3;border-left:4px solid #2f6b4f;padding:10px 12px;border-radius:8px;margin:10px 0;font-size:13.5px;line-height:1.42}
+.opt{display:block;border:1px solid #cfd8df;border-radius:8px;padding:10px;margin:7px 0;font-size:13.5px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{border:0;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:12.5px}
+.primary{background:#2f6b4f;color:#fff}.secondary{background:#e8edf0}.ghost{background:#fff;border:1px solid #cfd8df}
+.fb{display:none;margin-top:10px;padding:9px;border-radius:8px;font-size:13px;line-height:1.4}.fb.show{display:block}
+.good{background:#e9f7ef;border:1px solid #a8d7b9}.bad{background:#fff3e8;border:1px solid #e5ba89}
+.result{background:#eef6f2;border:1px solid #b9d7c7;padding:12px;border-radius:10px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="head">Практика. Масштабирование</div>
+
+<section class="screen active">
+<h2>Можно ли масштабировать?</h2>
+<div class="case">Группа три недели дает стабильный CPL 2 100 ₽ при допустимых 2 700 ₽. Качество лидов не снижается.</div>
+<label class="opt"><input type="radio" name="q1" value="a"> Сразу удвоить бюджет</label>
+<label class="opt"><input type="radio" name="q1" value="b"> Увеличить бюджет небольшим шагом</label>
+<label class="opt"><input type="radio" name="q1" value="c"> Полностью сменить аудиторию</label>
+<label class="opt"><input type="radio" name="q1" value="d"> Остановить кампанию</label>
+<div id="f1" class="fb"></div>
+<div class="actions">
+<button class="primary" onclick="check1()">Проверить ответ</button>
+<button class="secondary" onclick="next()">Дальше</button>
+</div>
+</section>
+
+<section class="screen">
+<h2>Когда искать новый резерв?</h2>
+<div class="case">После нескольких увеличений бюджета число конверсий почти перестало расти, а CPL продолжает повышаться.</div>
+<label class="opt"><input type="radio" name="q2" value="a"> Продолжать увеличивать бюджет</label>
+<label class="opt"><input type="radio" name="q2" value="b"> Снизить CPL вдвое</label>
+<label class="opt"><input type="radio" name="q2" value="c"> Искать новую аудиторию или сценарий</label>
+<label class="opt"><input type="radio" name="q2" value="d"> Отключить все объявления</label>
+<div id="f2" class="fb"></div>
+<div class="actions">
+<button class="ghost" onclick="back()">Вернуться назад</button>
+<button class="primary" onclick="check2()">Проверить ответ</button>
+<button class="secondary" onclick="showResult()">Результат</button>
+</div>
+</section>
+
+<section class="screen">
+<h2>Результат</h2>
+<div id="result" class="result"></div>
+<div class="actions"><button class="secondary" onclick="location.reload()">Пройти заново</button></div>
+</section>
+</div>
+
+<script>
+let current=0,score=0,done={};
+const screens=[...document.querySelectorAll('.screen')];
+function show(i){current=Math.max(0,Math.min(i,screens.length-1));screens.forEach((s,n)=>s.classList.toggle('active',n===current));}
+function next(){show(current+1)} function back(){show(current-1)}
+function value(name){return document.querySelector('input[name="'+name+'"]:checked')?.value}
+function fb(id,ok,good,bad){const e=document.getElementById(id);e.className='fb show '+(ok?'good':'bad');e.textContent=ok?good:bad}
+function check1(){const ok=value('q1')==='b';if(!done.q1){done.q1=true;if(ok)score++}fb('f1',ok,'Верно. Стабильную связку масштабируют постепенно и проверяют, сохраняется ли экономика.','Не стоит резко менять рабочую связку. Увеличьте объем небольшим шагом и проверьте CPL и качество лидов.')}
+function check2(){const ok=value('q2')==='c';if(!done.q2){done.q2=true;if(ok)score++}fb('f2',ok,'Верно. Если текущий источник уперся в потолок, следующий рост нужно искать в новой аудитории или сценарии.','Если бюджет уже не дает дополнительного объема, ищите другой резерв роста.')}
+function showResult(){show(2);document.getElementById('result').innerHTML='<b>Итог: '+score+' из 2</b>'}
+</script>
+</body>
+</html>
