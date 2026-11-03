@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Затраты на проект — интерактивное задание</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#222}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:flex;align-items:center;justify-content:center}.exercise{position:relative;width:min(100%,900px);min-height:330px;background:#fff;padding:56px 68px 62px;line-height:1.46;font-size:17px}.toolbar{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}.tool{pointer-events:auto;border:0;background:none;cursor:pointer;color:#278746;width:30px;height:30px;padding:2px;font-size:20px;display:grid;place-items:center}.tool.full{color:#ce6060}.tool:hover{background:#f3f7f4;border-radius:5px}.prompt{max-width:700px;margin:30px auto 0;font-size:17px;line-height:1.55}.answer{position:relative;display:inline-block;vertical-align:middle;min-width:80px}.answer select{font:inherit;max-width:240px;min-width:80px;height:31px;padding:3px 24px 3px 7px;background:#f7f7f7;border:1px solid #aaa;border-radius:2px;color:#222;cursor:pointer}.answer select:focus{outline:2px solid #78aaf5;outline-offset:1px}.answer.correct select{background:#91ef9a;border-color:#47bb60;color:#063e0c}.answer.incorrect select{background:#fff;border:1.5px solid #e34e4e;color:#e02222}.answer.correct select,.answer.incorrect select{appearance:none;-webkit-appearance:none;padding-right:8px}.check{position:absolute;right:20px;bottom:21px;width:54px;height:54px;border:none;border-radius:50%;background:#268de3;color:#fff;box-shadow:0 2px 5px #0004;cursor:pointer;display:grid;place-items:center}.check:hover{background:#137bd2}.check svg{width:29px;height:29px}.result{margin:18px 0 0;font-size:14px;min-height:20px}.result.good{color:#187f2d}.result.bad{color:#c72f2f}.retry{display:none;margin-top:12px;padding:8px 16px;border:1px solid #268de3;background:#fff;color:#176db3;border-radius:5px;font:inherit;font-size:14px;cursor:pointer}.retry:hover{background:#eaf5ff}.retry.visible{display:inline-block}.modal-backdrop{position:absolute;inset:0;background:#ffffff3d;display:flex;align-items:center;justify-content:center;z-index:9;padding:18px}.modal{width:min(100%,440px);border:8px solid #d7d7d7;border-radius:12px;background:#f8f8f8;padding:16px 20px 19px;box-shadow:0 0 2px 2px #999,0 5px 13px #0006;font-size:16px;line-height:1.4}.modal h2{font-size:20px;text-align:center;margin:0 0 10px}.modal p{margin:0 0 14px}.modal button{display:block;margin:auto;padding:4px 15px;background:#f5f5f5;border:1px solid #888;border-radius:1px;font-size:16px;cursor:pointer}.modal button:hover{background:#e7f2ff}.exercise:fullscreen{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:70px}.exercise:fullscreen .prompt{margin:0;font-size:clamp(18px,2vw,25px);max-width:1000px}.exercise:fullscreen .modal-backdrop{position:fixed}.exercise:fullscreen .modal{max-width:490px}@media(max-width:600px){.exercise{padding:45px 24px 95px;min-height:350px}.prompt{margin-top:24px;font-size:16px}.answer select{max-width:220px}.modal{padding:13px;font-size:15px}.modal h2{font-size:18px}}
+</style>
+</head>
+<body>
+<main class="exercise" id="exercise">
+  <div class="toolbar">
+    <button class="tool" id="help" type="button" aria-label="Открыть задание" title="Открыть задание">❔</button>
+    <button class="tool full" id="fullscreen" type="button" aria-label="На весь экран" title="На весь экран">⛶</button>
+  </div>
+  <section class="prompt">
+    Компания «ЗооМаг» заложила на исполнение проекта три месяца, но дополнительные условия заставили увеличить срок на две недели.<br>
+    Затраты на проект при этом
+    <span class="answer" id="answer"><select id="choice" aria-label="Как изменились затраты на проект">
+      <option value="" selected> </option>
+      <option value="grown">выросли</option>
+      <option value="same">остались без изменений</option>
+      <option value="down">снизились</option>
+    </select></span>.
+    <div class="result" id="result" aria-live="polite"></div><button class="retry" id="retry" type="button">Попробовать снова</button>
+  </section>
+  <button class="check" id="check" type="button" aria-label="Проверить ответ" title="Проверить ответ">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="19" height="20" rx="3"/><path d="m12 16 4 4 10-11"/><path d="M11 10h7"/></svg>
+  </button>
+  <div class="modal-backdrop" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal"><h2 id="modalTitle">Задание</h2><p>Нажмите на пустое поле и выберите верный вариант ответа.</p><button id="closeModal" type="button">OK</button></div>
+  </div>
+</main>
+<script>
+(()=>{
+const ex=document.getElementById('exercise'),overlay=document.getElementById('overlay'),help=document.getElementById('help'),close=document.getElementById('closeModal'),fs=document.getElementById('fullscreen'),choice=document.getElementById('choice'),answer=document.getElementById('answer'),result=document.getElementById('result'),retry=document.getElementById('retry');
+function showHelp(){overlay.hidden=false;overlay.style.display='flex';close.focus()}
+function hideHelp(){overlay.hidden=true;overlay.style.display='none';choice.focus()}
+help.addEventListener('click',showHelp);close.addEventListener('click',hideHelp);
+function resetFeedback(){answer.className='answer';result.textContent='';result.className='result';retry.classList.remove('visible')}
+choice.addEventListener('change',resetFeedback);
+retry.addEventListener('click',()=>{choice.value='';resetFeedback();choice.focus()});
+document.getElementById('check').addEventListener('click',()=>{answer.className='answer';result.className='result';if(!choice.value){result.textContent='Выберите вариант ответа.';return}let ok=choice.value==='grown';answer.classList.add(ok?'correct':'incorrect');result.classList.add(ok?'good':'bad');result.textContent=ok?'Верно! Затраты на проект выросли.':'Неверно. Попробуйте ещё раз.';retry.classList.add('visible')});
+fs.addEventListener('click',async()=>{try{if(!document.fullscreenElement){await ex.requestFullscreen()}else{await document.exitFullscreen()}}catch(e){fs.title='Полноэкранный режим недоступен в этой среде'}});
+document.addEventListener('fullscreenchange',()=>fs.setAttribute('aria-label',document.fullscreenElement?'Выйти из полноэкранного режима':'На весь экран'));
+})();
+</script>
+</body></html>
