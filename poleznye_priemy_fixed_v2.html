@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Полезные и бесполезные приёмы — интерактивное задание</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#202020;--green:#bfdc9b;--orange:#ffd0a3}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#fff}
+#exercise{position:relative;width:min(100%,1050px);margin:0 auto;aspect-ratio:660/302;min-height:330px;overflow:hidden;background:linear-gradient(90deg,#c6dd9f 0%,#c6dd9f 50%,#ffd0a3 50%,#ffd0a3 100%);touch-action:pan-y;user-select:none}
+#exercise:before{content:"";pointer-events:none;position:absolute;inset:0;opacity:.14;background-image:radial-gradient(#fff 0.8px,transparent 1.5px),radial-gradient(#b88037 .65px,transparent 1.4px);background-size:31px 39px,57px 52px;background-position:8px 7px,23px 12px}
+.zonetitle{position:absolute;top:48%;width:50%;transform:translateY(-50%);text-align:center;font-size:clamp(15px,2.5vw,25px);font-weight:400;pointer-events:none;text-shadow:0 1px 1px #ffffff66}
+.zonetitle.left{left:0}.zonetitle.right{left:50%}
+.corner{position:absolute;top:6px;z-index:25;border:0;background:transparent;color:#208c29;cursor:pointer;padding:1px 3px;line-height:1;border-radius:3px;display:flex;align-items:center;justify-content:center}
+.corner:hover,.corner:focus-visible{background:#ffffff85;outline:1px solid #7b9b82}
+#help{left:8px;font-weight:900;font-size:22px;text-shadow:1px 1px #fff,-1px -1px #fff}
+#full{right:8px;color:#e35c64}
+#full svg{width:19px;height:19px}
+.card{position:absolute;z-index:5;width:clamp(108px,19.7%,170px);min-height:51px;transform:translate(-50%,-50%);border:1px solid #ece5d4;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px 7px 8px;line-height:1.22;font-size:clamp(10px,1.48vw,14px);box-shadow:0 4px 8px #4d3e3260;cursor:grab;touch-action:none;transition:box-shadow .15s,border-color .15s,background-color .15s}
+.card:hover{box-shadow:0 5px 12px #4d3e3280}
+.card.dragging{cursor:grabbing;z-index:30;box-shadow:0 9px 18px #4d3e3285;transition:none}
+.pin{position:absolute;left:50%;top:-9px;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;box-shadow:0 1px 3px #4a4a4a42;background:linear-gradient(#21c977,#058c4b)}
+.card[data-side="right"] .pin{background:linear-gradient(#ff7c50,#f23819)}
+.card.checked.correct{border:3px solid #8be78c;box-shadow:0 0 0 2px #b2f5aa66,0 3px 10px #66523877}
+.card.checked.incorrect{border:3px solid #ff9999;background:#fff4f4;box-shadow:0 0 0 2px #ffb1b180,0 3px 10px #66523877}
+#check{position:absolute;bottom:9px;right:10px;z-index:22;border:0;border-radius:50%;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;background:#2699ec;color:white;box-shadow:0 2px 3px #4b4b4b70}
+#check:hover{background:#1383d1}
+#check svg{width:21px;height:21px}
+#result{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);z-index:19;padding:7px 12px;background:#fffef1ec;border:1px solid #9ca57e;border-radius:8px;box-shadow:0 2px 7px #50433640;font-size:13px;text-align:center;max-width:70%;display:none}
+#result.show{display:block}
+#controls{position:absolute;left:9px;bottom:8px;z-index:19;display:flex;gap:6px}
+.small{border:1px solid #849583;border-radius:6px;background:#ffffffba;color:#303030;padding:5px 8px;font-size:11px;cursor:pointer}
+.small:hover{background:white}
+#overlay{position:absolute;inset:0;z-index:40;display:grid;place-items:center;background:#ffffff12}
+#modal{width:min(88%,390px);background:#fafafa;border:8px solid #dedede;border-radius:12px;box-shadow:0 2px 12px #3f3f3f9e;padding:13px 11px 14px;text-align:center;font-size:13px;line-height:1.4}
+#modal h2{font-size:17px;margin:0 0 7px;font-weight:700}
+#modal p{text-align:left;margin:0 0 10px}
+#modal button{font:16px Arial,sans-serif;background:#f6f6f6;border:1px solid #888;padding:2px 8px;cursor:pointer}
+#modal button:hover{background:#e4e4e4}
+#exercise:fullscreen{width:100vw;height:100vh;aspect-ratio:auto;max-width:none;min-height:0}
+#exercise:fullscreen .card{font-size:clamp(13px,1.7vw,20px);width:clamp(160px,19.7%,290px);min-height:78px}
+#exercise:fullscreen .zonetitle{font-size:clamp(22px,3vw,40px)}
+#exercise:fullscreen #modal{width:min(88%,520px);font-size:17px}
+#exercise:fullscreen #modal h2{font-size:22px}
+#exercise:fullscreen #check{width:50px;height:50px}
+@media(max-width:520px){#exercise{min-height:460px;aspect-ratio:auto}.card{font-size:11px;width:42%;min-height:58px}.zonetitle{top:50%;font-size:15px}.corner{top:5px}#result{bottom:50px;max-width:95%;width:max-content}#controls{bottom:11px}.card[data-id="0"]{top:10%}.card[data-id="1"]{top:12%}.card[data-id="2"]{top:29%}.card[data-id="3"]{top:77%}.card[data-id="4"]{top:81%}.card[data-id="5"]{top:69%}}
+</style>
+</head>
+<body>
+<main id="exercise" aria-label="Интерактив: полезные и бесполезные приёмы">
+  <div class="zonetitle left">Полезные приёмы</div>
+  <div class="zonetitle right">Бесполезные приёмы</div>
+  <button id="help" class="corner" title="Открыть задание" aria-label="Открыть текст задания">❔</button>
+  <button id="full" class="corner" title="Развернуть на весь экран" aria-label="Развернуть на весь экран">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7"><path d="M9 3H3v6M15 3h6v6M3 15v6h6M21 15v6h-6"/><path d="m3 3 6 6m12-6-6 6M3 21l6-6m12 6-6-6"/></svg>
+  </button>
+  <div id="cards"></div>
+  <div id="controls"><button id="restart" class="small" title="Перемешать карточки">Начать заново</button><button id="solution" class="small" title="Показать верное распределение">Показать ответ</button></div>
+  <div id="result" aria-live="polite"></div>
+  <button id="check" title="Проверить ответ" aria-label="Проверить ответ">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="15" height="16" rx="2"/><path d="m7 12 3 3 8-8"/><path d="M17 4h3v5"/></svg>
+  </button>
+  <div id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalheading">
+    <div id="modal"><h2 id="modalheading">Задание</h2><p>Перед вами шесть приёмов, которые помогут избежать ошибок при внедрении аналитики. Перетащите четыре полезных в левый столбец, а два бесполезных — в правый.</p><button id="closeModal" autofocus>OK</button></div>
+  </div>
+</main>
+<script>
+(()=>{
+  'use strict';
+  const el=document.getElementById('exercise'), layer=document.getElementById('cards');
+  const modal=document.getElementById('overlay'),result=document.getElementById('result');
+  const defs=[
+    {text:'Фокусироваться на нескольких прозрачных показателях',correct:'left',x:34,y:11},
+    {text:'Раскладывать цель на составляющие и доводить до сотрудников',correct:'left',x:74,y:16},
+    {text:'Сразу не отказываться от недостигнутых целей',correct:'left',x:51,y:36},
+    {text:'Не придерживаться одной цели дольше месяца',correct:'right',x:26,y:75},
+    {text:'Оставлять достижение целей на усмотрение сотрудников',correct:'right',x:76,y:73},
+    {text:'Постоянно держать цель в поле зрения',correct:'left',x:51,y:77}
+  ];
+  const pos=defs.map(d=>({x:d.x,y:d.y}));
+  function within(n,min,max){return Math.max(min,Math.min(max,n))}
+  function paint(i){const c=layer.children[i];c.style.left=pos[i].x+'%';c.style.top=pos[i].y+'%';c.dataset.side=pos[i].x<50?'left':'right'}
+  defs.forEach((d,i)=>{
+    const c=document.createElement('div');c.className='card';c.dataset.id=i;
+    c.setAttribute('role','button');c.setAttribute('tabindex','0');c.setAttribute('aria-label',d.text+'. Переместить стрелками влево или вправо.');
+    const pin=document.createElement('span');pin.className='pin';pin.setAttribute('aria-hidden','true');
+    const span=document.createElement('span');span.textContent=d.text;c.append(pin,span);layer.append(c);paint(i);
+    c.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+      e.preventDefault();const s=e.shiftKey?8:3;
+      if(e.key==='ArrowLeft')pos[i].x-=s;if(e.key==='ArrowRight')pos[i].x+=s;
+      if(e.key==='ArrowUp')pos[i].y-=s;if(e.key==='ArrowDown')pos[i].y+=s;
+      pos[i].x=within(pos[i].x,12,88);pos[i].y=within(pos[i].y,11,89);
+      clearCheck();paint(i);
+    }});
+    c.addEventListener('pointerdown',e=>{
+      if(modal.style.display!=='none'||e.button!==0)return;
+      e.preventDefault();const r=el.getBoundingClientRect(), startX=e.clientX,startY=e.clientY,oldX=pos[i].x,oldY=pos[i].y;
+      c.setPointerCapture(e.pointerId);c.classList.add('dragging');
+      const move=ev=>{pos[i].x=within(oldX+(ev.clientX-startX)/r.width*100,12,88);pos[i].y=within(oldY+(ev.clientY-startY)/r.height*100,10,90);paint(i)};
+      const end=()=>{c.classList.remove('dragging');c.removeEventListener('pointermove',move);c.removeEventListener('pointerup',end);c.removeEventListener('pointercancel',end);clearCheck()};
+      c.addEventListener('pointermove',move);c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end)
+    });
+  });
+  function clearCheck(){[...layer.children].forEach(c=>c.classList.remove('checked','correct','incorrect'));result.classList.remove('show');result.textContent=''}
+  function check(){let count=0;defs.forEach((d,i)=>{const c=layer.children[i],okay=(pos[i].x<50?'left':'right')===d.correct;c.classList.add('checked',okay?'correct':'incorrect');c.classList.remove(okay?'incorrect':'correct');if(okay)count++});result.textContent=count===6?'Верно! Все шесть приёмов распределены правильно.':`Правильно: ${count} из 6. Зелёная рамка — верный ответ, розовая — ошибка.`;result.classList.add('show')}
+  document.getElementById('check').addEventListener('click',check);
+  document.getElementById('restart').addEventListener('click',()=>{defs.forEach((d,i)=>{pos[i]={x:d.x,y:d.y};paint(i)});clearCheck();openModal()});
+  document.getElementById('solution').addEventListener('click',()=>{const xs=[22,43,22,74,74,43],ys=[20,20,78,20,78,78];defs.forEach((d,i)=>{pos[i]={x:xs[i],y:ys[i]};paint(i)});clearCheck();check()});
+  function openModal(){modal.style.display='grid';document.getElementById('closeModal').focus()}
+  function closeModal(){modal.style.display='none';document.getElementById('help').focus()}
+  document.getElementById('help').addEventListener('click',openModal);
+  document.getElementById('closeModal').addEventListener('click',closeModal);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display!=='none')closeModal()});
+  document.getElementById('full').addEventListener('click',async()=>{
+    try{if(document.fullscreenElement){await document.exitFullscreen()}else if(el.requestFullscreen){await el.requestFullscreen()}else{el.classList.toggle('pseudo-fullscreen')}}catch(err){alert('Полноэкранный режим недоступен в этом окне. Попробуйте открыть файл в отдельной вкладке.')}
+  });
+  document.addEventListener('fullscreenchange',()=>{const b=document.getElementById('full');b.title=document.fullscreenElement?'Выйти из полноэкранного режима':'Развернуть на весь экран';b.setAttribute('aria-label',b.title)});
+})();
+</script>
+</body></html>
