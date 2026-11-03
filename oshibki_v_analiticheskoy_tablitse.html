@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Найдите ошибки в аналитической таблице</title>
+<style>
+:root{--green:#86ec90;--red:#ff8585;--blue:#298cde;--ink:#2e3438}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:Arial,Helvetica,sans-serif;background:#fff}
+#app{position:relative;width:100%;min-height:530px;max-width:1100px;margin:0 auto;background:linear-gradient(180deg,#fff 0%,#fff 100%);overflow:hidden}
+#app:fullscreen{max-width:none;min-height:100vh;display:flex;align-items:center;justify-content:center}
+#app:fullscreen .workspace{width:min(96vw,1600px)}
+.workspace{position:relative;padding:38px 20px 92px;margin:auto;width:100%;}
+.topbar{position:absolute;z-index:50;top:9px;left:0;right:0;pointer-events:none;display:flex;justify-content:space-between;padding:0 18px}
+.topbtn{pointer-events:auto;border:0;background:transparent;cursor:pointer;width:30px;height:30px;font-size:25px;display:grid;place-items:center;line-height:1}
+.topbtn.help{color:#35a43d;text-shadow:1px 1px #134b13}
+.topbtn.full{color:#eb6262;font-size:23px}
+.instructions{max-width:880px;margin:0 auto 14px;line-height:1.5;font-size:16px;color:#59666b;text-align:center}
+.table-scroller{position:relative;overflow:auto;padding:14px 14px 22px;scrollbar-color:#b6bbc0 transparent}
+.table-frame{position:relative;margin:0 auto;width:920px;max-width:none}
+.report{width:920px;table-layout:fixed;border-collapse:collapse;color:#252525;font-size:17px;background:white}
+.report th,.report td{border:2px solid #777;padding:6px 8px;vertical-align:top;position:relative;line-height:1.25;overflow-wrap:break-word}
+.report th{background:#dcebd9;text-align:left;font-weight:700;height:44px}
+.report th:first-child{background:#fff}
+.report td:first-child{background:#fff5d4;text-align:right;font-weight:700;white-space:nowrap}
+.report tr.mainrow td{height:41px}
+.report tr.longrow td{height:165px}
+.report col:nth-child(1){width:124px}
+.report col:nth-child(2){width:150px}
+.report col:nth-child(3){width:140px}
+.report col:nth-child(4){width:105px}
+.report col:nth-child(5){width:401px}
+.report td:nth-child(4){text-align:right}
+.report .comment{font-size:15.5px}
+.pin{position:absolute;z-index:5;width:32px;height:46px;padding:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 2px 2px #8888);transform:translate(-50%,-50%);touch-action:manipulation}
+.pin:focus-visible{outline:3px solid #333;border-radius:12px}
+.pin .shape{display:block;position:absolute;top:2px;left:6px;width:22px;height:27px;border-radius:55% 55% 55% 3%;transform:rotate(-45deg);background:var(--pin-color);box-shadow:inset 0 0 0 1px #0002}
+.pin .shape:after{content:'';position:absolute;left:8px;top:8px;border-radius:50%;width:7px;height:7px;background:#263238}
+.pin .number{position:absolute;z-index:2;top:-9px;left:20px;padding:2px 5px;min-width:20px;border-radius:999px;background:#fff;color:#232323;font-size:12px;font-weight:700;border:1px solid #aaa;box-shadow:0 1px 3px #777;display:none}
+.pin.responded .number{display:block}
+.pin.needs-answer{animation:wiggle .45s}
+@keyframes wiggle{20%,60%{transform:translate(-53%,-50%)}40%,80%{transform:translate(-47%,-50%)}}
+.answer-bubble{position:absolute;z-index:4;background:#fff;border:1px solid #a9a9a9;border-radius:6px;padding:5px 8px;max-width:190px;min-width:120px;box-shadow:0 1px 4px #0002;font-size:13px;line-height:1.2;white-space:normal;pointer-events:auto;cursor:pointer;display:none}
+.answer-bubble.visible{display:block}
+.answer-bubble.correct{background:#a5f7b0;border-color:#66ce75}
+.answer-bubble.wrong{background:#ffb0b0;border-color:#ec7474}
+.answer-bubble .short{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.answer-bubble:hover .short{display:block}
+.floating-actions{position:absolute;right:14px;bottom:12px;display:flex;align-items:center;gap:9px;z-index:10}
+.round-check{border:0;border-radius:50%;height:54px;width:54px;background:linear-gradient(145deg,#3db0fa,#1769cf);box-shadow:0 3px 5px #0003;color:#fff;font-size:26px;font-weight:bold;cursor:pointer}
+.status{font-size:14px;background:#fff;border:1px solid #cdd4d6;padding:8px 10px;border-radius:9px;box-shadow:0 1px 4px #0002}
+.status:empty{display:none}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:3px 65px 6px 12px}
+.controls button,.detail-actions button,.dialog button{border:1px solid #969da3;border-radius:7px;background:#fff;padding:9px 13px;font-size:15px;cursor:pointer;color:#292d30}
+.controls button:hover,.detail-actions button:hover,.dialog button:hover{background:#f0f7ff}
+.controls button.primary,.detail-actions button.primary{background:#207fd1;color:#fff;border-color:#207fd1}
+.controls button.primary:hover,.detail-actions button.primary:hover{background:#1066ba}
+.caption{font-size:13px;color:#62696d;text-align:center;margin:5px 10px 0}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0007;z-index:60;padding:18px}
+.overlay[hidden]{display:none}
+.dialog{border:12px solid #d4d4d4;background:#fff;box-shadow:0 6px 19px #0007;width:min(510px,100%);padding:18px 19px 15px;border-radius:11px;font-size:17px;max-height:90vh;overflow:auto}
+.dialog h2{font-size:21px;text-align:center;margin:1px 0 10px}
+.dialog p{line-height:1.48;margin:0 0 16px}
+.dialog>button{display:block;margin:0 auto;font-size:18px;padding:6px 20px;border-radius:2px;background:#f1f1f1}
+.detail-page{position:absolute;inset:0;z-index:35;background:radial-gradient(circle at 30% 23%,#fff9d4,#fff2ac 70%);padding:52px 20px 105px;overflow:auto}
+.detail-page[hidden]{display:none}
+.detail-card{margin:0 auto;max-width:850px}
+.detail-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+.detail-top h2{font-size:20px;font-weight:600;margin:0 0 5px}
+.detail-top p{font-size:14px;line-height:1.4;margin:0;color:#4b545b}
+.detail-preview{background:#fff;border:1px solid #b6b6b6;border-radius:15px;box-shadow:0 4px 12px #0003;overflow:hidden;padding:14px 12px;margin:12px auto 13px;max-width:650px}
+.detail-preview strong{font-size:14px;display:block;margin-bottom:7px}
+.preview-scroll{overflow:auto;max-height:145px}
+.preview-grid{border-collapse:collapse;width:100%;min-width:480px;font-size:15px;color:#222}
+.preview-grid th,.preview-grid td{border:1px solid #777;padding:7px;text-align:left}
+.preview-grid th{background:#e1eddf}
+.preview-grid .focus{background:#fff2a6;box-shadow:inset 0 0 0 3px #ffbb28}
+.preview-grid td:first-child{font-weight:700;background:#fff4d3}
+.options-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:16px 0 15px}
+.option{border:2px solid transparent;background:#fff;border-radius:14px;box-shadow:0 3px 8px #0002;padding:14px 12px;min-height:76px;font-size:17px;text-align:center;cursor:pointer;line-height:1.23;display:flex;align-items:center;justify-content:center}
+.option:hover{border-color:#c5dcea}
+.option.selected{background:#ccefff;border-color:#52a1d5}
+.detail-actions{display:flex;gap:10px;justify-content:center;align-items:center}
+.progress-pill{background:#fff;border:1px solid #dfdfdf;border-radius:999px;padding:6px 15px;font-size:14px;white-space:nowrap}
+.help-text{margin:12px 3px 6px;color:#525c60;text-align:center;line-height:1.35;font-size:14px}
+.final-info{padding:8px 12px;background:#fff;margin:0 auto 10px;width:max-content;max-width:98%;border:1px solid #dfdfdf;border-radius:10px;font-size:14px}
+#app:fullscreen .report{font-size:19px}
+#app:fullscreen .report .comment{font-size:17px}
+@media(max-width:680px){.workspace{padding:40px 2px 84px}.instructions{padding:0 35px;font-size:14px}.table-scroller{padding:8px 6px 20px}.options-grid{grid-template-columns:1fr}.option{min-height:57px;font-size:15px;padding:9px}.detail-page{padding:45px 12px 95px}.detail-top h2{font-size:18px}.detail-preview{padding:9px}.dialog{border-width:9px}.controls{margin-right:55px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <button class="topbtn help" id="help" title="Посмотреть задание ещё раз" aria-label="Инструкция">❔</button>
+    <button class="topbtn full" id="fullscreen" title="Развернуть на весь экран" aria-label="На весь экран">⛶</button>
+  </div>
+  <div class="workspace" id="workspace">
+    <p class="instructions">Найдите ошибки в таблице. Нажмите на цветную метку, изучите фрагмент и выберите, что в нём не так.</p>
+    <div class="table-scroller" id="scroller">
+      <div class="table-frame" id="tableFrame">
+        <table class="report">
+          <colgroup><col><col><col><col><col></colgroup>
+          <thead><tr><th></th><th>Продажи</th><th>Расходы</th><th>Возвраты</th><th>Комментарий</th></tr></thead>
+          <tbody>
+            <tr class="mainrow"><td>1.11.23</td><td>35 тыс. руб.</td><td>нет</td><td>2</td><td>Все ок</td></tr>
+            <tr class="mainrow"><td>2.11.23</td><td>19 тыс. руб.</td><td>7,5 тыс. руб.</td><td>0</td><td>Света не вышла</td></tr>
+            <tr class="mainrow"><td>3.11.23</td><td>28 тыс. руб.</td><td>1,1 тыс. руб.</td><td>–</td><td>Нужен развоз</td></tr>
+            <tr class="mainrow"><td>4.11.23</td><td></td><td>9 тыс. руб.</td><td>11</td><td>Скандалист</td></tr>
+            <tr class="longrow"><td>5.11.23</td><td>14 тыс. руб.</td><td>14 тыс. руб.</td><td>3500</td><td class="comment">Приходил мужчина, он очень хотел купить букет из старого каталога. Я сказала, что его в наличии уже нет. Он очень расстроился, так как наш постоянник. Жене букет очень нравился. Спрашивал, можем ли мы вернуть в ассортимент. Я сказала, что пока не сезон. Он спросил, может ли вернуться с вопросом на следующей неделе. Я сказала да.</td></tr>
+            <tr class="mainrow"><td>10–15.11.23</td><td>83 тыс. руб.</td><td>36 тыс. руб.</td><td>15</td><td>–</td></tr>
+          </tbody>
+        </table>
+        <div id="pins"></div>
+        <div id="bubbles"></div>
+      </div>
+    </div>
+    <div class="controls" id="controls"><button id="retry" hidden>Исправить ответы</button><button id="restart" hidden>Начать заново</button></div>
+    <p class="caption">Метки можно открывать в любом порядке. Ваш выбор сохранится при возвращении к таблице.</p>
+  </div>
+  <div class="detail-page" id="detail" hidden>
+    <div class="detail-card">
+      <div class="detail-top"><div><h2>Что не так в отмеченном фрагменте?</h2><p>Выберите один наиболее подходящий комментарий.</p></div><span class="progress-pill" id="progress"></span></div>
+      <div class="detail-preview"><strong id="previewTitle"></strong><div class="preview-scroll" id="preview"></div></div>
+      <div class="options-grid" id="options"></div>
+      <div class="detail-actions"><button id="back">Вернуться назад</button><button class="primary" id="save">Сохранить ответ</button></div>
+      <p class="help-text">Выбранный ответ останется возле метки на общей таблице. Его можно изменить до и после проверки.</p>
+    </div>
+  </div>
+  <div class="floating-actions"><div class="status" id="status" aria-live="polite"></div><button class="round-check" id="check" aria-label="Проверить ответы" title="Проверить ответы">☑</button></div>
+  <div class="overlay" id="intro"><div class="dialog"><h2>Задание</h2><p>Кликайте на цветные точки и выбирайте подходящие комментарии. Сначала изучите отмеченный фрагмент таблицы, затем выберите, какая ошибка в нём допущена. Кнопка «Вернуться назад» возвращает к таблице и сохраняет сделанный выбор.</p><button id="ok">OK</button></div></div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const COMMENTS = [
+    'В ячейке нет данных',
+    'Не указаны единицы измерения',
+    'Не уточнена категория расходов',
+    'Период не согласуется с предыдущими',
+    'Раздел не приносит смысла в таблицу',
+    'Разное отображение данных: ноль и прочерк'
+  ];
+  const errors = [
+    {id:'expenses',color:'#297ce8',x:440,y:26,label:'Заголовок «Расходы»',answer:2,columns:[0,2],row:0},
+    {id:'returnsHeading',color:'#ffbc34',x:567,y:26,label:'Заголовок «Возвраты»',answer:1,columns:[0,3],row:0},
+    {id:'comments',color:'#297ce8',x:744,y:26,label:'Раздел «Комментарий»',answer:4,columns:[0,4],row:0},
+    {id:'zero',color:'#f13a35',x:532,y:111,label:'Записи о возвратах за 2 и 3 ноября',answer:5,columns:[0,3],row:2},
+    {id:'empty',color:'#f13a35',x:193,y:193,label:'Продажи за 4 ноября',answer:0,columns:[0,1],row:4},
+    {id:'period',color:'#34de53',x:14,y:363,label:'Период «10–15.11.23»',answer:3,columns:[0,1],row:6}
+  ];
+  const app = document.getElementById('app');
+  const report = document.querySelector('.report');
+  const frame = document.getElementById('tableFrame');
+  const pins = document.getElementById('pins');
+  const bubbles = document.getElementById('bubbles');
+  const detail = document.getElementById('detail');
+  const status = document.getElementById('status');
+  const controls = document.getElementById('controls');
+  const check = document.getElementById('check');
+  const retry = document.getElementById('retry');
+  const restart = document.getElementById('restart');
+  const options = document.getElementById('options');
+  const back = document.getElementById('back');
+  const save = document.getElementById('save');
+  let active = null, checked = false;
+  const selections = Object.fromEntries(errors.map(e => [e.id,null]));
+  function pinPosition(e){
+    const tr = report.rows[e.row];
+    const td = tr?.cells?.[Math.min(e.columns[1],tr.cells.length-1)];
+    if(!td) return {x:e.x,y:e.y};
+    const row0=report.rows[0];
+    const col = row0.cells[e.columns[1]];
+    const x = col.offsetLeft + (e.id==='period' ? -65 : e.id==='empty' ? col.offsetWidth/2 : e.id==='zero' ? col.offsetWidth/2 : col.offsetWidth/2);
+    let y;
+    if(e.row===0)y=6;
+    else if(e.id==='period')y=tr.offsetTop+tr.offsetHeight-14;
+    else if(e.id==='empty')y=tr.offsetTop+7;
+    else y=tr.offsetTop+8;
+    return {x,y};
+  }
+  function renderMarkers(){
+    pins.innerHTML='';bubbles.innerHTML='';
+    for (const e of errors){
+      const pos=pinPosition(e);
+      const button=document.createElement('button');
+      button.className='pin'+(selections[e.id]!==null?' responded':'');
+      button.style.cssText=`left:${pos.x}px;top:${pos.y}px;--pin-color:${e.color}`;
+      button.setAttribute('aria-label',`${e.label}: открыть варианты ответа`);
+      button.title=e.label;
+      button.innerHTML='<span class="shape"></span><span class="number">✓</span>';
+      button.addEventListener('click',()=>openDetail(e.id));
+      pins.appendChild(button);
+      if(selections[e.id]!==null){
+        const bubble=document.createElement('button');
+        bubble.className='answer-bubble visible';
+        if(checked)bubble.classList.add(selections[e.id]===e.answer?'correct':'wrong');
+        let bx = pos.x - 4;
+        if(bx>frame.clientWidth-190)bx=frame.clientWidth-195;
+        bx=Math.max(0,bx);
+        const by=(e.id==='period'?pos.y+15:pos.y+29);
+        bubble.style.left=bx+'px';bubble.style.top=by+'px';
+        bubble.innerHTML=`<span class="short">${COMMENTS[selections[e.id]]}</span>`;
+        bubble.title='Нажмите, чтобы изменить ответ';
+        bubble.addEventListener('click',()=>openDetail(e.id));
+        bubbles.appendChild(bubble);
+      }
+    }
+  }
+  function contextTable(e){
+    const table=document.createElement('table');table.className='preview-grid';
+    let heads=['Дата','Продажи','Расходы','Возвраты','Комментарий'];
+    let rows=[
+      ['1.11.23','35 тыс. руб.','нет','2','Все ок'],
+      ['2.11.23','19 тыс. руб.','7,5 тыс. руб.','0','Света не вышла'],
+      ['3.11.23','28 тыс. руб.','1,1 тыс. руб.','–','Нужен развоз'],
+      ['4.11.23','','9 тыс. руб.','11','Скандалист'],
+      ['5.11.23','14 тыс. руб.','14 тыс. руб.','3500','Приходил мужчина, хотел букет из старого каталога…'],
+      ['10–15.11.23','83 тыс. руб.','36 тыс. руб.','15','–']
+    ];
+    const focusCol=e.columns[1];
+    let rowIndexes;
+    if(e.id==='zero')rowIndexes=[1,2];
+    else if(e.id==='empty')rowIndexes=[2,3];
+    else if(e.id==='period')rowIndexes=[4,5];
+    else rowIndexes=[0,1,2];
+    let html='<thead><tr>'+heads.map((h,i)=>`<th class="${i===focusCol?'focus':''}">${h}</th>`).join('')+'</tr></thead><tbody>';
+    for(let index of rowIndexes){
+      html+='<tr>'+rows[index].map((v,i)=>`<td class="${(e.id==='zero'&&i===3&&index>=1||e.id==='empty'&&i===1&&index===3||e.id==='period'&&i===0&&index===5)?'focus':''}">${v||'&nbsp;'}</td>`).join('')+'</tr>';
+    }
+    html+='</tbody>';table.innerHTML=html;return table;
+  }
+  function openDetail(id){
+    const e=errors.find(a=>a.id===id);active=id;
+    document.getElementById('previewTitle').textContent='Отмеченный фрагмент: '+e.label;
+    document.getElementById('progress').textContent=(errors.filter(x=>selections[x.id]!==null).length) + ' из 6 заполнено';
+    const preview=document.getElementById('preview');preview.innerHTML='';preview.appendChild(contextTable(e));
+    options.innerHTML='';
+    COMMENTS.forEach((text,index)=>{
+      const btn=document.createElement('button');btn.type='button';btn.textContent=text;
+      btn.className='option'+(selections[id]===index?' selected':'');
+      btn.addEventListener('click',()=>{selections[id]=index;options.querySelectorAll('.option').forEach((b,i)=>b.classList.toggle('selected',i===index));document.getElementById('progress').textContent=errors.filter(x=>selections[x.id]!==null).length+' из 6 заполнено';});
+      options.appendChild(btn);
+    });
+    detail.hidden=false;
+    status.textContent='';
+    detail.scrollTop=0;
+  }
+  function returnToTable(){detail.hidden=true;active=null;renderMarkers();showStatus();}
+  back.addEventListener('click',returnToTable);
+  save.addEventListener('click',returnToTable);
+  function showStatus(){
+    if(checked){
+      const good=errors.filter(e=>selections[e.id]===e.answer).length;
+      status.textContent=`Верно: ${good} из 6`;
+    } else {
+      const filled=errors.filter(e=>selections[e.id]!==null).length;
+      status.textContent=filled?`Ответы: ${filled}/6`:'';
+    }
+  }
+  check.addEventListener('click',()=>{
+    if(!detail.hidden){returnToTable();return;}
+    const missing=errors.filter(e=>selections[e.id]===null);
+    if(missing.length){status.textContent=`Заполните все метки: осталось ${missing.length}`;
+      pins.querySelectorAll('.pin').forEach((p,i)=>{if(missing.some(m=>m.id===errors[i].id)){p.classList.add('needs-answer');setTimeout(()=>p.classList.remove('needs-answer'),500)}});
+      return;
+    }
+    checked=true;
+    retry.hidden=false;restart.hidden=false;
+    renderMarkers();showStatus();
+  });
+  retry.addEventListener('click',()=>{checked=false;retry.hidden=true;renderMarkers();status.textContent='Можно изменить ответы, затем нажать «Проверить».'});
+  restart.addEventListener('click',()=>{
+    errors.forEach(e=>selections[e.id]=null);checked=false;retry.hidden=true;restart.hidden=true;
+    renderMarkers();showStatus();
+  });
+  document.getElementById('ok').addEventListener('click',()=>{document.getElementById('intro').hidden=true});
+  document.getElementById('help').addEventListener('click',()=>{document.getElementById('intro').hidden=false});
+  document.getElementById('fullscreen').addEventListener('click',async()=>{
+    try {if(!document.fullscreenElement)await app.requestFullscreen();else await document.exitFullscreen();}
+    catch(err){status.textContent='Полноэкранный режим недоступен в этом браузере.';}
+  });
+  window.addEventListener('resize',renderMarkers);
+  renderMarkers();
+})();
+</script>
+</body>
+</html>
