@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Проверка данных перед загрузкой</title>
+  <style>
+    :root{--red:#d71f36;--red-dark:#ba1730;--ink:#20212a;--sub:#5d626d;--border:#e5e6ea;--bg:#fff;--muted:#f7f7f9;--green:#197a51;--greenbg:#f0faf5;--redbg:#fff1f3}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:transparent;font-family:Arial,"Helvetica Neue",sans-serif;color:var(--ink)}
+    .app{max-width:560px;width:100%;margin:0 auto;background:var(--bg);border:1px solid #ececf0;border-radius:16px;padding:20px 22px 18px;box-shadow:0 7px 25px rgba(29,29,43,.055)}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:9px}
+    h1{font-size:19px;line-height:1.26;letter-spacing:-.025em;margin:0 0 10px;font-weight:750}
+    .situation{font-size:13.5px;line-height:1.48;color:#41444f;margin:0 0 14px}
+    .question{font-size:15px;line-height:1.35;font-weight:750;margin:0 0 11px}
+    fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
+    .choice{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);border-radius:10px;padding:11px 12px;cursor:pointer;background:white;transition:border-color .14s,background .14s;position:relative}
+    .choice:hover{border-color:#bdc1ca;background:#fafafb}
+    .choice:focus-within{outline:2px solid rgba(215,31,54,.22);outline-offset:1px}
+    .choice input{position:absolute;opacity:0;width:1px;height:1px}
+    .dot{flex:none;width:17px;height:17px;border:1.7px solid #b8bac3;border-radius:50%;margin-top:1px;display:grid;place-items:center;background:#fff}
+    .dot:after{content:"";width:7px;height:7px;border-radius:50%;background:#fff;transform:scale(0);transition:transform .12s}
+    .choice input:checked + .dot{border-color:var(--red);background:var(--red)}
+    .choice input:checked + .dot:after{transform:scale(1)}
+    .choice-text{font-size:13px;line-height:1.38}
+    .choice.selected{border-color:var(--red);background:#fff9fa}
+    .choice.correct{border-color:#58a884;background:var(--greenbg)}
+    .choice.correct .dot{border-color:var(--green);background:var(--green)}
+    .choice.incorrect{border-color:var(--red);background:var(--redbg)}
+    .feedback{margin-top:12px;padding:11px 12px;border-radius:10px;font-size:13px;line-height:1.43;display:none}
+    .feedback.show{display:block}
+    .feedback.success{background:var(--greenbg);color:#195f43;border-left:3px solid var(--green)}
+    .feedback.error{background:var(--redbg);color:#832b3b;border-left:3px solid var(--red)}
+    .feedback.neutral{background:var(--muted);color:#41444f;border-left:3px solid #a4a7b0}
+    .feedback strong{display:block;margin-bottom:3px;font-size:13px}
+    .actions{display:flex;gap:9px;align-items:center;margin-top:15px;flex-wrap:wrap}
+    button{font:700 13px/1.2 Arial,"Helvetica Neue",sans-serif;border-radius:9px;min-height:38px;padding:9px 15px;cursor:pointer;transition:background .15s,border-color .15s}
+    .check{background:var(--red);border:1px solid var(--red);color:white;flex:1;min-width:160px}
+    .check:hover{background:var(--red-dark);border-color:var(--red-dark)}
+    .reset{background:#fff;border:1px solid #dcdde3;color:#424550;flex:1;min-width:160px}
+    .reset:hover{background:#f7f7fa;border-color:#b8bbc5}
+    @media(max-width:460px){.app{padding:16px;border-radius:12px}.choice{padding:10px}h1{font-size:18px}.situation{font-size:13px}.choice-text{font-size:12.8px}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="eyebrow">Практика</div>
+    <h1>Проверьте, в чем ошибка</h1>
+    <p class="situation">Алексей загрузил в нейросеть таблицу с обращениями клиентов, чтобы проанализировать причины отказов от покупки. Вместе с нужными сведениями он передал ФИО, телефоны и адреса электронной почты покупателей. При этом для анализа персональные данные не требовались.</p>
+    <p class="question" id="question">Какую главную ошибку совершил Алексей?</p>
+    <fieldset aria-labelledby="question" id="answers">
+      <label class="choice"><input type="radio" name="answer" value="0"><span class="dot" aria-hidden="true"></span><span class="choice-text">Выбрал неверный способ решения задачи: такой анализ нельзя проводить с помощью нейросети.</span></label>
+      <label class="choice"><input type="radio" name="answer" value="1"><span class="dot" aria-hidden="true"></span><span class="choice-text">Выбрал неподходящую нейросеть для анализа клиентских обращений.</span></label>
+      <label class="choice"><input type="radio" name="answer" value="2"><span class="dot" aria-hidden="true"></span><span class="choice-text">Не попросил нейросеть обезличить данные в промпте.</span></label>
+      <label class="choice"><input type="radio" name="answer" value="3"><span class="dot" aria-hidden="true"></span><span class="choice-text">Не удалил лишние персональные данные до загрузки таблицы.</span></label>
+    </fieldset>
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    <div class="actions">
+      <button class="check" id="check" type="button">Проверить ответ</button>
+      <button class="reset" id="reset" type="button">Попробовать еще раз</button>
+    </div>
+  </main>
+  <script>
+    const answers=document.getElementById('answers');
+    const inputs=[...answers.querySelectorAll('input')];
+    const cards=[...answers.querySelectorAll('.choice')];
+    const feedback=document.getElementById('feedback');
+    const correctIndex=3;
+    function styleSelection(){cards.forEach((card,i)=>card.classList.toggle('selected',inputs[i].checked));}
+    function clearFeedback(){cards.forEach(card=>card.classList.remove('correct','incorrect'));feedback.className='feedback';feedback.innerHTML='';}
+    answers.addEventListener('change',()=>{clearFeedback();styleSelection();});
+    document.getElementById('check').addEventListener('click',()=>{
+      const selected=inputs.findIndex(input=>input.checked);
+      clearFeedback();
+      if(selected<0){feedback.className='feedback show neutral';feedback.innerHTML='<strong>Выберите вариант ответа</strong>Отметьте один вариант и нажмите «Проверить ответ».';return;}
+      if(selected===correctIndex){cards[selected].classList.add('correct');feedback.className='feedback show success';feedback.innerHTML='<strong>Верно!</strong>Для анализа причин отказов не нужны ФИО, телефоны и электронная почта клиентов. Алексей должен был убрать лишние персональные данные до отправки файла и проверить, разрешена ли передача подготовленных сведений выбранному сервису.';}
+      else{cards[selected].classList.add('incorrect');feedback.className='feedback show error';feedback.innerHTML='<strong>Пока неверно</strong>Ошибка связана не с самим анализом и не только с выбором нейросети. Персональные данные уже поступили сервису в момент загрузки, поэтому просьба обезличить их в промпте не исправит передачу. Попробуйте выбрать другой ответ.';}
+    });
+    document.getElementById('reset').addEventListener('click',()=>{inputs.forEach(input=>input.checked=false);clearFeedback();styleSelection();});
+  </script>
+</body>
+</html>
